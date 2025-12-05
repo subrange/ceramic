@@ -1,4 +1,6 @@
 import sys
-sys.path.append('..')
+
+sys.path.append("..")
 import external_test
+
 external_test.runExternalTest()

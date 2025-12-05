@@ -1,13 +1,15 @@
-from subprocess import Popen, PIPE;
+from subprocess import Popen, PIPE
 from sys import argv
 from time import sleep
 
-server = Popen([argv[1], "server"], stdout=PIPE);
+server = Popen([argv[1], "server"], stdout=PIPE)
 
 # wait for handshake from server before starting client
-hello = server.stdout.read(5);
+if server.stdout is None:
+    raise RuntimeError("server stdout is not available")
+hello = server.stdout.read(5)
 
-client = Popen([argv[1], "client"]);
+client = Popen([argv[1], "client"])
 client.wait()
 
 server.wait()

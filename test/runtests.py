@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.7
-
 import re
 import os
 import glob
@@ -9,17 +7,18 @@ import signal
 import sys
 import difflib
 import argparse
-from StringIO import StringIO
-from subprocess import Popen, PIPE, call
+from io import StringIO
+import subprocess
 from multiprocessing import Pool, cpu_count
 import time
 import tempfile
-import ConfigParser
+import configparser
 
-
+
 #
 # test properties
 #
+
 
 class TestOptions:
     testBuildFlags = []
@@ -30,18 +29,20 @@ class TestOptions:
     clayPlatform = None
     cleanUpLater = []
 
-
+
 #
 # utils
 #
 
-def indented(txt):
-    return ' ' + txt.rstrip('\n').replace('\n', '\n ') + '\n'
 
-
+def indented(txt):
+    return " " + txt.rstrip("\n").replace("\n", "\n ") + "\n"
+
+
 #
 # getClayCompiler
 #
+
 
 # stolen from http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
@@ -52,62 +53,78 @@ def which(program):
 
     return None
 
-def getClayCompiler(opt) :
+
+def getClayCompiler(opt):
     buildPath = ["..", "build", "compiler"]
     clayexe = None
-    if sys.platform == "win32" :
+    if sys.platform == "win32":
         clayexe = "clay.exe"
-    else :
+    else:
         clayexe = "clay"
 
     compiler = os.path.join(opt.testRoot, *(buildPath + [clayexe]))
-    if not os.path.exists(compiler) :
+    if not os.path.exists(compiler):
         compiler = which(clayexe)
         if compiler is None:
-            print "could not find the clay compiler"
+            print("could not find the clay compiler")
             sys.exit(1)
     return compiler
 
 
-
 #
 # getClayPlatform, fileForPlatform
 #
 
+
 def getClayPlatform(opt):
-    with tempfile.NamedTemporaryFile(suffix='.clay', delete=False) as platformclay:
-        print >>platformclay, 'import core.platform.(OSString, OSFamilyString, CPUString, CPUBits);'
-        print >>platformclay, 'import printer.(println);'
-        print >>platformclay, 'main() {'
-        print >>platformclay, '    println("[Target]");'
-        print >>platformclay, '    println("platform: ", OSString);'
-        print >>platformclay, '    println("platform-family: ", OSFamilyString);'
-        print >>platformclay, '    println("architecture: ", CPUString);'
-        print >>platformclay, '    println("bits: ", CPUBits);'
-        print >>platformclay, '    return 0;'
-        print >>platformclay, '}'
-        platformclay.close()
-
-        commandline = [opt.clayCompiler] + opt.testBuildFlags + ['-o', 'test.exe', platformclay.name]
-        returncode = call(commandline)
-        if returncode != 0:
-            print "could not build an executable with", " ".join(commandline)
-            sys.exit(1)
-
-        process = Popen(["./test.exe"], stdout=PIPE)
-        config = ConfigParser.ConfigParser()
-        config.readfp(process.stdout)
-
-        process.communicate()
-        if process.returncode != 0:
-            print "executable failed with exit code", process.returncode, "built with", opt.clayCompiler, opt.testBuildFlags
-
-        return (
-            config.get('Target', 'platform'),
-            config.get('Target', 'platform-family'),
-            config.get('Target', 'architecture'),
-            config.get('Target', 'bits')
+    with tempfile.NamedTemporaryFile(
+        suffix=".clay", delete=False, mode="w", encoding="utf-8"
+    ) as platform_clay:
+        platform_clay.write(
+            "import core.platform.(OSString, OSFamilyString, CPUString, CPUBits);\n"
         )
+        platform_clay.write("import printer.(println);\n")
+        platform_clay.write("main() {\n")
+        platform_clay.write('    println("[Target]");\n')
+        platform_clay.write('    println("platform: ", OSString);\n')
+        platform_clay.write('    println("platform-family: ", OSFamilyString);\n')
+        platform_clay.write('    println("architecture: ", CPUString);\n')
+        platform_clay.write('    println("bits: ", CPUBits);\n')
+        platform_clay.write("    return 0;\n")
+        platform_clay.write("}\n")
+        src_path = platform_clay.name
+
+    try:
+        cmd = [opt.clayCompiler] + opt.testBuildFlags + ["-o", "test.exe", src_path]
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError:
+        raise RuntimeError("could not build an executable with: " + " ".join(cmd))
+
+    try:
+        r = subprocess.run(
+            ["./test.exe"], check=True, stdout=subprocess.PIPE, text=True
+        )
+        out_text = r.stdout
+    except subprocess.CalledProcessError as ex:
+        raise RuntimeError(f"executable failed with exit code {ex.returncode}")
+
+    cfg = configparser.ConfigParser()
+    cfg.read_string(out_text)
+
+    # cleanup
+    try:
+        os.unlink(src_path)
+        os.unlink("test.exe")
+    except OSError:
+        pass
+
+    return (
+        cfg.get("Target", "platform"),
+        cfg.get("Target", "platform-family"),
+        cfg.get("Target", "architecture"),
+        cfg.get("Target", "bits"),
+    )
+
 
 def fileForPlatform(opt, folder, name, ext):
     platform, family, arch, bits = opt.clayPlatform
@@ -131,18 +148,18 @@ def fileForPlatform(opt, folder, name, ext):
 
     return os.path.join(folder, "%s.%s" % (name, ext))
 
-
+
 #
 # RefText
 #
 
 
 def normalize(text):
-    text = text.replace('\r', '')
-    if not text or text.endswith('\n'):
+    text = text.replace("\r", "")
+    if not text or text.endswith("\n"):
         return text
     else:
-        return text + '\n'
+        return text + "\n"
 
 
 class RefText(object):
@@ -151,16 +168,16 @@ class RefText(object):
         text = normalize(text)
         self.text = text
         self.re = None
-        xx = text.split('\n', 1)
-        if len(xx) == 2 and xx[0] == '(re)':
-            restring = xx[1].replace('\r', '').strip()
+        xx = text.split("\n", 1)
+        if len(xx) == 2 and xx[0] == "(re)":
+            restring = xx[1].replace("\r", "").strip()
             self.re = re.compile(restring, re.DOTALL)
         else:
             self.re = None
 
     @staticmethod
     def load(name, path):
-        text = open(path).read().replace('\r', '')
+        text = open(path).read().replace("\r", "")
         return RefText(name=name, text=text)
 
     @staticmethod
@@ -183,21 +200,25 @@ class RefText(object):
                 return None
             r = ""
             for line in difflib.unified_diff(
-                self.text.splitlines(True), actual.splitlines(True),
-                fromfile=self.name, tofile="stdout"
+                self.text.splitlines(True),
+                actual.splitlines(True),
+                fromfile=self.name,
+                tofile="stdout",
             ):
                 r += indented(line)
             return r
 
-
+
 #
 # TestCase
 #
 
+
 class TestCase(object):
     allCases = []
     opt = None
-    def __init__(self, opt, folder, testfile, base = None):
+
+    def __init__(self, opt, folder, testfile, base=None):
         self.opt = opt
         entries = os.listdir(folder)
         self.testfile = os.path.basename(testfile)
@@ -222,34 +243,39 @@ class TestCase(object):
             if not os.path.isdir(fullpath):
                 continue
             findTestCase(self.opt, fullpath, self)
-    
+
     def loadTest(self, testfile):
         TestCase.allCases.append(self)
         self.testfile = testfile
 
-    def cmdline(self, clay) :
-        r = [clay, "-I" + self.path, "-o", "test.exe", "-Dtest.minimal"] + self.opt.testBuildFlags + self.buildflags + [self.testfile]
+    def cmdline(self, clay):
+        r = (
+            [clay, "-I" + self.path, "-o", "test.exe", "-Dtest.minimal"]
+            + self.opt.testBuildFlags
+            + self.buildflags
+            + [self.testfile]
+        )
         return r
 
-    def pre_build(self) :
+    def pre_build(self):
         pass
 
-    def post_build(self) :
+    def post_build(self):
         pass
 
-    def post_run(self) :
+    def post_run(self):
         for f in glob.glob("temp*") + glob.glob("*.data"):
             try:
                 os.unlink(f)
             except OSError:
                 self.opt.cleanUpLater.append(f)
 
-    def match(self, resultout, resulterr, returncode) :
+    def match(self, resultout, resulterr, returncode):
         compilererrfile = fileForPlatform(self.opt, ".", "compilererr", "txt")
         if os.path.isfile(compilererrfile):
             errpattern = open(compilererrfile).read()
-            errpattern = errpattern.replace('\r', '').strip()
-            resulterr = resulterr.replace('\r', '')
+            errpattern = errpattern.replace("\r", "").strip()
+            resulterr = resulterr.replace("\r", "")
 
             if returncode != "compiler error":
                 self.testLogBuffer.write("Failure: compiler did not fail\n")
@@ -274,7 +300,7 @@ class TestCase(object):
                 return "compiler error"
             outfile = fileForPlatform(self.opt, ".", "out", "txt")
             errfile = fileForPlatform(self.opt, ".", "err", "txt")
-            if not os.path.isfile(outfile) :
+            if not os.path.isfile(outfile):
                 self.testLogBuffer.write("Failure: out.txt missing\n")
                 self.testLogBuffer.write("Stdout:\n")
                 self.testLogBuffer.write(indented(resultout))
@@ -307,11 +333,11 @@ class TestCase(object):
                 self.testLogBuffer.write(errcompare)
                 return "err.txt mismatch"
             else:
-                raise Exception, "impossible"
+                raise Exception("impossible")
 
     def run(self):
         self.testLogBuffer = StringIO()
-        print >>self.testLogBuffer
+        print(file=self.testLogBuffer)
         self.testLogBuffer.write("[%s]\n" % self.name())
         os.chdir(self.path)
         self.pre_build()
@@ -330,35 +356,46 @@ class TestCase(object):
     def runtest(self):
         outfilename = "test.exe"
         outfilename = os.path.join(".", outfilename)
-        process = Popen(self.cmdline(self.opt.clayCompiler), stdout=PIPE, stderr=PIPE)
+        process = subprocess.Popen(
+            self.cmdline(self.opt.clayCompiler),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         compilerout, compilererr = process.communicate()
-        if process.returncode != 0 :
+        if process.returncode != 0:
             return "", "%s\n%s" % (compilerout, compilererr), "compiler error"
         if self.runscript is None:
             commandline = [outfilename]
         else:
-            commandline = [sys.executable, self.runscript, outfilename] + self.opt.testBuildFlags
+            commandline = [
+                sys.executable,
+                self.runscript,
+                outfilename,
+            ] + self.opt.testBuildFlags
 
-        process = Popen(commandline, stdout=PIPE, stderr=PIPE)
+        process = subprocess.Popen(
+            commandline, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         resultout, resulterr = process.communicate()
         self.removefile(outfilename)
         return resultout, resulterr, process.returncode
 
-    def removefile(self, filename) :
+    def removefile(self, filename):
         # on windows, sometimes, deleting a file
-        # immediately after executing it 
+        # immediately after executing it
         # results in a 'access denied' error.
         # so we wait and try again a few times.
         attempts = 1
-        while (attempts <= 3) and os.path.exists(filename) :
-            try :
+        while (attempts <= 3) and os.path.exists(filename):
+            try:
                 os.unlink(filename)
-            except OSError :
+            except OSError:
                 time.sleep(1)
             attempts += 1
 
+
 class TestModuleCase(TestCase):
-    def match(self, resultout, resulterr, returncode) :
+    def match(self, resultout, resulterr, returncode):
         if returncode == 0:
             return "ok"
         elif returncode == "compiler error":
@@ -374,18 +411,21 @@ class TestModuleCase(TestCase):
             self.testLogBuffer.write(indented(resulterr))
             return "exit code %d" % returncode
 
+
 class TestDisabledCase(TestCase):
     def runtest(self):
         return "disabled", "", None
-    def match(self, resultout, resulterr, returncode) :
+
+    def match(self, resultout, resulterr, returncode):
         return "disabled"
 
-
+
 #
 # runtests
 #
 
-def findTestCase(opt, folder, base = None):
+
+def findTestCase(opt, folder, base=None):
     testPath = fileForPlatform(opt, folder, "test", "clay")
     mainPath = fileForPlatform(opt, folder, "main", "clay")
     testDisabledPath = fileForPlatform(opt, folder, "test-disabled", "clay")
@@ -399,20 +439,24 @@ def findTestCase(opt, folder, base = None):
     else:
         TestCase(opt, folder, mainPath, base)
 
+
 def findTestCases(opt):
     findTestCase(opt, opt.runTestRoot)
     return TestCase.allCases
 
+
 def initWorker():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
+
 
 def runTest(t):
     return t.run()
 
+
 def runTests(opt):
     testcases = findTestCases(opt)
     try:
-        pool = Pool(processes = cpu_count(), initializer=initWorker)
+        pool = Pool(processes=cpu_count(), initializer=initWorker)
         results = pool.imap(runTest, testcases)
     except ImportError:
         pool = None
@@ -420,98 +464,117 @@ def runTests(opt):
     succeeded = []
     failed = []
     disabled = []
-    logfile = open(opt.testLogFile, 'w')
+    logfile = open(opt.testLogFile, "w")
     try:
-        print "[TargetPlatform]"
+        print("[TargetPlatform]")
         platform, family, arch, bits = opt.clayPlatform
-        print "platform:", platform
-        print "cpu:", arch
-        print "bits:", bits
-        print
-        print "[Compiler]"
-        print "exe:", opt.clayCompiler
-        print
-        print "[Tests]"
+        print("platform:", platform)
+        print("cpu:", arch)
+        print("bits:", bits)
+        print()
+        print("[Compiler]")
+        print("exe:", opt.clayCompiler)
+        print()
+        print("[Tests]")
         for test in testcases:
             startTime = time.time()
-            res, log = results.next()
+            res, log = next(results)
             endTime = time.time()
             if res != "ok" and res != "disabled":
                 logfile.write(log)
             logfile.flush()
-            print "%s: %s (%fs)" % (test.name(), res, (endTime - startTime))
+            print("%s: %s (%fs)" % (test.name(), res, (endTime - startTime)))
             if res == "disabled":
                 disabled.append(test.name())
             elif res != "ok":
-                failed.append('%s: %s' % (test.name(), res))
+                failed.append("%s: %s" % (test.name(), res))
             else:
                 succeeded.append(test.name())
     except KeyboardInterrupt:
-        print "\nInterrupted!"
+        print("\nInterrupted!")
         if pool:
             pool.terminate()
 
     if failed:
-        print
-        print "[Failed]\n",
-        print "\n".join(failed)
+        print()
+        print("[Failed]\n", end=" ")
+        print("\n".join(failed))
 
-    print
-    print "[Summary]"
-    print "Passed: %d" % len(succeeded)
+    print()
+    print("[Summary]")
+    print("Passed: %d" % len(succeeded))
     if disabled:
-        print "Disabled: %d" % len(disabled)
+        print("Disabled: %d" % len(disabled))
     if failed:
-        print "Failed: %d" % len(failed)
+        print("Failed: %d" % len(failed))
     logfile.flush()
-    print "\n# Test log written to " + opt.testLogFile
+    print("\n# Test log written to " + opt.testLogFile)
 
-def main() :
+
+def main():
     opt = TestOptions()
 
     argp = argparse.ArgumentParser(description="Run the Clay test suite.")
-    argp.add_argument("-I",
+    argp.add_argument(
+        "-I",
         metavar="path",
-        dest='libClayPaths',
-        action='append',
-        help="Specifies the Clay module path(s) to use.")
-    argp.add_argument("--arch",
+        dest="libClayPaths",
+        action="append",
+        help="Specifies the Clay module path(s) to use.",
+    )
+    argp.add_argument(
+        "--arch",
         metavar="arch",
-        dest='arch',
-        help="Specifies a Darwin target architecture to build for. (Apple only)")
-    argp.add_argument("--target",
+        dest="arch",
+        help="Specifies a Darwin target architecture to build for. (Apple only)",
+    )
+    argp.add_argument(
+        "--target",
         metavar="cpu-vendor-os",
-        dest='target',
-        help="Specifies the target triple to build for.")
-    argp.add_argument("--clay",
+        dest="target",
+        help="Specifies the target triple to build for.",
+    )
+    argp.add_argument(
+        "--clay",
         metavar="path",
-        dest='clayCompiler',
-        help="Use the specified clay compiler (defaults to clay on path, or in build dir).")
-    argp.add_argument("--buildflags",
-        nargs='+',
+        dest="clayCompiler",
+        help="Use the specified clay compiler (defaults to clay on path, or in build dir).",
+    )
+    argp.add_argument(
+        "--buildflags",
+        nargs="+",
         metavar="flags",
-        dest='buildFlags',
-        help="Additional build flags to pass through to the Clay compiler.")
-    argp.add_argument("--root",
+        dest="buildFlags",
+        help="Additional build flags to pass through to the Clay compiler.",
+    )
+    argp.add_argument(
+        "--root",
         metavar="path",
-        dest='testRoot',
-        help="Specifies the root directory out of which to run tests.")
-    argp.add_argument("--log",
+        dest="testRoot",
+        help="Specifies the root directory out of which to run tests.",
+    )
+    argp.add_argument(
+        "--log",
         metavar="path",
-        dest='logfile',
-        help="Log detailed test failures to the given path (default testlog.txt).")
-    argp.add_argument("testname",
-        nargs='?',
-        help="Only run tests under the specified subdirectory in the test root.")
+        dest="logfile",
+        help="Log detailed test failures to the given path (default testlog.txt).",
+    )
+    argp.add_argument(
+        "testname",
+        nargs="?",
+        help="Only run tests under the specified subdirectory in the test root.",
+    )
 
     args = argp.parse_args()
 
     if args.arch is not None:
-        opt.testBuildFlags += ['-arch', args.arch]
+        opt.testBuildFlags += ["-arch", args.arch]
     if args.libClayPaths is not None:
-        opt.testBuildFlags += ['-I' + os.path.abspath(path) for path in args.libClayPaths]
+        opt.testBuildFlags += [
+            "-I" + os.path.abspath(path) for path in args.libClayPaths
+        ]
     if args.target is not None:
-        opt.testBuildFlags += ['-target', args.target]
+        opt.testBuildFlags += ["-target", args.target]
     if args.testRoot is not None:
         opt.testRoot = os.path.abspath(args.testRoot)
     if args.logfile is not None:
@@ -534,10 +597,10 @@ def main() :
         try:
             os.unlink(f)
         except OSError:
-            print "warning: unable to clean up temporary file", f
+            print("warning: unable to clean up temporary file", f)
     endTime = time.time()
-    print
-    print "time-taken-seconds: %f" % (endTime - startTime)
+    print()
+    print("time-taken-seconds: %f" % (endTime - startTime))
 
 
 if __name__ == "__main__":
