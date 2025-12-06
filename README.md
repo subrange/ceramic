@@ -1,6 +1,6 @@
-## Clay
+## Ceramic
 
-Clay is a programming language designed for Generic Programming.
+Ceramic is a programming language based on Clay designed for Generic Programming.
 
 ## License
 
