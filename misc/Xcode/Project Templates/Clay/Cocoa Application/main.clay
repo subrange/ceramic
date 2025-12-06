@@ -1,4 +1,0 @@
-import cocoa.*;
-import ___PROJECTNAMEASIDENTIFIER___.appdelegate.*;
-
-main() = appKitMain(AppDelegate);
