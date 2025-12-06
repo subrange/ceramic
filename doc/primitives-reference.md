@@ -1,132 +1,117 @@
 # <a name="clayprimitivesreference"></a>The Clay Programming Language
+
 ## Primitives Reference, version 0.1
 
 This document describes the contents of the `__primitives__` module synthesized by the Clay compiler and implicitly available to all Clay programs. This module provides primitive types, fundamental operations, and functions for compile-time introspection of programs. For information about the Clay language itself, consult the [Language Reference](language-reference.md).
 
-* [Primitive types](#primitivetypes)
-    * [`Bool`](#bool)
-    * [Integer types](#integertypes)
-        * `Int8`, `Int16`, `Int32`, `Int64`, `Int128`, `UInt8`, `UInt16`, `UInt32`, `UInt64`, `UInt128`
-    * [Floating-point types](#floatingpointtypes)
-        * `Float32`, `Float64`, `Float80`
-    * [Imaginary and complex types](#imaginaryandcomplextypes)
-        * `Imag32`, `Imag64`, `Imag80`, `Complex32`, `Complex64`, `Complex80`
-    * [`Pointer`](#pointer)
-    * [`CodePointer`](#codepointer)
-    * [External code pointer types](#externalcodepointertypes)
-        * `CCodePointer`, `VarArgsCCodePointer`, `LLVMCodePointer`, `StdCallCodePointer`, `FastCallCodePointer`, `ThisCallCodePointer`
-    * [`Array`](#array)
-    * [`Vec`](#vec)
-    * [`Tuple`](#tuple)
-    * [`Union`](#union)
-    * [`Static`](#static)
-
-* [Data access operations](#dataaccessoperations)
-    * [`primitiveCopy`](#primitivecopy)
-    * [`arrayRef`](#arrayref)
-    * [`arrayElements`](#arrayelements)
-    * [`tupleRef`](#tupleref)
-    * [`tupleElements`](#tupleelements)
-    * [`recordFieldRef`](#recordfieldref)
-    * [`recordFieldRefByName`](#recordfieldrefbyname)
-    * [`recordFields`](#recordfields)
-    * [`enumToInt`](#enumtoint)
-    * [`intToEnum`](#inttoenum)
-
-* [Numeric operations](#numericoperations)
-    * [`boolNot`](#boolnot)
-    * [`numericEquals?`](#numericequals)
-    * [`numericLesser?`](#numericlesser)
-    * [`numericAdd`](#numericadd)
-    * [`numericSubtract`](#numericsubtract)
-    * [`numericMultiply`](#numericmultiply)
-    * [`numericDivide`](#numericdivide)
-    * [`numericNegate`](#numericnegate)
-    * [`integerRemainder`](#integerremainder)
-    * [`integerShiftLeft`](#integershiftleft)
-    * [`integerShiftRight`](#integershiftright)
-    * [`integerBitwiseAnd`](#integerbitwiseand)
-    * [`integerBitwiseOr`](#integerbitwiseor)
-    * [`integerBitwiseXor`](#integerbitwisexor)
-    * [`integerBitwiseNot`](#integerbitwisenot)
-    * [`numericConvert`](#numericconvert)
-
-* [Checked integer operations](#checkedintegeroperations)
-    * `integerAddChecked`, `integerSubtractChecked`, `integerMultiplyChecked`, `integerDivideChecked`, `integerRemainderChecked`, `integerNegateChecked`, `integerShiftLeftChecked`, `integerConvertChecked`
-
-* [Pointer operations](#pointeroperations)
-    * [`addressOf`](#addressof)
-    * [`pointerDereference`](#pointerdereference)
-    * [`pointerEquals?`](#pointerequals)
-    * [`pointerLesser?`](#pointerlesser)
-    * [`pointerOffset`](#pointeroffset)
-    * [`pointerToInt`](#pointertoint)
-    * [`intToPointer`](#inttopointer)
-    * [`pointerCast`](#pointercast)
-
-* [Function pointer operations](#functionpointeroperations)
-    * [`makeCodePointer`](#makecodepointer)
-    * [`makeCCodePointer`](#makeccodepointer)
-    * [`callCCodePointer`](#callccodepointer)
-
-* [Atomic memory operations](#atomicmemoryoperations)
-    * [Memory order symbols](#memoryordersymbols)
-        * `OrderUnordered`, `OrderMonotonic`, `OrderAcquire`, `OrderRelease`, `OrderAcqRel`, `OrderSeqCst`
-    * [`atomicLoad`](#atomicload)
-    * [`atomicStore`](#atomicstore)
-    * [`atomicRMW`](#atomicrmw)
-        * `RMWXchg`, `RMWAdd`, `RMWSubtract`, `RMWAnd`, `RMWNAnd`, `RMWOr`, `RMWXor`, `RMWMin`, `RMWMax`, `RMWUMin`, `RMWUMax`
-    * [`atomicCompareExchange`](#atomiccompareexchange)
-    * [`atomicFence`](#atomicfence)
-
-* [Exception handling](#exceptionhandling)
-    * [`activeException`](#activeexception)
-
-* [Symbol and function introspection](#symbolandfunctionintrospection)
-    * [`Type?`](#type)
-    * [`CallDefined?`](#calldefined)
-    * [`ModuleName`](#modulename)
-    * [`IdentifierModuleName`](#identifiermodulename)
-    * [`StaticName`](#staticname)
-    * [`IdentifierStaticName`](#identifierstaticname)
-    * [`staticFieldRef`](#staticfieldref)
-
-* [Static string manipulation](#staticstringmanipulation)
-    * [`Identifier?`](#identifier)
-    * [`IdentifierSize`](#identifiersize)
-    * [`IdentifierConcat`](#identifierconcat)
-    * [`IdentifierSlice`](#identifierslice)
-
-* [Type introspection](#typeintrospection)
-    * [`TypeSize`](#typesize)
-    * [`TypeAlignment`](#typealignment)
-    * [`CCodePointer?`](#ccodepointer)
-    * [`TupleElementCount`](#tupleelementcount)
-    * [`UnionMemberCount`](#unionmembercount)
-    * [`Record?`](#record)
-    * [`RecordFieldCount`](#recordfieldcount)
-    * [`RecordFieldName`](#recordfieldname)
-    * [`RecordWithField?`](#recordwithfield)
-    * [`Variant?`](#variant)
-    * [`VariantMemberCount`](#variantmembercount)
-    * [`VariantMemberIndex`](#variantmemberindex)
-    * [`Enum?`](#enum)
-    * [`EnumMemberCount`](#enummembercount)
-    * [`EnumMemberName`](#enummembername)
-
-* [Compiler flags](#compilerflags)
-    * [`ExceptionsEnabled?`](#exceptionsenabled)
-    * [`Flag?`](#flag)
-    * [`Flag`](#flag)
-
-* [External function attributes](#externalfunctionattributes)
-    * [Calling convention attributes](#callingconventionattributes)
-        * `AttributeCCall`, `AttributeStdCall`, `AttributeFastCall`, `AttributeThisCall`, `AttributeLLVMCall`
-    * [Linkage attributes](#linkageattributes)
-        * `AttributeDLLImport`, `AttributeDLLExport`
-
-* [Miscellaneous functions](#miscellaneousfunctions)
-    * [`staticIntegers`](#staticintegers)
+- [The Clay Programming Language](#the-clay-programming-language)
+  - [Primitives Reference, version 0.1](#primitives-reference-version-01)
+    - [Primitive types](#primitive-types)
+      - [Bool](#bool)
+      - [Integer types](#integer-types)
+      - [Floating-point types](#floating-point-types)
+      - [Imaginary and complex types](#imaginary-and-complex-types)
+      - [Pointer](#pointer)
+      - [CodePointer](#codepointer)
+      - [External code pointer types](#external-code-pointer-types)
+      - [Array](#array)
+      - [Vec](#vec)
+      - [Tuple](#tuple)
+      - [Union](#union)
+      - [Static](#static)
+    - [Data access operations](#data-access-operations)
+      - [primitiveCopy](#primitivecopy)
+      - [arrayRef](#arrayref)
+      - [arrayElements](#arrayelements)
+      - [tupleRef](#tupleref)
+      - [tupleElements](#tupleelements)
+      - [recordFieldRef](#recordfieldref)
+      - [recordFieldRefByName](#recordfieldrefbyname)
+      - [recordFields](#recordfields)
+      - [enumToInt](#enumtoint)
+      - [intToEnum](#inttoenum)
+    - [Numeric operations](#numeric-operations)
+      - [boolNot](#boolnot)
+      - [numericEquals?](#numericequals)
+      - [numericLesser?](#numericlesser)
+      - [numericAdd](#numericadd)
+      - [numericSubtract](#numericsubtract)
+      - [numericMultiply](#numericmultiply)
+      - [numericDivide](#numericdivide)
+      - [numericNegate](#numericnegate)
+      - [integerRemainder](#integerremainder)
+      - [integerShiftLeft](#integershiftleft)
+      - [integerShiftRight](#integershiftright)
+      - [integerBitwiseAnd](#integerbitwiseand)
+      - [integerBitwiseOr](#integerbitwiseor)
+      - [integerBitwiseXor](#integerbitwisexor)
+      - [integerBitwiseNot](#integerbitwisenot)
+      - [numericConvert](#numericconvert)
+        - [Integer to integer conversion](#integer-to-integer-conversion)
+        - [Floating-point to floating-point conversion](#floating-point-to-floating-point-conversion)
+        - [Integer to floating-point conversion](#integer-to-floating-point-conversion)
+        - [Integer to floating-point conversion](#integer-to-floating-point-conversion-1)
+    - [Checked integer operations](#checked-integer-operations)
+    - [Pointer operations](#pointer-operations)
+      - [addressOf](#addressof)
+      - [pointerDereference](#pointerdereference)
+      - [pointerEquals?](#pointerequals)
+      - [pointerLesser?](#pointerlesser)
+      - [pointerOffset](#pointeroffset)
+      - [pointerToInt](#pointertoint)
+      - [intToPointer](#inttopointer)
+      - [pointerCast](#pointercast)
+    - [Function pointer operations](#function-pointer-operations)
+      - [makeCodePointer](#makecodepointer)
+      - [makeCCodePointer](#makeccodepointer)
+      - [callCCodePointer](#callccodepointer)
+    - [Atomic memory operations](#atomic-memory-operations)
+      - [Memory order symbols](#memory-order-symbols)
+      - [atomicLoad](#atomicload)
+      - [atomicStore](#atomicstore)
+      - [atomicRMW](#atomicrmw)
+      - [atomicCompareExchange](#atomiccompareexchange)
+      - [atomicFence](#atomicfence)
+    - [Exception handling](#exception-handling)
+      - [activeException](#activeexception)
+    - [Symbol and function introspection](#symbol-and-function-introspection)
+      - [Type?](#type)
+      - [CallDefined?](#calldefined)
+      - [ModuleName](#modulename)
+      - [IdentifierModuleName](#identifiermodulename)
+      - [StaticName](#staticname)
+      - [IdentifierStaticName](#identifierstaticname)
+      - [staticFieldRef](#staticfieldref)
+    - [Static string manipulation](#static-string-manipulation)
+      - [Identifier?](#identifier)
+      - [IdentifierSize](#identifiersize)
+      - [IdentifierConcat](#identifierconcat)
+      - [IdentifierSlice](#identifierslice)
+    - [Type introspection](#type-introspection)
+      - [TypeSize](#typesize)
+      - [TypeAlignment](#typealignment)
+      - [CCodePointer?](#ccodepointer)
+      - [TupleElementCount](#tupleelementcount)
+      - [UnionMemberCount](#unionmembercount)
+      - [Record?](#record)
+      - [RecordFieldCount](#recordfieldcount)
+      - [RecordFieldName](#recordfieldname)
+      - [RecordWithField?](#recordwithfield)
+      - [Variant?](#variant)
+      - [VariantMemberCount](#variantmembercount)
+      - [VariantMemberIndex](#variantmemberindex)
+      - [Enum?](#enum)
+      - [EnumMemberCount](#enummembercount)
+      - [EnumMemberName](#enummembername)
+    - [Compiler flags](#compiler-flags)
+      - [ExceptionsEnabled?](#exceptionsenabled)
+      - [Flag?](#flag)
+      - [Flag](#flag-1)
+    - [External function attributes](#external-function-attributes)
+      - [Calling convention attributes](#calling-convention-attributes)
+      - [Linkage attributes](#linkage-attributes)
+    - [Miscellaneous functions](#miscellaneous-functions)
+      - [staticIntegers](#staticintegers)
 
 ### <a name="primitivetypes"></a>Primitive types
 
@@ -164,9 +149,9 @@ Imaginary and complex types are provided for each floating-point type. `Imag32` 
 
 `CCodePointer`s are called using the C calling convention when passed to the [`callCCodePointer`](#callccodepointer) primitive function. Different symbols are provided for function pointers with different calling conventions.
 
-* `LLVMCodePointer[[A,B,C],[D]]` corresponds directly to an LLVM `D (A,B,C) *` function pointer type.
-* `VarArgsCCodePointer[[A,B,C], [D]]` points to a variadic C function; it corresponds to the `D (*)(A,B,C,...)` type in C.
-* `StdCallCodePointer`, `FastCallCodePointer`, and `ThisCallCodePointer` point to functions using legacy x86 calling conventions on Windows. They correspond to C function pointer types decorated with `__stdcall`, `__fastcall`, or `__thiscall` in Microsoft dialect, or with `__attribute__((stdcall))` etc. in GCC dialect.
+- `LLVMCodePointer[[A,B,C],[D]]` corresponds directly to an LLVM `D (A,B,C) *` function pointer type.
+- `VarArgsCCodePointer[[A,B,C], [D]]` points to a variadic C function; it corresponds to the `D (*)(A,B,C,...)` type in C.
+- `StdCallCodePointer`, `FastCallCodePointer`, and `ThisCallCodePointer` point to functions using legacy x86 calling conventions on Windows. They correspond to C function pointer types decorated with `__stdcall`, `__fastcall`, or `__thiscall` in Microsoft dialect, or with `__attribute__((stdcall))` etc. in GCC dialect.
 
 `CCodePointer`s, along with the other external code pointer types, may be obtained by evaluating external function names, or as return values from C functions. They may also be derived directly automatically from some Clay functions using the [`makeCCodePointer`](#makeccodepointer) primitive function.
 
@@ -317,7 +302,6 @@ These functions provide fundamental arithmetic operations for the primitive [`Bo
     numericMultiply(a:T, b:T) : T;
 
 `numericMultiply` returns the product of `a` and `b`. Integer signed or unsigned multiplication overflows following two's-complement arithmetic rules. For integer types, the function corresponds to the LLVM `mul` instruction, and for floating-point types, the `fmul` instruction.
-
 
 #### <a name="numericdivide"></a>numericDivide
 
@@ -508,8 +492,8 @@ These operations create and invoke pointers to instances of Clay functions. Unli
 
 The matched overload must meet the following criteria to be deemed C-compatible:
 
-* It must return zero or one values.
-* It must not have any arguments of types with nontrivial `copy`, `move`, or `destroy` operations.
+- It must return zero or one values.
+- It must not have any arguments of types with nontrivial `copy`, `move`, or `destroy` operations.
 
 Like an external function, if a Clay exception escapes from the pointed-to overload, the `unhandledExceptionInExternal` operator function is called.
 
@@ -541,12 +525,12 @@ The following functions provide uninterruptible, lock-free memory access and syn
 
 These symbols are used as parameters by every atomic operation to specify the memory ordering constraints for that operation. These correspond to LLVM's memory ordering constraints, which in turn are a superset of those specified by the C11 and C++11 memory model. See the [LLVM Atomic Instructions and Concurrency Guide](http://llvm.org/docs/Atomics.html) for details.
 
-* `OrderUnordered` corresponds to the LLVM `unordered` memory ordering.
-* `OrderMonotonic` corresponds to the LLVM `monotonic` and C++11 `memory_order_relaxed` orderings.
-* `OrderAcquire` corresponds to the LLVM `acquire` and C++11 `memory_order_acquire` orderings.
-* `OrderRelease` corresponds to the LLVM `release` and C++11 `memory_order_release` orderings.
-* `OrderAcqRel` corresponds to the LLVM `acq_rel` and C++11 `memory_order_acq_rel` orderings.
-* `OrderSeqCst` corresponds to the LLVM `seq_cst` and C++11 `memory_order_seq_cst` orderings.
+- `OrderUnordered` corresponds to the LLVM `unordered` memory ordering.
+- `OrderMonotonic` corresponds to the LLVM `monotonic` and C++11 `memory_order_relaxed` orderings.
+- `OrderAcquire` corresponds to the LLVM `acquire` and C++11 `memory_order_acquire` orderings.
+- `OrderRelease` corresponds to the LLVM `release` and C++11 `memory_order_release` orderings.
+- `OrderAcqRel` corresponds to the LLVM `acq_rel` and C++11 `memory_order_acq_rel` orderings.
+- `OrderSeqCst` corresponds to the LLVM `seq_cst` and C++11 `memory_order_seq_cst` orderings.
 
 #### <a name="atomicload"></a>atomicLoad
 
@@ -581,17 +565,17 @@ These symbols are used as parameters by every atomic operation to specify the me
 
 `atomicRMW` applies an atomic read-modify-write update operation to the value pointed to by `p`. The value pointed to by `p` prior to the operation is returned. The `Op` parameter determines the operation used to update `p^`:
 
-* `RMWXchg` causes `operand` to be written to `p^`. The value is bitwise copied.
-* `RMWAdd` causes `operand` to be added to `p^`. `T` must be an integer type.
-* `RMWSubtract` causes `operand` to be subtracted from `p^`. `T` must be an integer type.
-* `RMWMin` causes the signed minimum of `operand` and `p^` to be written to `p`. `T` must be an integer type.
-* `RMWMax` causes the signed maximum of `operand` and `p^` to be written to `p`. `T` must be an integer type.
-* `RMWUMin` causes the unsigned minimum of `operand` and `p^` to be written to `p`. `T` must be an integer type.
-* `RMWUMax` causes the unsigned maximum of `operand` and `p^` to be written to `p`. `T` must be an integer type.
-* `RMWAnd` causes `operand` to be bitwise-anded with `p^`.
-* `RMWNAnd` causes `operand` to be bitwise-anded with `p^`, and the bitwise-not of the result is written to `p`.
-* `RMWOr` causes `operand` to be bitwise-ored with `p^`.
-* `RMWXor` causes `operand` to be bitwise-xored with `p^`.
+- `RMWXchg` causes `operand` to be written to `p^`. The value is bitwise copied.
+- `RMWAdd` causes `operand` to be added to `p^`. `T` must be an integer type.
+- `RMWSubtract` causes `operand` to be subtracted from `p^`. `T` must be an integer type.
+- `RMWMin` causes the signed minimum of `operand` and `p^` to be written to `p`. `T` must be an integer type.
+- `RMWMax` causes the signed maximum of `operand` and `p^` to be written to `p`. `T` must be an integer type.
+- `RMWUMin` causes the unsigned minimum of `operand` and `p^` to be written to `p`. `T` must be an integer type.
+- `RMWUMax` causes the unsigned maximum of `operand` and `p^` to be written to `p`. `T` must be an integer type.
+- `RMWAnd` causes `operand` to be bitwise-anded with `p^`.
+- `RMWNAnd` causes `operand` to be bitwise-anded with `p^`, and the bitwise-not of the result is written to `p`.
+- `RMWOr` causes `operand` to be bitwise-ored with `p^`.
+- `RMWXor` causes `operand` to be bitwise-xored with `p^`.
 
 The update is subject to the memory ordering constraints specified by `Order`. The function corresponds to the LLVM `atomicrmw` instruction. An error is raised if the target platform does not atomically support the specified operation for `T`.
 
@@ -685,10 +669,10 @@ The following functions query properties of symbols. Unlike normal symbols, they
 
 `StaticName` generates a string literal corresponding to the name of the static value `x`. The name string is generated as follows:
 
-* If `x` is a symbol, the symbol's name (not including its module name, but including its parameters if any) is used.
-* If `x` is a static string, its string value is used.
-* If `x` is a numeric value, it is converted into a string in decimal notation.
-* If `x` is a tuple, it is converted into a comma-delimited string surrounded in square brackets (`[]`).
+- If `x` is a symbol, the symbol's name (not including its module name, but including its parameters if any) is used.
+- If `x` is a static string, its string value is used.
+- If `x` is a numeric value, it is converted into a string in decimal notation.
+- If `x` is a tuple, it is converted into a comma-delimited string surrounded in square brackets (`[]`).
 
 Like a true string literal, the generated string is evaluated into a value using the `StringConstant` operator function.
 
@@ -886,18 +870,18 @@ The following symbols are defined for use as attributes of external functions.
 
 When used as external attributes, the following symbols control the calling convention used by the external function:
 
-* `AttributeCCall` causes the function to use the C calling convention.
-* `AttributeStdCall` causes the function to use the `__stdcall` calling convention on Windows x86 systems.
-* `AttributeFastCall` causes the function to use the `__fastcall` calling convention on Windows x86 systems.
-* `AttributeThisCall` causes the function to use the `__thiscall` calling convention on Windows x86 systems.
-* `AttributeLLVMCall` causes the function to use the LLVM `ccc` calling convention.
+- `AttributeCCall` causes the function to use the C calling convention.
+- `AttributeStdCall` causes the function to use the `__stdcall` calling convention on Windows x86 systems.
+- `AttributeFastCall` causes the function to use the `__fastcall` calling convention on Windows x86 systems.
+- `AttributeThisCall` causes the function to use the `__thiscall` calling convention on Windows x86 systems.
+- `AttributeLLVMCall` causes the function to use the LLVM `ccc` calling convention.
 
 #### <a name="linkageattributes"></a>Linkage attributes
 
 When used as external attributes, the following symbols affect the linkage of the external function:
 
-* `AttributeDLLImport` gives the function `__dllimport` linkage on Windows targets.
-* `AttributeDLLExport` gives the function `__dllexport` linkage on Windows targets.
+- `AttributeDLLImport` gives the function `__dllimport` linkage on Windows targets.
+- `AttributeDLLExport` gives the function `__dllexport` linkage on Windows targets.
 
 ### <a name="miscellaneousfunctions"></a>Miscellaneous functions
 
