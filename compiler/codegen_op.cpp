@@ -518,7 +518,7 @@ namespace clay {
             innerArgs.push_back(ret->value->llValue);
 
         // XXX check exception
-        ctx.builder->CreateCall(entry->llvmFunc, llvm::makeArrayRef(innerArgs));
+        ctx.builder->CreateCall(entry->llvmFunc, llvm::ArrayRef(innerArgs));
 
         extFunc->returnStatement(extFunc->retInfo, returns, &ctx);
 
@@ -570,7 +570,7 @@ namespace clay {
                                           ? llCallable
                                           : ctx->builder->CreateBitCast(llCallable, t->getCallType());
         llvm::CallInst *callInst =
-                ctx->builder->CreateCall(llCastCallable, llvm::makeArrayRef(llArgs));
+                ctx->builder->CreateCall(llCastCallable, llvm::ArrayRef(llArgs));
         llvm::CallingConv::ID callingConv = extFunc->llConv;
         callInst->setCallingConv(callingConv);
         for (vector<pair<unsigned, llvm::Attributes> >::iterator
@@ -1298,7 +1298,7 @@ namespace clay {
                 vector<llvm::Value *> indices;
                 indices.push_back(v1);
                 llvm::Value *result = ctx->builder->CreateGEP(v0,
-                                                              llvm::makeArrayRef(indices));
+                                                              llvm::ArrayRef(indices));
                 assert(out->size() == 1);
                 CValuePtr out0 = out->values[0];
                 assert(out0->type == t.ptr());
@@ -1535,7 +1535,7 @@ namespace clay {
                 indices.push_back(llvm::ConstantInt::get(llvmIntType(32), 0));
                 indices.push_back(iv);
                 llvm::Value *ptr =
-                        ctx->builder->CreateGEP(av, llvm::makeArrayRef(indices));
+                        ctx->builder->CreateGEP(av, llvm::ArrayRef(indices));
                 assert(out->size() == 1);
                 CValuePtr out0 = out->values[0];
                 assert(out0->type == pointerType(at->elementType));

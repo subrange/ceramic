@@ -22,7 +22,7 @@ namespace clay {
         vector<pair<int, string> > counts;
         llvm::StringMap<int>::iterator cmi = countsMap.begin();
         while (cmi != countsMap.end()) {
-            counts.push_back(make_pair(cmi->getValue(), cmi->getKey()));
+            counts.push_back(vector<pair<int, string>>::value_type(make_pair(cmi->getValue(), cmi->getKey())));
             ++cmi;
         }
         sort(counts.begin(), counts.end());

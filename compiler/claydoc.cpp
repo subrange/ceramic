@@ -150,6 +150,6 @@ int main(int argc, char **argv) {
 
 std::string identifierString(clay::IdentifierPtr id) {
     if (!id)
-        return std::string("<anonymous>");
-    return string(id->str.str().begin(), id->str.str().end());
+        return {"<anonymous>"};
+    return {id->str.str().begin(), id->str.str().end()};
 }

@@ -41,7 +41,7 @@ namespace clay {
         llvm::CallingConv::ID llConv;
         ArgInfo retInfo;
         vector<ArgInfo> argInfos;
-        vector<pair<unsigned, llvm::Attributes> > attrs;
+        vector<pair<unsigned, llvm::Attributes>> attrs;
 
         ExternalFunction(CallingConv conv, TypePtr ret,
                          vector<TypePtr> &args, size_t numReqArg,

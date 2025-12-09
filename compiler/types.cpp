@@ -1168,7 +1168,7 @@ namespace clay {
                     }
 
                     llvm::DIArray debugParamArray = llvmDIBuilder->getOrCreateArray(
-                        llvm::makeArrayRef(debugParamTypes));
+                        llvm::ArrayRef(debugParamTypes));
 
                     llvm::DIType pointeeType = llvmDIBuilder->createSubroutineType(
                         llvm::DIFile(),
@@ -1236,7 +1236,7 @@ namespace clay {
                         0,
                         x->size - 1);
                     llvm::DIArray elementRangeArray = llvmDIBuilder->getOrCreateArray(
-                        llvm::makeArrayRef(&elementRange, &elementRange + 1));
+                        llvm::ArrayRef(&elementRange, &elementRange + 1));
                     t->debugInfo = (llvm::MDNode *) llvmDIBuilder->createArrayType(
                         debugTypeSize(t->llType),
                         debugTypeAlignment(t->llType),
@@ -1253,7 +1253,7 @@ namespace clay {
                         0,
                         x->size - 1);
                     llvm::DIArray elementRangeArray = llvmDIBuilder->getOrCreateArray(
-                        llvm::makeArrayRef(&elementRange, &elementRange + 1));
+                        llvm::ArrayRef(&elementRange, &elementRange + 1));
                     t->debugInfo = (llvm::MDNode *) llvmDIBuilder->createVectorType(
                         x->size,
                         debugTypeAlignment(llvmType(x->elementType)),
@@ -1408,7 +1408,7 @@ namespace clay {
                     }
 
                     llvm::DIArray memberArray = llvmDIBuilder->getOrCreateArray(
-                        llvm::makeArrayRef(members));
+                        llvm::ArrayRef(members));
 
                     t->debugInfo = (llvm::MDNode *) llvmDIBuilder->createStructType(
                         primitivesModule()->getDebugInfo(), // scope
@@ -1487,7 +1487,7 @@ namespace clay {
                     }
 
                     llvm::DIArray memberArray = llvmDIBuilder->getOrCreateArray(
-                        llvm::makeArrayRef(members));
+                        llvm::ArrayRef(members));
 
                     t->debugInfo = (llvm::MDNode *) llvmDIBuilder->createUnionType(
                         primitivesModule()->getDebugInfo(), // scope
@@ -1605,7 +1605,7 @@ namespace clay {
                     }
 
                     llvm::DIArray memberArray = llvmDIBuilder->getOrCreateArray(
-                        llvm::makeArrayRef(members));
+                        llvm::ArrayRef(members));
 
                     unsigned line, column;
                     llvm::DIFile file = getDebugLineCol(x->record->location, line, column);

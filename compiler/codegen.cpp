@@ -1530,7 +1530,7 @@ namespace clay {
                     debugParamTypes.push_back(llvmTypeDebugInfo(x->args[i]->type2));
 
                 llvm::DIArray debugParamArray = llvmDIBuilder->getOrCreateArray(
-                    llvm::makeArrayRef(debugParamTypes));
+                    llvm::ArrayRef(debugParamTypes));
 
                 llvm::DIType typeDebugInfo = llvmDIBuilder->createSubroutineType(
                     file, // file
@@ -2833,7 +2833,7 @@ namespace clay {
             }
 
             llvm::DIArray debugParamArray = llvmDIBuilder->getOrCreateArray(
-                llvm::makeArrayRef(debugParamTypes));
+                llvm::ArrayRef(debugParamTypes));
 
             llvm::DIType typeDebugInfo = llvmDIBuilder->createSubroutineType(
                 file,
