@@ -393,6 +393,7 @@ static SourcePtr evalToSource(Location const &location, ExprListPtr args, EnvPtr
 {
     llvm::SmallString<128> sourceTextBuf;
     llvm::raw_svector_ostream sourceTextOut(sourceTextBuf);
+
     MultiStaticPtr values = evaluateMultiStatic(args, env);
     for (size_t i = 0; i < values->size(); ++i) {
         printStaticName(sourceTextOut, values->values[i]);
@@ -404,7 +405,6 @@ static SourcePtr evalToSource(Location const &location, ExprListPtr args, EnvPtr
     printFileLineCol(sourceNameOut, location);
     sourceNameOut << ">";
 
-    sourceTextOut.flush();
     return new Source(sourceNameOut.str(),
         llvm::MemoryBuffer::getMemBufferCopy(sourceTextBuf));
 }

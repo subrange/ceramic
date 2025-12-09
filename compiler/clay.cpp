@@ -304,7 +304,6 @@ static string joinCmdArgs(llvm::ArrayRef<const char*>  args) {
         }
         ss << *arg;
     }
-    ss.flush();
     return s;
 }
 

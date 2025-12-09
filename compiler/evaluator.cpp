@@ -341,8 +341,6 @@ void evaluateStaticAssert(Location const& location,
             printStaticName(ss, str->values[i]);
         }
 
-        ss.flush();
-
         if (!s.empty()) {
             error(location, "static assert failed: " + s);
         } else {

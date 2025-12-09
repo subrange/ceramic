@@ -543,7 +543,6 @@ static string paramCountString(const CodePtr& code) {
     } else {
         ss << code->formalArgs.size();
     }
-    ss.flush();
     return s;
 }
 
@@ -552,7 +551,6 @@ static string toString(const T& t) {
     string s;
     llvm::raw_string_ostream ss(s);
     ss << t;
-    ss.flush();
     return s;
 }
 

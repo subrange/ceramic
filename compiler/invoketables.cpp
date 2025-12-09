@@ -135,7 +135,6 @@ static bool shouldLogCallable(ObjectPtr callable)
     string name;
     llvm::raw_string_ostream sout(name);
     printStaticName(sout, callable);
-    sout.flush();
 
     pair<string,string> specificKey = make_pair(m->moduleName, name);
     pair<string,string> moduleGlobKey = make_pair(m->moduleName, string("*"));

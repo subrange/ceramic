@@ -1726,8 +1726,6 @@ struct IntrinsicAnalyzer {
         if (!TableRef.empty()) {
             errors << "intrinsic has too few arguments";
         }
-
-        errors.flush();
     }
 
     bool ok() const { return outError.empty(); }

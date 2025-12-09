@@ -25,7 +25,6 @@ std::string Object::toString() const {
     std::string r;
     llvm::raw_string_ostream os(r);
     os << *this;
-    os.flush();
     return r;
 }
 
@@ -1389,6 +1388,5 @@ std::string clay::DottedName::join() const {
             ss << ".";
         ss << (*part)->str;
     }
-    ss.flush();
     return s;
 }
