@@ -4,7 +4,6 @@
     margin:0
 }
 
-
 body
 {
     background: #fff;
@@ -32,7 +31,6 @@ body
     padding: 0.5em;
     float:left;
     background: #999;
-
     text-decoration:underline;
     color: #000;
     font-weight:bold;
@@ -102,7 +100,6 @@ h3
     line-height:1.4em;
 }
 
-
 .identifier
 {
     height:1.4em;
@@ -134,9 +131,8 @@ a.reference:hover
 
 .brokenreference
 {
-    background: url(underline.gif) bottom repeat-x;
+    /* background: url(underline.gif) bottom repeat-x; */
 }
-
 
 /* index  */
 
@@ -168,6 +164,7 @@ a.reference:hover
     text-decoration:none;
     color: #000;
 }
+
 .moduleIndexItem a:hover
 {
     text-decoration:underline;
