@@ -1210,7 +1210,7 @@ static void declareLLVMType(TypePtr t) {
                 llvm::makeArrayRef(debugParamTypes));
 
             llvm::DIType pointeeType = llvmDIBuilder->createSubroutineType(
-                llvm::DIFile(NULL),
+                llvm::DIFile(),
                 debugParamArray);
 
             t->debugInfo = (llvm::MDNode*)llvmDIBuilder->createPointerType(
@@ -1255,7 +1255,7 @@ static void declareLLVMType(TypePtr t) {
             llvm::DIArray debugParamArray = llvmDIBuilder->getOrCreateArray(debugParamTypes);
 
             llvm::DIType pointeeType = llvmDIBuilder->createSubroutineType(
-                llvm::DIFile(NULL),
+                llvm::DIFile(),
                 debugParamArray);
 
             t->debugInfo = (llvm::MDNode*)llvmDIBuilder->createPointerType(
@@ -1437,7 +1437,7 @@ static void defineLLVMType(TypePtr t) {
                 members.push_back(llvmDIBuilder->createMemberType(
                     placeholder,
                     name.str(),
-                    llvm::DIFile(NULL), // file
+                    llvm::DIFile(), // file
                     0, // lineNo
                     debugSize, // size
                     debugAlign, // align
@@ -1518,7 +1518,7 @@ static void defineLLVMType(TypePtr t) {
                 members.push_back(llvmDIBuilder->createMemberType(
                     placeholder,
                     name.str(),
-                    llvm::DIFile(NULL), // file
+                    llvm::DIFile(), // file
                     0, // lineNo
                     debugSize, // size
                     debugAlign, // align

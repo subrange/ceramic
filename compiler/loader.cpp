@@ -784,7 +784,7 @@ static void initModule(ModulePtr m, llvm::ArrayRef<string>  importChain) {
     if (llvmDIBuilder != NULL) {
         llvm::DIFile file = m->location.ok()
             ? m->location.source->getDebugInfo()
-            : llvm::DIFile(NULL);
+            : llvm::DIFile();
         m->debugInfo = (llvm::MDNode*)llvmDIBuilder->createNameSpace(
             llvm::DICompileUnit(llvmDIBuilder->getCU()), // scope
             m->moduleName, // name

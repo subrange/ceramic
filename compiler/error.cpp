@@ -149,7 +149,7 @@ llvm::DIFile getDebugLineCol(Location const &location, unsigned &line, unsigned 
     if (!location.ok()) {
         line = 0;
         column = 0;
-        return llvm::DIFile(NULL);
+        return llvm::DIFile();
     }
 
     unsigned tabColumn;
