@@ -23,17 +23,33 @@
 #include <llvm/ADT/StringMap.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/AsmParser/Parser.h>
+#include <llvm/Analysis/Passes.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
+#include <llvm/CodeGen/LinkAllAsmWriterComponents.h>
+#include <llvm/CodeGen/LinkAllCodegenComponents.h>
+#include <llvm/CodeGen/ValueTypes.h>
+#include <llvm/IR/Attributes.h>
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/DIBuilder.h>
+#include <llvm/IR/DebugInfoMetadata.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Type.h>
-#include <llvm/IR/DebugInfoMetadata.h>
-#include <llvm/Support/Allocator.h>
-#include <llvm/Support/MemoryBuffer.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/MC/TargetRegistry.h>
-#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Support/Allocator.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/FormattedStream.h>
+#include <llvm/Support/MemoryBuffer.h>
+#include <llvm/Support/Path.h>
+#include <llvm/Support/SourceMgr.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Target/TargetOptions.h>
+#include <llvm/Transforms/IPO.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/Scalar/GVN.h>
 
 #include <complex>
 
