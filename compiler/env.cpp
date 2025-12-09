@@ -395,9 +395,9 @@ ModulePtr safeLookupModule(EnvPtr env) {
     }
 }
 
-llvm::DINameSpace lookupModuleDebugInfo(EnvPtr env) {
+llvm::DINamespace lookupModuleDebugInfo(EnvPtr env) {
     if (env == NULL || env->parent == NULL)
-        return llvm::DINameSpace(NULL);
+        return llvm::DINamespace(NULL);
 
     switch (env->parent->objKind) {
     case ENV : {
@@ -409,7 +409,7 @@ llvm::DINameSpace lookupModuleDebugInfo(EnvPtr env) {
         return module->getDebugInfo();
     }
     default :
-        return llvm::DINameSpace(NULL);
+        return llvm::DINamespace(NULL);
     }
 }
 
