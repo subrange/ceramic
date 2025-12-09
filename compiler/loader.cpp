@@ -30,7 +30,7 @@ namespace clay {
 
     Source::Source(llvm::StringRef lineOfCode, int dummy)
         : Object(SOURCE), debugInfo(nullptr) {
-        buffer.reset(llvm::MemoryBuffer::getMemBufferCopy(lineOfCode));
+        buffer.reset(llvm::MemoryBuffer::getMemBufferCopy(lineOfCode).get());
     }
 
     //
