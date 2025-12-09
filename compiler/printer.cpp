@@ -167,12 +167,12 @@ namespace clay {
 
     template<class T>
     llvm::raw_ostream &operator<<(llvm::raw_ostream &out, const vector<T> &v) {
-        return out << llvm::makeArrayRef(v);
+        return out << llvm::ArrayRef(v);
     }
 
     template<class T>
     llvm::raw_ostream &operator<<(llvm::raw_ostream &out, const llvm::SmallVector<T, 3> &v) {
-        return out << llvm::makeArrayRef(v);
+        return out << llvm::ArrayRef(v);
     }
 
     llvm::raw_ostream &operator<<(llvm::raw_ostream &out, PVData const &pv) {
@@ -523,7 +523,7 @@ namespace clay {
             }
             case DOTTED_NAME: {
                 const DottedName *y = (const DottedName *) x;
-                out << "DottedName(" << llvm::makeArrayRef(y->parts) << ")";
+                out << "DottedName(" << llvm::ArrayRef(y->parts) << ")";
                 break;
             }
 
@@ -781,7 +781,7 @@ namespace clay {
 
             case MULTI_PVALUE: {
                 const MultiPValue *y = (const MultiPValue *) x;
-                out << "MultiPValue(" << llvm::makeArrayRef(y->values) << ")";
+                out << "MultiPValue(" << llvm::ArrayRef(y->values) << ")";
                 break;
             }
 
