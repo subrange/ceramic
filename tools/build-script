@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+import argparse
+import subprocess
+from pathlib import Path
+import os
+
+# https://stackoverflow.com/questions/2817264/how-to-get-the-parent-dir-location
+ROOT_DIR = Path(__file__).resolve().parent.parent
+BUILD_DIR = ROOT_DIR / "build"
+# ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+# BUILD_DIR = Path(ROOT_DIR + "/build")
+
+parser = argparse.ArgumentParser(
+    prog="build-script", usage="%(prog)s [-c] [-t type] [-j N] [-v] [-x] [target]"
+)
+parser.add_argument(
+    "target",
+    nargs="?",
+    default="all",
+    choices=["all", "clay", "compiler", "clay-bindgen", "ut"],
+    help="target (clay, compiler, clay-bindgen, ut, or all)",
+)
+parser.add_argument(
+    "-t", "--type", default="Release", choices=["Release", "Debug"], help="build type"
+)
+parser.add_argument("-c", "--clean", action="store_true", help="remove build directory")
+parser.add_argument("-x", "--test", action="store_true", help="run tests")
+parser.add_argument("-v", "--verbose", action="store_true", help="verbose")
+parser.add_argument("-j", "--jobs", type=int, default=None, help="parallel work")
+parser.add_argument("-i", "--install", action="store_true", help="install binaries")
+args = parser.parse_args()
+
+if args.clean and BUILD_DIR.exists():
+    subprocess.run(["rm", "-rfv", str(BUILD_DIR)], check=True)
+
+if not BUILD_DIR.exists():
+    BUILD_DIR.mkdir(parents=True)
+
+subprocess.run(
+    [
+        "cmake",
+        "-S",
+        str(ROOT_DIR),
+        "-B",
+        str(BUILD_DIR),
+        "-G",
+        "Ninja",
+        f"-DCMAKE_BUILD_TYPE={args.type}",
+    ],
+    check=True,
+)
+
+build_cmd = ["ninja", "-C", str(BUILD_DIR)]
+if args.target != "all":
+    build_cmd.append(args.target)
+if args.jobs:
+    build_cmd.extend(["-j", str(args.jobs)])
+if args.verbose:
+    build_cmd.append("-v")
+
+subprocess.run(build_cmd, check=True)
+
+if args.test:
+    subprocess.run(["ninja", "-C", str(BUILD_DIR), "test"], check=True)
+if args.install:
+    subprocess.run(["ninja", "-C", str(BUILD_DIR), "install"], check=True)
