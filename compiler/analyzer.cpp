@@ -1508,8 +1508,8 @@ struct IntrinsicAnalyzer {
             return;
         }
         case IITDescriptor::Argument: return;
-        case IITDescriptor::ExtendVecArgument: return;
-        case IITDescriptor::TruncVecArgument: return;
+        case IITDescriptor::ExtendArgument: return;
+        case IITDescriptor::TruncArgument: return;
         }
         llvm_unreachable("unhandled");
     }
@@ -1678,7 +1678,7 @@ struct IntrinsicAnalyzer {
             }
             llvm_unreachable("all argument kinds not covered");
 
-        case IITDescriptor::ExtendVecArgument:
+        case IITDescriptor::ExtendArgument:
             // This may only be used when referring to a previous vector argument.
             if (D.getArgumentNumber() >= ArgTys.size() ||
                 !isa<llvm::VectorType>(ArgTys[D.getArgumentNumber()]) ||
@@ -1692,7 +1692,7 @@ struct IntrinsicAnalyzer {
             }
             return;
 
-        case IITDescriptor::TruncVecArgument:
+        case IITDescriptor::TruncArgument:
             // This may only be used when referring to a previous vector argument.
             if (D.getArgumentNumber() >= ArgTys.size() ||
                 !isa<llvm::VectorType>(ArgTys[D.getArgumentNumber()]) ||
