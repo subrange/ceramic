@@ -12,6 +12,7 @@ static const unsigned short DW_LANG_user_CLAY = 0xC1A4;
 extern llvm::Module *llvmModule;
 extern llvm::DIBuilder *llvmDIBuilder;
 extern const llvm::DataLayout *llvmDataLayout;
+extern llvm::LLVMContext llvmContext;
 
 llvm::PointerType *exceptionReturnType();
 llvm::Value *noExceptionReturnValue();
@@ -125,8 +126,8 @@ struct ValueStackEntry {
 struct CodegenContext {
     llvm::Function *llvmFunc;
     vector<llvm::TrackingVH<llvm::MDNode> > debugScope;
-    llvm::OwningPtr<llvm::IRBuilder<> > initBuilder;
-    llvm::OwningPtr<llvm::IRBuilder<> > builder;
+    std::unique_ptr<llvm::IRBuilder<>> initBuilder;
+    std::unique_ptr<llvm::IRBuilder<>> builder;
 
     vector<ValueStackEntry> valueStack;
     llvm::Value *valueForStatics;

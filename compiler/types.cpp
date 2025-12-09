@@ -1001,17 +1001,17 @@ static void verifyRecursionCorrectness(TypePtr t,
 //
 
 llvm::Type *llvmIntType(unsigned bits) {
-    return llvm::IntegerType::get(llvm::getGlobalContext(), bits);
+    return llvm::IntegerType::get(llvmContext, bits);
 }
 
 llvm::Type *llvmFloatType(unsigned bits) {
     switch (bits) {
     case 32 :
-        return llvm::Type::getFloatTy(llvm::getGlobalContext());
+        return llvm::Type::getFloatTy(llvmContext);
     case 64 :
-        return llvm::Type::getDoubleTy(llvm::getGlobalContext());
+        return llvm::Type::getDoubleTy(llvmContext);
     case 80 :
-        return llvm::Type::getX86_FP80Ty(llvm::getGlobalContext());
+        return llvm::Type::getX86_FP80Ty(llvmContext);
     default :
         assert(false);
         return NULL;
@@ -1042,7 +1042,7 @@ llvm::Type *llvmArrayType(TypePtr type, unsigned size) {
 }
 
 llvm::Type *llvmVoidType() {
-    return llvm::Type::getVoidTy(llvm::getGlobalContext());
+    return llvm::Type::getVoidTy(llvmContext);
 }
 
 llvm::Type *CCodePointerType::getCallType() {
@@ -1084,7 +1084,7 @@ llvm::StructType *llvmStaticType() {
     if (theType == NULL) {
         llvm::SmallVector<llvm::Type *, 2> llTypes;
         llTypes.push_back(llvmIntType(8));
-        theType = llvm::StructType::get(llvm::getGlobalContext(), llTypes);
+        theType = llvm::StructType::get(llvmContext, llTypes);
     }
     return theType;
 }
@@ -1144,7 +1144,7 @@ static void declareLLVMType(TypePtr t) {
         TypePtr realT = floatType(x->bits), imagT = imagType(x->bits);
         llTypes.push_back(llvmType(realT));
         llTypes.push_back(llvmType(imagT));
-        t->llType = llvm::StructType::create(llvm::getGlobalContext(), llTypes, typeName(t));
+        t->llType = llvm::StructType::create(llvmContext, llTypes, typeName(t));
         if (llvmDIBuilder != NULL) {
             t->debugInfo = (llvm::MDNode*)llvmDIBuilder->createBasicType(
                 typeName(t),
@@ -1302,19 +1302,19 @@ static void declareLLVMType(TypePtr t) {
         break;
     }
     case TUPLE_TYPE : {
-        t->llType = llvm::StructType::create(llvm::getGlobalContext(), typeName(t));
+        t->llType = llvm::StructType::create(llvmContext, typeName(t));
         if (llvmDIBuilder != NULL)
             t->debugInfo = (llvm::MDNode*)llvmDIBuilder->createTemporaryType();
         break;
     }
     case UNION_TYPE : {
-        t->llType = llvm::StructType::create(llvm::getGlobalContext(), typeName(t));
+        t->llType = llvm::StructType::create(llvmContext, typeName(t));
         if (llvmDIBuilder != NULL)
             t->debugInfo = (llvm::MDNode*)llvmDIBuilder->createTemporaryType();
         break;
     }
     case RECORD_TYPE : {
-        t->llType = llvm::StructType::create(llvm::getGlobalContext(), typeName(t));
+        t->llType = llvm::StructType::create(llvmContext, typeName(t));
         if (llvmDIBuilder != NULL)
             t->debugInfo = (llvm::MDNode*)llvmDIBuilder->createTemporaryType();
         break;

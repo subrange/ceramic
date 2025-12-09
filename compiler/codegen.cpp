@@ -29,6 +29,7 @@ llvm::Module *llvmModule = NULL;
 llvm::DIBuilder *llvmDIBuilder = NULL;
 llvm::ExecutionEngine *llvmEngine;
 const llvm::DataLayout *llvmDataLayout;
+llvm::LLVMContext llvmContext;
 
 static vector<CValuePtr> initializedGlobals;
 static CodegenContext *constructorsCtx = NULL;
@@ -263,7 +264,7 @@ void setExceptionsEnabled(bool enabled)
 
 llvm::BasicBlock *newBasicBlock(llvm::StringRef name, CodegenContext* ctx)
 {
-    return llvm::BasicBlock::Create(llvm::getGlobalContext(),
+    return llvm::BasicBlock::Create(llvmContext,
                                     name,
                                     ctx->llvmFunc);
 }
@@ -1916,7 +1917,7 @@ llvm::Value *codegenSimpleConstant(EValuePtr ev)
             //use APfloat to get an 80bit value
             bits[0] = *(uint64_t*)ev->addr;
             bits[1] = *(uint16_t*)((uint64_t*)ev->addr + 1);
-            val = llvm::ConstantFP::get( llvm::getGlobalContext(), llvm::APFloat(llvm::APInt(80, 2, bits)));
+            val = llvm::ConstantFP::get( llvmContext, llvm::APFloat(llvm::APInt(80, 2, bits)));
             break;
         default :
             assert(false);
@@ -2796,7 +2797,7 @@ void codegenLLVMBody(InvokeEntry* entry, llvm::StringRef callableName)
         llvm::MemoryBuffer::getMemBuffer(llvm::StringRef(out.str()));
 
     if(!llvm::ParseAssembly(buf, llvmModule, err,
-                llvm::getGlobalContext())) {
+                llvmContext)) {
         llvm::errs() << out.str();
         err.print("\n", llvm::errs());
         llvm::errs() << "\n";
@@ -4533,7 +4534,7 @@ static void codegenTopLevelLLVMRecursive(ModulePtr m)
         llvm::MemoryBuffer::getMemBuffer(llvm::StringRef(code));
 
     if (!llvm::ParseAssembly(buf, llvmModule, err,
-                             llvm::getGlobalContext())) {
+                             llvmContext)) {
         err.print("\n", llvm::errs());
         llvm::errs() << "\n";
         error("llvm assembly parse error");
@@ -4666,13 +4667,13 @@ static void generateLLVMCtorsAndDtors() {
     llvm::Type *funcPtrType = llvm::PointerType::getUnqual(funcType);
     fieldTypes.push_back(funcPtrType);
     llvm::StructType *structType =
-        llvm::StructType::get(llvm::getGlobalContext(), fieldTypes);
+        llvm::StructType::get(llvmContext, fieldTypes);
     llvm::ArrayType *arrayType = llvm::ArrayType::get(structType, 1);
 
     // make constants for llvm.global_ctors
     vector<llvm::Constant*> structElems1;
     llvm::ConstantInt *prio1 =
-        llvm::ConstantInt::get(llvm::getGlobalContext(),
+        llvm::ConstantInt::get(llvmContext,
                                llvm::APInt(32, llvm::StringRef("65535"), 10));
     structElems1.push_back(prio1);
     structElems1.push_back(constructorsCtx->llvmFunc);
@@ -4694,7 +4695,7 @@ static void generateLLVMCtorsAndDtors() {
         // make constants for llvm.global_dtors
         vector<llvm::Constant*> structElems2;
         llvm::ConstantInt *prio2 =
-            llvm::ConstantInt::get(llvm::getGlobalContext(),
+            llvm::ConstantInt::get(llvmContext,
                                    llvm::APInt(32, llvm::StringRef("65535"), 10));
         structElems2.push_back(prio2);
         structElems2.push_back(destructorsCtx->llvmFunc);
@@ -4823,7 +4824,7 @@ llvm::TargetMachine *initLLVM(llvm::StringRef targetTriple,
     llvm::InitializeAllAsmPrinters();
     llvm::InitializeAllAsmParsers();
 
-    llvmModule = new llvm::Module(name, llvm::getGlobalContext());
+    llvmModule = new llvm::Module(name, llvmContext);
     llvmModule->setTargetTriple(targetTriple);
     if (debug) {
         llvm::SmallString<260> absFileName(name);

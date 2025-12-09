@@ -457,10 +457,10 @@ static llvm::Constant *codegenStringTableConstant(llvm::StringRef s)
     llvm::Constant *sizeInitializer =
         llvm::ConstantInt::get(llvmType(cSizeTType), s.size(), false);
     llvm::Constant *stringInitializer =
-        llvm::ConstantDataArray::getString(llvm::getGlobalContext(), s, true);
+        llvm::ConstantDataArray::getString(llvmContext, s, true);
     llvm::Constant *structEntries[] = {sizeInitializer, stringInitializer};
     llvm::Constant *initializer =
-        llvm::ConstantStruct::getAnon(llvm::getGlobalContext(),
+        llvm::ConstantStruct::getAnon(llvmContext,
                 structEntries,
                 false);
 
@@ -545,11 +545,11 @@ static void codegenCWrapper(InvokeEntry* entry, CallingConv cc)
     CodegenContext ctx(llCWrapper);
 
     llvm::BasicBlock *llInitBlock =
-        llvm::BasicBlock::Create(llvm::getGlobalContext(),
+        llvm::BasicBlock::Create(llvmContext,
                                  "init",
                                  llCWrapper);
     llvm::BasicBlock *llBlock =
-        llvm::BasicBlock::Create(llvm::getGlobalContext(),
+        llvm::BasicBlock::Create(llvmContext,
                                  "code",
                                  llCWrapper);
     ctx.initBuilder.reset(new llvm::IRBuilder<>(llInitBlock));

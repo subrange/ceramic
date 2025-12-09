@@ -312,7 +312,7 @@ ExtArgInfo LLVMExternalTarget::pushReturnType(
         return ExtArgInfo::getDirect();
     else if (typeReturnsBySretPointer(conv, type)) {
         llvm::Attributes attrs = llvm::Attributes::get(
-            llvm::getGlobalContext(),
+            llvmContext,
             llvm::Attributes::StructRet);
         llAttrs.push_back(make_pair(attrPos++, attrs));
         return ExtArgInfo::getIndirect();
@@ -332,7 +332,7 @@ ExtArgInfo LLVMExternalTarget::pushArgumentType(
 {
     if (typePassesByByvalPointer(conv, type, varArg)) {
         llvm::Attributes attrs = llvm::Attributes::get(
-            llvm::getGlobalContext(),
+            llvmContext,
             llvm::Attributes::ByVal);
         llAttrs.push_back(make_pair(attrPos++, attrs));
         return ExtArgInfo::getIndirect();
@@ -928,7 +928,7 @@ llvm::Type *X86_64_ExternalTarget::llvmWordType(TypePtr type)
     llvm::ArrayRef<WordClass> wordClasses = getTypeClassification(type);
     assert(!wordClasses.empty());
 
-    llvm::StructType *llType = llvm::StructType::create(llvm::getGlobalContext(), "x86-64 " + typeName(type));
+    llvm::StructType *llType = llvm::StructType::create(llvmContext, "x86-64 " + typeName(type));
     vector<llvm::Type*> llWordTypes;
     WordClass const *i = wordClasses.begin();
     size_t size = typeSize(type);
@@ -1075,7 +1075,7 @@ struct Mips32_ExternalTarget : public ExternalTarget {
         unsigned &pos, llvm::Attributes::AttrVal val)
     {
         attrs.push_back(make_pair(
-            pos++, llvm::Attributes::get(llvm::getGlobalContext(), val)));
+            pos++, llvm::Attributes::get(llvmContext, val)));
     }
 
     virtual void computeInfo(ExternalFunction *f) {
@@ -1140,7 +1140,7 @@ llvm::Type* Mips32_ExternalTarget::getLLVMWordType(TypePtr type,
     }
 
     llvm::StructType *llType = llvm::StructType::get(
-        llvm::getGlobalContext(), argList);
+        llvmContext, argList);
 
     return llType;
 }
