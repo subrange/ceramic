@@ -4,243 +4,241 @@
 #include "clay.hpp"
 
 namespace clay {
+    extern llvm::StringMap<ModulePtr> globalModules;
+    extern llvm::StringMap<string> globalFlags;
+    extern ModulePtr globalMainModule;
+
+    void addOverload(vector<OverloadPtr> &overloads, OverloadPtr &x);
+    void addProcedureOverload(ProcedurePtr proc, EnvPtr Env, OverloadPtr x);
+    void getProcedureMonoTypes(ProcedureMono &mono, EnvPtr env,
+                               llvm::ArrayRef<FormalArgPtr> formalArgs, bool hasVarArg);
+
+    void initLoader();
+    void setSearchPath(const llvm::ArrayRef<PathString> path);
+    ModulePtr loadProgram(llvm::StringRef fileName, vector<string> *sourceFiles, bool verbose, bool repl);
+    ModulePtr loadProgramSource(llvm::StringRef name, llvm::StringRef source, bool verbose, bool repl);
+    ModulePtr loadedModule(llvm::StringRef module);
+    ModulePtr preludeModule();
+    ModulePtr primitivesModule();
+    ModulePtr operatorsModule();
+    ModulePtr intrinsicsModule();
+    ModulePtr staticModule(ObjectPtr x);
+
+    void addGlobals(ModulePtr m, llvm::ArrayRef<TopLevelItemPtr> toplevels);
+    void loadDependent(ModulePtr m, vector<string> *sourceFiles, ImportPtr dependent, bool verbose);
+    void initModule(ModulePtr m);
 
 
-extern llvm::StringMap<ModulePtr> globalModules;
-extern llvm::StringMap<string> globalFlags;
-extern ModulePtr globalMainModule;
+    //
+    // PrimOp
+    //
 
-void addOverload(vector<OverloadPtr> &overloads, OverloadPtr &x);
-void addProcedureOverload(ProcedurePtr proc, EnvPtr Env, OverloadPtr x);
-void getProcedureMonoTypes(ProcedureMono &mono, EnvPtr env,
-    llvm::ArrayRef<FormalArgPtr> formalArgs, bool hasVarArg);
+    enum PrimOpCode {
+        PRIM_TypeP,
+        PRIM_TypeSize,
+        PRIM_TypeAlignment,
 
-void initLoader();
-void setSearchPath(const llvm::ArrayRef<PathString> path);
-ModulePtr loadProgram(llvm::StringRef fileName, vector<string> *sourceFiles, bool verbose, bool repl);
-ModulePtr loadProgramSource(llvm::StringRef name, llvm::StringRef source, bool verbose, bool repl);
-ModulePtr loadedModule(llvm::StringRef module);
-ModulePtr preludeModule();
-ModulePtr primitivesModule();
-ModulePtr operatorsModule();
-ModulePtr intrinsicsModule();
-ModulePtr staticModule(ObjectPtr x);
+        PRIM_OperatorP,
+        PRIM_SymbolP,
 
-void addGlobals(ModulePtr m, llvm::ArrayRef<TopLevelItemPtr> toplevels);
-void loadDependent(ModulePtr m, vector<string> *sourceFiles, ImportPtr dependent, bool verbose);
-void initModule(ModulePtr m);
+        PRIM_StaticCallDefinedP,
+        PRIM_StaticCallOutputTypes,
 
+        PRIM_StaticMonoP,
+        PRIM_StaticMonoInputTypes,
 
+        PRIM_bitcopy,
+        PRIM_bitcast,
 
-//
-// PrimOp
-//
+        PRIM_boolNot,
 
-enum PrimOpCode {
-    PRIM_TypeP,
-    PRIM_TypeSize,
-    PRIM_TypeAlignment,
+        PRIM_numericAdd,
+        PRIM_numericSubtract,
+        PRIM_numericMultiply,
+        PRIM_floatDivide,
+        PRIM_numericNegate,
 
-    PRIM_OperatorP,
-    PRIM_SymbolP,
+        PRIM_integerQuotient,
+        PRIM_integerRemainder,
+        PRIM_integerShiftLeft,
+        PRIM_integerShiftRight,
+        PRIM_integerBitwiseAnd,
+        PRIM_integerBitwiseOr,
+        PRIM_integerBitwiseXor,
+        PRIM_integerBitwiseNot,
+        PRIM_integerEqualsP,
+        PRIM_integerLesserP,
 
-    PRIM_StaticCallDefinedP,
-    PRIM_StaticCallOutputTypes,
+        PRIM_numericConvert,
 
-    PRIM_StaticMonoP,
-    PRIM_StaticMonoInputTypes,
+        PRIM_integerAddChecked,
+        PRIM_integerSubtractChecked,
+        PRIM_integerMultiplyChecked,
+        PRIM_integerQuotientChecked,
+        PRIM_integerRemainderChecked,
+        PRIM_integerNegateChecked,
+        PRIM_integerShiftLeftChecked,
+        PRIM_integerConvertChecked,
 
-    PRIM_bitcopy,
-    PRIM_bitcast,
+        PRIM_floatOrderedEqualsP,
+        PRIM_floatOrderedLesserP,
+        PRIM_floatOrderedLesserEqualsP,
+        PRIM_floatOrderedGreaterP,
+        PRIM_floatOrderedGreaterEqualsP,
+        PRIM_floatOrderedNotEqualsP,
+        PRIM_floatOrderedP,
+        PRIM_floatUnorderedEqualsP,
+        PRIM_floatUnorderedLesserP,
+        PRIM_floatUnorderedLesserEqualsP,
+        PRIM_floatUnorderedGreaterP,
+        PRIM_floatUnorderedGreaterEqualsP,
+        PRIM_floatUnorderedNotEqualsP,
+        PRIM_floatUnorderedP,
 
-    PRIM_boolNot,
+        PRIM_Pointer,
 
-    PRIM_numericAdd,
-    PRIM_numericSubtract,
-    PRIM_numericMultiply,
-    PRIM_floatDivide,
-    PRIM_numericNegate,
+        PRIM_addressOf,
+        PRIM_pointerDereference,
+        PRIM_pointerOffset,
+        PRIM_pointerToInt,
+        PRIM_intToPointer,
+        PRIM_nullPointer,
 
-    PRIM_integerQuotient,
-    PRIM_integerRemainder,
-    PRIM_integerShiftLeft,
-    PRIM_integerShiftRight,
-    PRIM_integerBitwiseAnd,
-    PRIM_integerBitwiseOr,
-    PRIM_integerBitwiseXor,
-    PRIM_integerBitwiseNot,
-    PRIM_integerEqualsP,
-    PRIM_integerLesserP,
+        PRIM_CodePointer,
+        PRIM_makeCodePointer,
 
-    PRIM_numericConvert,
+        PRIM_AttributeStdCall,
+        PRIM_AttributeFastCall,
+        PRIM_AttributeThisCall,
+        PRIM_AttributeCCall,
+        PRIM_AttributeLLVMCall,
+        PRIM_AttributeDLLImport,
+        PRIM_AttributeDLLExport,
 
-    PRIM_integerAddChecked,
-    PRIM_integerSubtractChecked,
-    PRIM_integerMultiplyChecked,
-    PRIM_integerQuotientChecked,
-    PRIM_integerRemainderChecked,
-    PRIM_integerNegateChecked,
-    PRIM_integerShiftLeftChecked,
-    PRIM_integerConvertChecked,
+        PRIM_ExternalCodePointer,
+        PRIM_makeExternalCodePointer,
+        PRIM_callExternalCodePointer,
 
-    PRIM_floatOrderedEqualsP,
-    PRIM_floatOrderedLesserP,
-    PRIM_floatOrderedLesserEqualsP,
-    PRIM_floatOrderedGreaterP,
-    PRIM_floatOrderedGreaterEqualsP,
-    PRIM_floatOrderedNotEqualsP,
-    PRIM_floatOrderedP,
-    PRIM_floatUnorderedEqualsP,
-    PRIM_floatUnorderedLesserP,
-    PRIM_floatUnorderedLesserEqualsP,
-    PRIM_floatUnorderedGreaterP,
-    PRIM_floatUnorderedGreaterEqualsP,
-    PRIM_floatUnorderedNotEqualsP,
-    PRIM_floatUnorderedP,
+        PRIM_Array,
+        PRIM_arrayRef,
+        PRIM_arrayElements,
 
-    PRIM_Pointer,
+        PRIM_Vec,
 
-    PRIM_addressOf,
-    PRIM_pointerDereference,
-    PRIM_pointerOffset,
-    PRIM_pointerToInt,
-    PRIM_intToPointer,
-    PRIM_nullPointer,
+        PRIM_Tuple,
+        PRIM_TupleElementCount,
+        PRIM_tupleRef,
+        PRIM_tupleElements,
 
-    PRIM_CodePointer,
-    PRIM_makeCodePointer,
+        PRIM_Union,
+        PRIM_UnionMemberCount,
 
-    PRIM_AttributeStdCall,
-    PRIM_AttributeFastCall,
-    PRIM_AttributeThisCall,
-    PRIM_AttributeCCall,
-    PRIM_AttributeLLVMCall,
-    PRIM_AttributeDLLImport,
-    PRIM_AttributeDLLExport,
+        PRIM_RecordP,
+        PRIM_RecordFieldCount,
+        PRIM_RecordFieldName,
+        PRIM_RecordWithFieldP,
+        PRIM_recordFieldRef,
+        PRIM_recordFieldRefByName,
+        PRIM_recordFields,
+        PRIM_recordVariadicField,
 
-    PRIM_ExternalCodePointer,
-    PRIM_makeExternalCodePointer,
-    PRIM_callExternalCodePointer,
+        PRIM_VariantP,
+        PRIM_VariantMemberIndex,
+        PRIM_VariantMemberCount,
+        PRIM_VariantMembers,
 
-    PRIM_Array,
-    PRIM_arrayRef,
-    PRIM_arrayElements,
+        PRIM_BaseType,
 
-    PRIM_Vec,
+        PRIM_Static,
+        PRIM_StaticName,
+        PRIM_staticIntegers,
+        PRIM_integers,
+        PRIM_staticFieldRef,
 
-    PRIM_Tuple,
-    PRIM_TupleElementCount,
-    PRIM_tupleRef,
-    PRIM_tupleElements,
+        PRIM_MainModule,
+        PRIM_StaticModule,
+        PRIM_ModuleName,
+        PRIM_ModuleMemberNames,
 
-    PRIM_Union,
-    PRIM_UnionMemberCount,
+        PRIM_EnumP,
+        PRIM_EnumMemberCount,
+        PRIM_EnumMemberName,
+        PRIM_enumToInt,
+        PRIM_intToEnum,
 
-    PRIM_RecordP,
-    PRIM_RecordFieldCount,
-    PRIM_RecordFieldName,
-    PRIM_RecordWithFieldP,
-    PRIM_recordFieldRef,
-    PRIM_recordFieldRefByName,
-    PRIM_recordFields,
-    PRIM_recordVariadicField,
+        PRIM_StringLiteralP,
+        PRIM_stringLiteralByteIndex,
+        PRIM_stringLiteralBytes,
+        PRIM_stringLiteralByteSize,
+        PRIM_stringLiteralByteSlice,
+        PRIM_stringLiteralConcat,
+        PRIM_stringLiteralFromBytes,
 
-    PRIM_VariantP,
-    PRIM_VariantMemberIndex,
-    PRIM_VariantMemberCount,
-    PRIM_VariantMembers,
+        PRIM_stringTableConstant,
 
-    PRIM_BaseType,
+        PRIM_FlagP,
+        PRIM_Flag,
 
-    PRIM_Static,
-    PRIM_StaticName,
-    PRIM_staticIntegers,
-    PRIM_integers,
-    PRIM_staticFieldRef,
+        PRIM_atomicFence,
+        PRIM_atomicRMW,
+        PRIM_atomicLoad,
+        PRIM_atomicStore,
+        PRIM_atomicCompareExchange,
 
-    PRIM_MainModule,
-    PRIM_StaticModule,
-    PRIM_ModuleName,
-    PRIM_ModuleMemberNames,
+        PRIM_OrderUnordered,
+        PRIM_OrderMonotonic,
+        PRIM_OrderAcquire,
+        PRIM_OrderRelease,
+        PRIM_OrderAcqRel,
+        PRIM_OrderSeqCst,
 
-    PRIM_EnumP,
-    PRIM_EnumMemberCount,
-    PRIM_EnumMemberName,
-    PRIM_enumToInt,
-    PRIM_intToEnum,
+        PRIM_RMWXchg,
+        PRIM_RMWAdd,
+        PRIM_RMWSubtract,
+        PRIM_RMWAnd,
+        PRIM_RMWNAnd,
+        PRIM_RMWOr,
+        PRIM_RMWXor,
+        PRIM_RMWMin,
+        PRIM_RMWMax,
+        PRIM_RMWUMin,
+        PRIM_RMWUMax,
 
-    PRIM_StringLiteralP,
-    PRIM_stringLiteralByteIndex,
-    PRIM_stringLiteralBytes,
-    PRIM_stringLiteralByteSize,
-    PRIM_stringLiteralByteSlice,
-    PRIM_stringLiteralConcat,
-    PRIM_stringLiteralFromBytes,
+        PRIM_ByRef,
+        PRIM_RecordWithProperties,
 
-    PRIM_stringTableConstant,
+        PRIM_activeException,
 
-    PRIM_FlagP,
-    PRIM_Flag,
+        PRIM_memcpy,
+        PRIM_memmove,
 
-    PRIM_atomicFence,
-    PRIM_atomicRMW,
-    PRIM_atomicLoad,
-    PRIM_atomicStore,
-    PRIM_atomicCompareExchange,
+        PRIM_countValues,
+        PRIM_nthValue,
+        PRIM_withoutNthValue,
+        PRIM_takeValues,
+        PRIM_dropValues,
 
-    PRIM_OrderUnordered,
-    PRIM_OrderMonotonic,
-    PRIM_OrderAcquire,
-    PRIM_OrderRelease,
-    PRIM_OrderAcqRel,
-    PRIM_OrderSeqCst,
+        PRIM_LambdaRecordP,
+        PRIM_LambdaSymbolP,
+        PRIM_LambdaMonoP,
+        PRIM_LambdaMonoInputTypes,
 
-    PRIM_RMWXchg,
-    PRIM_RMWAdd,
-    PRIM_RMWSubtract,
-    PRIM_RMWAnd,
-    PRIM_RMWNAnd,
-    PRIM_RMWOr,
-    PRIM_RMWXor,
-    PRIM_RMWMin,
-    PRIM_RMWMax,
-    PRIM_RMWUMin,
-    PRIM_RMWUMax,
+        PRIM_GetOverload,
 
-    PRIM_ByRef,
-    PRIM_RecordWithProperties,
+        PRIM_usuallyEquals
+    };
 
-    PRIM_activeException,
+    struct PrimOp : public Object {
+        const PrimOpCode primOpCode;
 
-    PRIM_memcpy,
-    PRIM_memmove,
+        PrimOp(PrimOpCode primOpCode)
+            : Object(PRIM_OP), primOpCode(primOpCode) {
+        }
+    };
 
-    PRIM_countValues,
-    PRIM_nthValue,
-    PRIM_withoutNthValue,
-    PRIM_takeValues,
-    PRIM_dropValues,
+    llvm::StringRef primOpName(PrimOpCode op);
 
-    PRIM_LambdaRecordP,
-    PRIM_LambdaSymbolP,
-    PRIM_LambdaMonoP,
-    PRIM_LambdaMonoInputTypes,
-
-    PRIM_GetOverload,
-
-    PRIM_usuallyEquals
-};
-
-struct PrimOp : public Object {
-    const PrimOpCode primOpCode;
-    PrimOp(PrimOpCode primOpCode)
-        : Object(PRIM_OP), primOpCode(primOpCode) {}
-};
-
-llvm::StringRef primOpName(PrimOpCode op);
-
-static inline llvm::StringRef primOpName(const PrimOpPtr& x) {
-    return primOpName(x->primOpCode);
-}
-
+    static inline llvm::StringRef primOpName(const PrimOpPtr &x) {
+        return primOpName(x->primOpCode);
+    }
 }

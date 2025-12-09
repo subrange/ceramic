@@ -12,10 +12,9 @@
 #include <stdio.h>
 
 namespace clay {
-
     typedef llvm::SmallString<16U> Str;
 
-    const char* replAnonymousFunctionName = "__replAnonymousFunction__";
+    const char *replAnonymousFunctionName = "__replAnonymousFunction__";
 
     static ModulePtr module;
     static llvm::ExecutionEngine *engine;
@@ -26,8 +25,7 @@ namespace clay {
 
     static void eval(llvm::StringRef code);
 
-    string newFunctionName()
-    {
+    string newFunctionName() {
         static int funNum = 0;
         string buf;
         llvm::raw_string_ostream funName(buf);
@@ -36,8 +34,7 @@ namespace clay {
         return funName.str();
     }
 
-    string stripSpaces(string const& s)
-    {
+    string stripSpaces(string const &s) {
         size_t i;
         for (i = 0; i < s.size(); ++i) {
             if (!isSpace(s[i]))
@@ -55,8 +52,8 @@ namespace clay {
         tokenize(source, 0, line.length(), tokens);
         return tokens;
     }
-  
-    static void cmdGlobals(const vector<Token>& tokens) {
+
+    static void cmdGlobals(const vector<Token> &tokens) {
         ModulePtr m;
         if (tokens.size() == 1) {
             m = module;
@@ -73,17 +70,17 @@ namespace clay {
         llvm::StringMap<ObjectPtr>::const_iterator g = m->globals.begin();
         for (; g != m->globals.end(); ++g) {
             if (g->second->objKind == GLOBAL_VARIABLE) {
-                IdentifierPtr name = ((GlobalVariable*)g->second.ptr())->name;
-                code << "println(\"" << name->str << " : \", " 
-                                     << "Type(" << name->str << "), \" : \", "
-                                     << name->str <<");\n";
+                IdentifierPtr name = ((GlobalVariable *) g->second.ptr())->name;
+                code << "println(\"" << name->str << " : \", "
+                        << "Type(" << name->str << "), \" : \", "
+                        << name->str << ");\n";
             }
         }
         code.flush();
         eval(buf);
     }
 
-    static void cmdModules(const vector<Token>& tokens) {
+    static void cmdModules(const vector<Token> &tokens) {
         if (tokens.size() != 1) {
             llvm::errs() << "Warning: command parameters are ignored\n";
         }
@@ -93,18 +90,18 @@ namespace clay {
         }
     }
 
-    static void cmdOverloads(const vector<Token>& tokens) {
+    static void cmdOverloads(const vector<Token> &tokens) {
         for (size_t i = 1; i < tokens.size(); ++i) {
             if (tokens[i].tokenKind == T_IDENTIFIER) {
                 Str identStr = tokens[i].str;
 
                 ObjectPtr obj = lookupPrivate(module, Identifier::get(identStr));
-                if (obj == NULL || obj->objKind != PROCEDURE) {
+                if (obj == nullptr || obj->objKind != PROCEDURE) {
                     llvm::errs() << identStr << " is not a procedure name\n";
                     continue;
                 }
 
-                vector<InvokeSet*> sets = lookupInvokeSets(obj.ptr());
+                vector<InvokeSet *> sets = lookupInvokeSets(obj.ptr());
                 for (size_t k = 0; k < sets.size(); ++k) {
                     llvm::errs() << "        ";
                     for (size_t l = 0; l < sets[k]->argsKey.size(); ++l) {
@@ -116,7 +113,7 @@ namespace clay {
         }
     }
 
-    static void cmdPrint(const vector<Token>& tokens) {
+    static void cmdPrint(const vector<Token> &tokens) {
         for (size_t i = 1; i < tokens.size(); ++i) {
             if (tokens[i].tokenKind == T_IDENTIFIER) {
                 Str identifier = tokens[i].str;
@@ -132,8 +129,7 @@ namespace clay {
         }
     }
 
-    static void replCommand(string const& line)
-    {
+    static void replCommand(string const &line) {
         SourcePtr source = new Source(line, 0);
         vector<Token> tokens;
         //TODO: don't use compiler's tokenizer
@@ -155,27 +151,24 @@ namespace clay {
             printAST = false;
         } else if (cmd == "rebuild") {
             //TODO : this command should re-codegen everything
-        }
-        else {
+        } else {
             llvm::errs() << "Unknown interactive mode command: " << cmd.c_str() << "\n";
         }
     }
 
-    static void loadImports(llvm::ArrayRef<ImportPtr> imports)
-    {
+    static void loadImports(llvm::ArrayRef<ImportPtr> imports) {
         for (size_t i = 0; i < imports.size(); ++i) {
             module->imports.push_back(imports[i]);
         }
         for (size_t i = 0; i < imports.size(); ++i) {
-            loadDependent(module, NULL, imports[i], false);
+            loadDependent(module, nullptr, imports[i], false);
         }
         for (size_t i = 0; i < imports.size(); ++i) {
             initModule(imports[i]->module);
         }
     }
 
-    static void jitTopLevel(llvm::ArrayRef<TopLevelItemPtr> toplevels)
-    {
+    static void jitTopLevel(llvm::ArrayRef<TopLevelItemPtr> toplevels) {
         if (toplevels.empty()) {
             return;
         }
@@ -187,8 +180,7 @@ namespace clay {
         addGlobals(module, toplevels);
     }
 
-    static void jitStatements(llvm::ArrayRef<StatementPtr> statements)
-    {
+    static void jitStatements(llvm::ArrayRef<StatementPtr> statements) {
         if (statements.empty()) {
             return;
         }
@@ -203,12 +195,12 @@ namespace clay {
 
         BlockPtr funBody = new Block(statements);
         ExternalProcedurePtr entryProc =
-                new ExternalProcedure(NULL,
+                new ExternalProcedure(nullptr,
                                       fun,
                                       PRIVATE,
                                       vector<ExternalArgPtr>(),
                                       false,
-                                      NULL,
+                                      nullptr,
                                       funBody.ptr(),
                                       new ExprList());
 
@@ -217,20 +209,19 @@ namespace clay {
         codegenBeforeRepl(module);
         try {
             codegenExternalProcedure(entryProc, true);
-        }
-        catch (std::exception) {
+        } catch (std::exception) {
             return;
         }
 
-        llvm::Function* ctor;
-        llvm::Function* dtor;
+        llvm::Function *ctor;
+        llvm::Function *dtor;
         codegenAfterRepl(ctor, dtor);
 
         engine->runFunction(ctor, std::vector<llvm::GenericValue>());
 
-        void* dtorLlvmFun = engine->getPointerToFunction(dtor);
+        void *dtorLlvmFun = engine->getPointerToFunction(dtor);
         typedef void (*PFN)();
-        atexit((PFN)(uintptr_t)dtorLlvmFun);
+        atexit((PFN) (uintptr_t) dtorLlvmFun);
         engine->runFunction(entryProc->llvmFunc, std::vector<llvm::GenericValue>());
     }
 
@@ -253,17 +244,15 @@ namespace clay {
                 jitTopLevel(x.toplevels);
                 jitStatements(x.stmts);
             }
-        }
-        catch (CompilerError) {
+        } catch (CompilerError) {
             return;
-        }        
+        }
     }
 
-    static void interactiveLoop()
-    {
+    static void interactiveLoop() {
         setjmp(recovery);
         string line;
-        while(true) {
+        while (true) {
             llvm::errs().flush();
             llvm::errs() << "clay>";
             char buf[255];
@@ -278,16 +267,12 @@ namespace clay {
         engine->runStaticConstructorsDestructors(true);
     }
 
-    static void exceptionHandler(int i)
-    {
+    static void exceptionHandler(int i) {
         llvm::errs() << "SIGABRT called\n";
         longjmp(recovery, 1);
     }
 
-
-
-    void runInteractive(llvm::Module *llvmModule_, ModulePtr module_)
-    {
+    void runInteractive(llvm::Module *llvmModule_, ModulePtr module_) {
         signal(SIGABRT, exceptionHandler);
 
         llvmModule = llvmModule_;
@@ -310,5 +295,4 @@ namespace clay {
 
         interactiveLoop();
     }
-
 }

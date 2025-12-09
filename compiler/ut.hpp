@@ -1,13 +1,9 @@
 #pragma once
 
-#include <stdio.h>
-
-
 namespace clay {
+    typedef void (*TestFunc)();
 
-typedef void (*TestFunc)();
-
-void register_test(const char* name, TestFunc);
+    void register_test(const char *name, TestFunc);
 
 #define CLAY_UNITTEST(NAME) \
     void NAME ## _testImpl (); \
@@ -19,15 +15,13 @@ void register_test(const char* name, TestFunc);
     static TestRegistrator_ ## NAME testRegistrator_ ## NAME; \
     void NAME ## _testImpl()
 
-
-struct AssertionError {};
-
+    struct AssertionError {
+    };
 
 #define UT_FAIL() do { \
         printf("failure in %s at %s:%d\n", __func__, __FILE__, __LINE__); \
         throw AssertionError(); \
     } while (0)
-
 
 #define UT_ASSERT(COND) do { \
         if (!(COND)) { \
@@ -35,6 +29,4 @@ struct AssertionError {};
             throw AssertionError(); \
         } \
     } while (0)
-
-
 }

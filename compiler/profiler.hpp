@@ -1,9 +1,8 @@
 #pragma once
 
-
 #include "clay.hpp"
 
 namespace clay {
-void incrementCount(ObjectPtr obj);
-void displayCounts();
+    void incrementCount(const ObjectPtr &obj);
+    void displayCounts();
 }

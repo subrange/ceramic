@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "clay.hpp"
 
 namespace clay {

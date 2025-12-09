@@ -6,16 +6,15 @@
 using namespace std;
 
 namespace clay {
-
     struct Test {
-        const char* name;
+        const char *name;
         TestFunc func;
     };
 
-    static vector<Test>* tests;
+    static vector<Test> *tests;
 
-    void register_test(const char* name, TestFunc func) {
-        if (tests == 0) {
+    void register_test(const char *name, const TestFunc func) {
+        if (tests == nullptr) {
             tests = new vector<Test>;
         }
         tests->push_back(Test());
@@ -23,21 +22,21 @@ namespace clay {
         tests->back().func = func;
     }
 
-    int real_main(int argc, char **argv, char const* const* envp) {
-        for (vector<Test>::const_iterator test = tests->begin(); test != tests->end(); ++test) {
-            printf("%s...\n", test->name);
+    int real_main(int argc, char **argv, char const *const *envp) {
+        for (const auto test : *tests) {
+            printf("%s...\n", test.name);
             try {
-                test->func();
+                test.func();
 
-                printf("%s OK\n", test->name);
-            } catch (const AssertionError&) {
-                printf("%s FAILED\n", test->name);
+                printf("%s OK\n", test.name);
+            } catch (const AssertionError &) {
+                printf("%s FAILED\n", test.name);
             }
         }
         return 0;
     }
 }
 
-int main(int argc, char **argv, char const* const* envp) {
+int main(const int argc, char **argv, char const *const *envp) {
     return clay::parachute(&clay::real_main, argc, argv, envp);
 }
