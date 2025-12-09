@@ -587,7 +587,7 @@ struct Source : public Object {
     Source(llvm::StringRef lineOfCode, int dummy);
 
     Source(llvm::StringRef fileName, llvm::MemoryBuffer *buffer)
-        : Object(SOURCE), fileName(fileName), buffer(buffer), debugInfo(NULL)
+        : Object(SOURCE), fileName(fileName), buffer(buffer), debugInfo(nullptr)
     { }
 
     const char *data() const { return buffer->getBufferStart(); }
@@ -602,11 +602,11 @@ struct Location {
     unsigned offset;
 
     Location()
-        : source(NULL), offset(0) {}
+        : source(nullptr), offset(0) {}
     Location(const SourcePtr &source, unsigned offset)
         : source(source), offset(offset) {}
 
-    bool ok() const { return source != NULL; }
+    bool ok() const { return source != nullptr; }
 };
 
 
@@ -932,7 +932,7 @@ struct Call : public Expr {
 
     Call(ExprPtr expr, ExprListPtr parenArgs)
         : Expr(CALL), expr(expr), parenArgs(parenArgs),
-          _allArgs(NULL) {}
+          _allArgs(nullptr) {}
 };
 
 struct FieldRef : public Expr {
@@ -1126,7 +1126,7 @@ struct ExprList : public Object {
 };
 
 inline ExprListPtr Call::allArgs() {
-    if (_allArgs == NULL) {
+    if (_allArgs == nullptr) {
         _allArgs = new ExprList();
         _allArgs->add(parenArgs);
     }
@@ -1569,12 +1569,12 @@ struct Code : public ANode {
 
     bool hasNamedReturns() {
         return hasReturnSpecs() && (
-            (!returnSpecs.empty() && returnSpecs[0]->name != NULL)
-            || (varReturnSpec != NULL && varReturnSpec->name != NULL));
+            (!returnSpecs.empty() && returnSpecs[0]->name != nullptr)
+            || (varReturnSpec != nullptr && varReturnSpec->name != nullptr));
     }
 
     bool isLLVMBody() {
-        return llvmBody.ptr() != NULL;
+        return llvmBody.ptr() != nullptr;
     }
     bool hasBody() {
         return body.ptr() || isLLVMBody();
@@ -1602,7 +1602,7 @@ enum Visibility {
 struct TopLevelItem : public ANode {
     Module * const module;
     IdentifierPtr name; // for named top level items
-    const Visibility visibility; // valid only if name != NULL
+    const Visibility visibility; // valid only if name != nullptr
 
     EnvPtr env;
 
@@ -1858,7 +1858,7 @@ struct GlobalVariable : public TopLevelItem {
     ~GlobalVariable();
 
     bool hasParams() const {
-        return !params.empty() || (varParam.ptr() != NULL);
+        return !params.empty() || (varParam.ptr() != nullptr);
     }
 };
 
@@ -1924,7 +1924,7 @@ struct ExternalProcedure : public TopLevelItem {
     ExternalProcedure(Module *module, Visibility visibility)
         : TopLevelItem(EXTERNAL_PROCEDURE, module, visibility),
           attributes(new ExprList()),
-          llvmFunc(NULL), debugInfo(NULL),
+          llvmFunc(nullptr), debugInfo(nullptr),
           hasVarArgs(false),
           attributesVerified(false),
           analyzed(false), bodyCodegenned(false)
@@ -1939,7 +1939,7 @@ struct ExternalProcedure : public TopLevelItem {
         : TopLevelItem(EXTERNAL_PROCEDURE, module, name, visibility), args(args),
           returnType(returnType), body(body),
           attributes(attributes),
-          llvmFunc(NULL), debugInfo(NULL),
+          llvmFunc(nullptr), debugInfo(nullptr),
           hasVarArgs(hasVarArgs),
           attributesVerified(false),
           analyzed(false), bodyCodegenned(false)
@@ -1971,7 +1971,7 @@ struct ExternalVariable : public TopLevelItem {
     ExternalVariable(Module *module, Visibility visibility)
         : TopLevelItem(EXTERNAL_VARIABLE, module, visibility),
           attributes(new ExprList()),
-          llGlobal(NULL), debugInfo(NULL),
+          llGlobal(nullptr), debugInfo(nullptr),
           attributesVerified(false)
           {}
     ExternalVariable(Module *module, IdentifierPtr name,
@@ -1980,7 +1980,7 @@ struct ExternalVariable : public TopLevelItem {
                      ExprListPtr attributes)
         : TopLevelItem(EXTERNAL_VARIABLE, module, name, visibility),
           type(type), attributes(attributes),
-          llGlobal(NULL), debugInfo(NULL),
+          llGlobal(nullptr), debugInfo(nullptr),
           attributesVerified(false)
           {}
 
@@ -2056,7 +2056,7 @@ struct GlobalAlias : public TopLevelItem {
           patternVars(patternVars), predicate(predicate),
           params(params), varParam(varParam), expr(expr) {}
     bool hasParams() const {
-        return !params.empty() || (varParam.ptr() != NULL);
+        return !params.empty() || (varParam.ptr() != nullptr);
     }
 };
 
@@ -2147,7 +2147,7 @@ struct ModuleLookup {
     ModulePtr module;
     llvm::StringMap<ModuleLookup> parents;
 
-    ModuleLookup() : module(NULL), parents() {}
+    ModuleLookup() : module(nullptr), parents() {}
     ModuleLookup(Module *m) : module(m), parents() {}
 };
 
@@ -2204,7 +2204,7 @@ struct Module : public ANode {
           topLevelLLVMGenerated(false),
           externalsGenerated(false),
           isIntrinsicsModule(false),
-          debugInfo(NULL) {}
+          debugInfo(nullptr) {}
     Module(llvm::StringRef moduleName,
            llvm::ArrayRef<ImportPtr> imports,
            ModuleDeclarationPtr declaration,
@@ -2222,7 +2222,7 @@ struct Module : public ANode {
           topLevelLLVMGenerated(false),
           externalsGenerated(false),
           isIntrinsicsModule(false),
-          debugInfo(NULL) {}
+          debugInfo(nullptr) {}
 
     llvm::DINamespace getDebugInfo() { return llvm::DINamespace(debugInfo); }
 };
@@ -2235,11 +2235,11 @@ struct Module : public ANode {
 struct PVData {
     TypePtr type;
     bool isRValue:1;
-    PVData() : type(NULL), isRValue(false) {}
+    PVData() : type(nullptr), isRValue(false) {}
     PVData(TypePtr type, bool isRValue)
         : type(type), isRValue(isRValue) {}
 
-    bool ok() const { return type != NULL; }
+    bool ok() const { return type != nullptr; }
 
     bool operator==(PVData const &x) const { return type == x.type && isRValue == x.isRValue; }
 };
@@ -2352,7 +2352,7 @@ struct Type : public Object {
 
     Type(TypeKind typeKind)
         : Object(TYPE), typeKind(typeKind),
-          llType(NULL), debugInfo(NULL),
+          llType(nullptr), debugInfo(nullptr),
           overloadsInitialized(false),
           defined(false),
           typeInfoInitialized(false)
@@ -2390,7 +2390,7 @@ struct ComplexType : public Type {
     const llvm::StructLayout *layout;
     const unsigned bits:15;
     ComplexType(unsigned bits)
-        : Type(COMPLEX_TYPE), layout(NULL), bits(bits) {}
+        : Type(COMPLEX_TYPE), layout(nullptr), bits(bits) {}
 };
 
 struct PointerType : public Type {
@@ -2414,7 +2414,7 @@ struct CodePointerType : public Type {
 
 struct CCodePointerType : public Type {
     vector<TypePtr> argTypes;
-    TypePtr returnType; // NULL if void return
+    TypePtr returnType; // nullptr if void return
 
     llvm::Type *callType;
 
@@ -2429,7 +2429,7 @@ struct CCodePointerType : public Type {
                      TypePtr returnType)
         : Type(CCODE_POINTER_TYPE),
           argTypes(argTypes),
-          returnType(returnType), callType(NULL),
+          returnType(returnType), callType(nullptr),
           callingConv(callingConv), hasVarArgs(hasVarArgs) {}
 };
 
@@ -2451,10 +2451,10 @@ struct TupleType : public Type {
     vector<TypePtr> elementTypes;
     const llvm::StructLayout *layout;
     TupleType()
-        : Type(TUPLE_TYPE), layout(NULL) {}
+        : Type(TUPLE_TYPE), layout(nullptr) {}
     TupleType(llvm::ArrayRef<TypePtr> elementTypes)
         : Type(TUPLE_TYPE), elementTypes(elementTypes),
-          layout(NULL) {}
+          layout(nullptr) {}
 };
 
 struct UnionType : public Type {
