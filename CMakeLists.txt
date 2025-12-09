@@ -1,15 +1,17 @@
 project(clay)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.25)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-find_package(Subversion)
-find_package(Mercurial)
+
 find_package(Git)
 
-set(Python_ADDITIONAL_VERSIONS "2.7")
-include(FindPythonInterp)
-include(CheckSymbolExists)
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
+include(CheckSymbolExists)
 include(CPack)
 
 if(UNIX)
@@ -28,12 +30,8 @@ if(UNIX)
         RESULT_VARIABLE LLVM_CONFIG_VERSION_RESULT
     )
 
-    if (NOT ${LLVM_CONFIG_VERSION_RESULT} EQUAL 0)
+    if(NOT LLVM_CONFIG_VERSION_RESULT EQUAL 0)
         message(FATAL_ERROR "${LLVM_CONFIG} failed")
-    endif()
-
-    if(NOT ${LLVM_VERSION} MATCHES "^3.2(svn)?$")
-        message(FATAL_ERROR "Clay requires LLVM 3.2.")
     endif()
 
     execute_process(
@@ -41,10 +39,8 @@ if(UNIX)
         OUTPUT_VARIABLE LLVM_CXXFLAGS
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    set(LLVM_CXXFLAGS "${LLVM_CXXFLAGS}")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        # llvm-config --cxxflags contains -O3
         set(LLVM_CXXFLAGS "${LLVM_CXXFLAGS} -O0")
     endif()
 
@@ -53,25 +49,31 @@ if(UNIX)
         OUTPUT_VARIABLE LLVM_LDFLAGS
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+
     execute_process(
         COMMAND ${LLVM_CONFIG} --libs all
         OUTPUT_VARIABLE LLVM_LIBS
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+
     execute_process(
         COMMAND ${LLVM_CONFIG} --libdir
         OUTPUT_VARIABLE LLVM_LIBDIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+
     execute_process(
         COMMAND ${LLVM_CONFIG} --prefix
         OUTPUT_VARIABLE LLVM_DIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+
     message("-- Using LLVM: ${LLVM_DIR}")
+
     set(CMAKE_REQUIRED_INCLUDES ${LLVM_DIR}/include)
     set(CMAKE_REQUIRED_LIBRARIES clang)
     set(CMAKE_REQUIRED_FLAGS "-L${LLVM_LIBDIR}")
+
 elseif(WIN32)
     set(LLVM_DIR "$ENV{ProgramFiles}/LLVM" CACHE PATH "llvm install path")
 
@@ -79,14 +81,20 @@ elseif(WIN32)
         set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${LLVM_DIR}/share/llvm/cmake")
         include(LLVMConfig)
 
-        include_directories( ${LLVM_DIR}/include )
-        link_directories( ${LLVM_DIR}/lib )
-        add_definitions( ${LLVM_DEFINITIONS} )
-        llvm_map_components_to_libraries(LLVM_LIBS ${LLVM_TARGETS_TO_BUILD} jit interpreter native asmparser bitreader bitwriter ipo linker)
+        include_directories(${LLVM_DIR}/include)
+        link_directories(${LLVM_DIR}/lib)
+        add_definitions(${LLVM_DEFINITIONS})
+
+        llvm_map_components_to_libraries(LLVM_LIBS
+            ${LLVM_TARGETS_TO_BUILD}
+            jit interpreter native asmparser bitreader bitwriter ipo linker
+        )
+
         find_file(CLANG clang.exe HINTS ${LLVM_DIR}/bin)
     else()
         message(FATAL_ERROR "Could not find LLVM. Try setting LLVM_DIR")
     endif()
+
     set(CMAKE_REQUIRED_INCLUDES ${LLVM_DIR}/include)
     set(CMAKE_REQUIRED_LIBRARIES ${LLVM_DIR}/lib/libclang.lib)
 endif()
@@ -102,25 +110,9 @@ add_subdirectory(compiler)
 add_subdirectory(misc)
 add_subdirectory(tools)
 
-if(PYTHONINTERP_FOUND)
-    execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} --version
-        ERROR_VARIABLE PYTHON_VERSION
-        ERROR_STRIP_TRAILING_WHITESPACE)
-
-    if(NOT ${PYTHON_VERSION} MATCHES "Python 2.7")
-        unset(PYTHON_EXECUTABLE)
-        find_program(PYTHON2_EXE python2)
-        if(PYTHON2_EXE)
-            set(PYTHON_EXECUTABLE ${PYTHON2_EXE})
-        endif()
-    endif()
-
-    if(DEFINED PYTHON_EXECUTABLE)
-        add_custom_target(test ${PYTHON_EXECUTABLE} "${PROJECT_SOURCE_DIR}/test/runtests.py" --buildflags="-Dtest.minimal")
-        add_dependencies(test clay)
-    else()
-        message("-- Python 2.x not found. You will not be able to run tests")
-        message("-- Try setting PYTHON_EXECUTABLE to the Python 2.x interpreter")
-    endif()
-endif()
+add_custom_target(
+    test
+    ${Python3_EXECUTABLE} "${PROJECT_SOURCE_DIR}/test/runtests.py"
+    --buildflags="-Dtest.minimal"
+)
+add_dependencies(test clay)
