@@ -71,11 +71,11 @@ namespace clay {
     //
 
     static size_t llTypeSize(llvm::Type *llt) {
-        return (size_t) llvmDataLayout->getTypeAllocSize(llt);
+        return llvmDataLayout->getTypeAllocSize(llt);
     }
 
     static size_t llTypeAlignment(llvm::Type *llt) {
-        return (size_t) llvmDataLayout->getABITypeAlignment(llt);
+        return llvmDataLayout->getABITypeAlign(llt).value();
     }
 
     static size_t debugTypeSize(llvm::Type *llt) {
@@ -1434,7 +1434,7 @@ namespace clay {
                 size_t maxSize = 0;
                 for (size_t i = 0; i < x->memberTypes.size(); ++i) {
                     llvm::Type *llt = llvmType(x->memberTypes[i]);
-                    size_t align = (size_t) llvmDataLayout->getABITypeAlignment(llt);
+                    size_t align = (size_t) llvmDataLayout->getABITypeAlign(llt);
                     size_t size = (size_t) llvmDataLayout->getTypeAllocSize(llt);
                     if (align > maxAlign) {
                         maxAlign = align;
@@ -1686,6 +1686,6 @@ namespace clay {
         llvm::SmallString<128> buf;
         llvm::raw_svector_ostream os(buf);
         typePrint(os, type);
-        return os.str();
+        return string(os.str());
     }
 }
