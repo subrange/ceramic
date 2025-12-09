@@ -45,18 +45,7 @@ set(UT_SOURCES
 )
 
 
-# version info is only updated when cmake is run
-if(Subversion_FOUND AND EXISTS "${LLVM_DIR}/.svn")
-    Subversion_WC_INFO(${LLVM_DIR} SVN)
-    set_property(SOURCE main.cpp APPEND PROPERTY
-        COMPILE_DEFINITIONS "SVN_REVISION=\"${SVN_WC_REVISION}\"")
-endif()
 
-if(Mercurial_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.hg")
-    Mercurial_WC_ID(${PROJECT_SOURCE_DIR} HG)
-    set_property(SOURCE main.cpp APPEND PROPERTY
-        COMPILE_DEFINITIONS "HG_ID=\"${HG_WC_ID}\"")
-endif()
 
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
