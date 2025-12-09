@@ -46,10 +46,15 @@
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/Error.h>
 #include <llvm/Target/TargetOptions.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Support/Program.h>
+#include <llvm/TargetParser/Host.h>
+#include <llvm/Linker/Linker.h>
 
 #include <complex>
 

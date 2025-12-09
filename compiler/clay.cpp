@@ -28,8 +28,8 @@ namespace clay {
 
     using namespace std;
 
-    static void addOptimizationPasses(llvm::PassManager &passes,
-                                      llvm::FunctionPassManager &fpasses,
+    static void addOptimizationPasses(llvm::legacy::PassManager &passes,
+                                      llvm::legacy::FunctionPassManager &fpasses,
                                       unsigned optLevel,
                                       bool internalize) {
         llvm::Pass *inliningPass = 0;
