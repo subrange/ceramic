@@ -107,7 +107,7 @@ install(DIRECTORY examples/ DESTINATION share/doc/clay/examples)
 install(DIRECTORY lib-clay DESTINATION lib)
 
 add_subdirectory(compiler)
-add_subdirectory(misc)
+# add_subdirectory(misc)
 add_subdirectory(tools)
 
 add_custom_target(
