@@ -15,7 +15,7 @@ namespace clay {
 
     static vector<CompileContextEntry> contextStack;
 
-    static const unsigned RECURSION_WARNING_LEVEL = 1000;
+    static constexpr unsigned RECURSION_WARNING_LEVEL = 1000;
 
     void pushCompileContext(ObjectPtr obj) {
         if (contextStack.size() >= RECURSION_WARNING_LEVEL)
