@@ -30,7 +30,7 @@ if(UNIX)
         RESULT_VARIABLE LLVM_CONFIG_VERSION_RESULT
     )
 
-    if(NOT LLVM_CONFIG_VERSION_RESULT EQUAL 0)
+    if (NOT ${LLVM_CONFIG_VERSION_RESULT} EQUAL 0)
         message(FATAL_ERROR "${LLVM_CONFIG} failed")
     endif()
 
@@ -39,6 +39,10 @@ if(UNIX)
         OUTPUT_VARIABLE LLVM_CXXFLAGS
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+    message("-- Using LLVM: ${LLVM_DIR}")
+    message("-- LLVM include dir: ${LLVM_INCLUDEDIR}")
+    set(LLVM_CXXFLAGS "${LLVM_CXXFLAGS}")
+    separate_arguments(LLVM_CXXFLAGS)
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(LLVM_CXXFLAGS "${LLVM_CXXFLAGS} -O0")
@@ -49,12 +53,14 @@ if(UNIX)
         OUTPUT_VARIABLE LLVM_LDFLAGS
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+    separate_arguments(LLVM_LDFLAGS)
 
     execute_process(
         COMMAND ${LLVM_CONFIG} --libs all
         OUTPUT_VARIABLE LLVM_LIBS
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+    separate_arguments(LLVM_LIBS)
 
     execute_process(
         COMMAND ${LLVM_CONFIG} --libdir
@@ -68,12 +74,17 @@ if(UNIX)
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
-    message("-- Using LLVM: ${LLVM_DIR}")
+    execute_process(
+        COMMAND ${LLVM_CONFIG} --includedir
+        OUTPUT_VARIABLE LLVM_INCLUDEDIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
 
+    message("-- Using LLVM: ${LLVM_DIR}")
     set(CMAKE_REQUIRED_INCLUDES ${LLVM_DIR}/include)
+    set(LLVM_INCLUDEDIR "${LLVM_INCLUDEDIR}")
     set(CMAKE_REQUIRED_LIBRARIES clang)
     set(CMAKE_REQUIRED_FLAGS "-L${LLVM_LIBDIR}")
-
 elseif(WIN32)
     set(LLVM_DIR "$ENV{ProgramFiles}/LLVM" CACHE PATH "llvm install path")
 
@@ -94,7 +105,6 @@ elseif(WIN32)
     else()
         message(FATAL_ERROR "Could not find LLVM. Try setting LLVM_DIR")
     endif()
-
     set(CMAKE_REQUIRED_INCLUDES ${LLVM_DIR}/include)
     set(CMAKE_REQUIRED_LIBRARIES ${LLVM_DIR}/lib/libclang.lib)
 endif()
@@ -107,12 +117,14 @@ install(DIRECTORY examples/ DESTINATION share/doc/clay/examples)
 install(DIRECTORY lib-clay DESTINATION lib)
 
 add_subdirectory(compiler)
-# add_subdirectory(misc)
-add_subdirectory(tools)
+if(EXISTS "${PROJECT_SOURCE_DIR}/tools")
+    add_subdirectory(tools)
+endif()
 
-add_custom_target(
-    test
-    ${Python3_EXECUTABLE} "${PROJECT_SOURCE_DIR}/test/runtests.py"
+add_custom_target(test
+    ${Python3_EXECUTABLE}
+    "${PROJECT_SOURCE_DIR}/test/runtests.py"
     --buildflags="-Dtest.minimal"
 )
+
 add_dependencies(test clay)
