@@ -7,12 +7,12 @@ import data.strings.*;
 import complex.*;
 import data.vectors.*;
 
-
+
 /// @section  hashing 
 
 define hash;
 
-
+
 /// @section  booleans, integers, floats, pointers, characters 
 
 [when TypeSize(SizeT) == 4]
@@ -51,14 +51,14 @@ forceinline overload hash(x:Pointer[T]) = bitcast(SizeT, x);
 forceinline default hash(x:Char) = wrapCast(SizeT, x);
 
 
-
+
 /// @section  arrays 
 
 [T,n]
 forceinline overload hash(a:Array[T,n]) = hashSequence(a);
 
 
-
+
 /// @section  tuples 
 
 define hashValues;
@@ -74,42 +74,42 @@ forceinline default hashValues(value) = hash(value);
 [..T]
 forceinline overload hash(x:Tuple[..T]) = hashValues(..tupleElements(x));
 
-
+
 /// @section  records 
 
 [T when Record?(T)]
 forceinline overload hash(x:T) = hashValues(..recordFields(x));
 
 
-
+
 /// @section  enumerations 
 
 [T when Enum?(T)]
 forceinline overload hash(x:T) = SizeT(x);
 
 
-
+
 /// @section  shared pointers 
 
 [T]
 forceinline overload hash(x:SharedPointer[T]) = hash(x.ptr);
 
 
-
+
 /// @section  strings 
 
 forceinline default hash(a:String) = hashSequence(a);
 forceinline overload hash(a:StringLiteralRef) = hashSequence(a);
 
 
-
+
 /// @section  vectors 
 
 [T]
 forceinline overload hash(a:Vector[T]) = hashSequence(a);
 
 
-
+
 /// @section  hashSequence 
 
 hashSequence(a) {
@@ -123,20 +123,20 @@ hashSequence(a) {
 }
 
 
-
+
 /// @section  variants 
 
 [T when Variant?(T)]
 overload hash(x:T) = wrapAdd(SizeT(wrapMultiply(23, variantTag(x))), hash(*x));
 
 
-
+
 /// @section  reference types 
 
 [T when ReferenceType?(T)]
 overload hash(x:T) = hash(referencePtr(x));
 
-
+
 /// @section  statics 
 
 [x]

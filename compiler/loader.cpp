@@ -42,7 +42,7 @@ Source::Source(llvm::StringRef lineOfCode, int dummy)
 
 
 
-
+
 //
 // initModuleSuffixes
 //
@@ -149,7 +149,7 @@ void initLoader() {
     initModuleSuffixes();
 }
 
-
+
 //
 // toKey
 //
@@ -165,7 +165,7 @@ static string toKey(DottedNamePtr name) {
 }
 
 
-
+
 //
 // addSearchPath, locateFile, toRelativePath,
 // locateModule
@@ -251,7 +251,7 @@ static PathString locateModule(DottedNamePtr name) {
 }
 
 
-
+
 //
 // loadFile
 //
@@ -468,7 +468,7 @@ ModulePtr loadedModule(llvm::StringRef module) {
 }
 
 
-
+
 //
 // initOverload, initVariantInstance, initModule
 //
@@ -798,7 +798,7 @@ void initModule(ModulePtr m) {
     initModule(m, vector<string>());
 }
 
-
+
 //
 // staticModule
 //
@@ -885,7 +885,7 @@ ModulePtr staticModule(ObjectPtr x) {
 }
 
 
-
+
 //
 // ForeignExpr::getEnv, ForeignStatement::getEnv
 //
@@ -907,7 +907,7 @@ EnvPtr ForeignStatement::getEnv() {
 }
 
 
-
+
 //
 // prim op names
 //
@@ -921,7 +921,7 @@ llvm::StringRef primOpName(PrimOpCode op) {
 }
 
 
-
+
 //
 // makePrimitivesModule
 //

@@ -1,6 +1,6 @@
 import data.vectors.*;
 
-
+
 /// @section  TokenInput?, TokenType 
 
 [TokenInput]
@@ -10,7 +10,7 @@ TokenInput?(#TokenInput) = Iterator?(TokenInput);
 TokenType(#TokenInput) = IteratorTargetType(TokenInput);
 
 
-
+
 /// @section  Parser?, Parsers? 
 
 [TokenInput]
@@ -28,7 +28,7 @@ overload Parsers?(#TokenInput, first, ..rest) =
 overload Parsers?(#TokenInput) = true;
 
 
-
+
 /// @section  SimpleParser? 
 
 define SimpleParser?;
@@ -48,7 +48,7 @@ overload MaybeType?(..args) = false;
 [T] overload MaybeType?(#Maybe[T]) = true;
 
 
-
+
 /// @section  ConvertibleParser? 
 
 define ConvertibleParser?;
@@ -66,7 +66,7 @@ overload ConvertibleParser?(#TokenInput, #A) = true;
 overload ConvertibleParser?(#TokenInput, #Tuple[..T]) = true;
 
 
-
+
 /// @section  convertParser 
 
 define convertParser;
@@ -92,7 +92,7 @@ overload convertParser(#TokenInput, rvalue parser:Parser) =
     move(parser);
 
 
-
+
 /// @section  convertParsers 
 
 private record Converter[TokenInput]();
@@ -104,7 +104,7 @@ convertParsers(#TokenInput, forward ..parsers:T) =
     forward ..mapValues(Converter[TokenInput](), ..parsers);
 
 
-
+
 /// @section  ParseResult 
 
 [TokenInput, Parser when Parser?(TokenInput, Parser)]
@@ -117,7 +117,7 @@ ParseResult(#TokenInput, #Parser) {
 [T] private UnwrapMaybe(#Maybe[T]) = T;
 
 
-
+
 /// @section  nextToken 
 
 [TokenInput]
@@ -130,7 +130,7 @@ nextToken(#TokenInput, input:TokenInput) {
 }
 
 
-
+
 /// @section  condition 
 
 [TokenInput, Predicate]
@@ -157,7 +157,7 @@ condition(#TokenInput, predicate:Predicate) =
     };
 
 
-
+
 /// @section  literal 
 
 [TokenInput, Token when TokenType(TokenInput) == Token]
@@ -165,7 +165,7 @@ literal(#TokenInput, expected:Token) =
     condition(TokenInput, x => (x == expected));
 
 
-
+
 /// @section  literalString 
 
 define literalString;
@@ -195,7 +195,7 @@ overload literalString(#TokenInput, #S) =
     
 
 
-
+
 /// @section  optional 
 
 [TokenInput, Parser when Parser?(TokenInput, Parser)]
@@ -205,7 +205,7 @@ optional(#TokenInput, forward _parser:Parser) {
 }
 
 
-
+
 /// @section  choice 
 
 UniformParsers?(TokenInput, ..Parsers) =
@@ -226,7 +226,7 @@ choice(#TokenInput, forward first:First, forward ..rest:Rest) {
 }
 
 
-
+
 /// @section  sequence, sequenceAs 
 
 [TokenInput, First, ..Rest when Parsers?(TokenInput, First, ..Rest)]
@@ -263,7 +263,7 @@ sequenceAs(#TokenInput, result:Result, forward .._parsers:Parsers) {
 }
 
 
-
+
 /// @section  modify 
 
 Modifier?(TokenInput, Modifier, Parser) {
@@ -285,7 +285,7 @@ modify(#TokenInput, modifier:Modifier, forward _parser:Parser) {
 }
 
 
-
+
 /// @section  repeated, repeatedAs 
 
 [TokenInput, Parser when Parser?(TokenInput, Parser)]
@@ -332,7 +332,7 @@ repeatedAs(#TokenInput, result:Result, min:Int, max:Int, forward _parser:Parser)
 }
 
 
-
+
 /// @section  zeroOrMore, oneOrMore 
 //
 
@@ -353,7 +353,7 @@ oneOrMoreAs(#TokenInput, result:Result, forward parser:Parser) =
     repeatedAs(TokenInput, result, 1, Greatest(Int), parser);
 
 
-
+
 /// @section  separatedList, optSeparatedList, 
 //
 

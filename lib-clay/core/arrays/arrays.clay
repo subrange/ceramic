@@ -1,4 +1,4 @@
-
+
 /// @section  predicates 
 
 [T,n]
@@ -8,7 +8,7 @@ overload ContiguousSequence?(#Array[T,n]) : Bool = true;
 overload SequenceContainer?(#Array[T,n]) : Bool = true;
 
 
-
+
 /// @section  size, index, iterator, begin, end, front, back 
 
 [T,n]
@@ -44,7 +44,7 @@ forceinline overload front(a:Array[T,n]) : ByRef[T] = ref a[0];
 forceinline overload back(a:Array[T,n]) : ByRef[T] = ref a[n-1];
 
 
-
+
 /// @section  basic constructor 
 
 [T,n,..A when (countValues(..A) == n) and equalValues?(T, ..A)]
@@ -53,7 +53,7 @@ alias overload Array[T,n](..args:A) --> returned:Array[T,n] {
 }
 
 
-
+
 /// @section  constructor from sequences 
 
 [T, n, S when Sequence?(S)
@@ -105,7 +105,7 @@ overload Array(#n, forward s:S) {
 }
 
 
-
+
 /// @section  constructor from StaticSizedSequence 
 
 [T,n,S when StaticSizedSequence?(S)
@@ -153,7 +153,7 @@ alias overload Array(s:S) {
 }
 
 
-
+
 /// @section  other constructors, moveUnsafe, resetUnsafe, destroy 
 
 [T,n]
@@ -182,7 +182,7 @@ overload destroy(a:Array[T,n]) : {
 }
 
 
-
+
 /// @section  array - type inferring constructor 
 
 define array private overload;
@@ -197,14 +197,14 @@ alias overload array(..strings:SS) {
     return array(..mapValues(StringLiteralRef, ..strings));
 }
 
-
+
 /// @section  integerArray 
 
 [n]
 integerArray(#n) = array(..integers(#n));
 
 
-
+
 /// @section  array assignment 
 
 [T,U,n when not (T == U and BitwiseAssignedType?(T)) and CallDefined?(assign, T, U)]
@@ -220,7 +220,7 @@ overload assign(ref left: Array[T,n], rvalue right: Array[U, n]) : {
 
 
 
-
+
 /// @section  ArrayRef
 /// ArrayRef is a pair of pointers to the begin and to the end of memory area
 

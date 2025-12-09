@@ -192,7 +192,7 @@ llvm::raw_ostream &operator<<(llvm::raw_ostream &out, PVData const &pv)
     return out << "PVData(" << pv.type << ", " << pv.isRValue << ")";
 }
 
-
+
 //
 // big vec
 //
@@ -232,7 +232,7 @@ llvm::raw_ostream &operator<<(llvm::raw_ostream &out, const BigVec<T> &v) {
 }
 
 
-
+
 //
 // print PatternVar
 //
@@ -244,7 +244,7 @@ llvm::raw_ostream &operator<<(llvm::raw_ostream &out, const PatternVar &pvar)
 }
 
 
-
+
 //
 // print
 //
@@ -840,7 +840,7 @@ static void print(llvm::raw_ostream &out, const Object *x) {
 }
 
 
-
+
 //
 // printName
 //
@@ -1061,7 +1061,7 @@ void printName(llvm::raw_ostream &out, ObjectPtr x)
 }
 
 
-
+
 //
 // printTypeAndValue, printValue
 //
@@ -1193,7 +1193,7 @@ string shortString(llvm::StringRef in) {
 }
 
 
-
+
 //
 // patternPrint
 //

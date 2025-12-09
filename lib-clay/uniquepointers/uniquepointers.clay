@@ -1,6 +1,6 @@
 import printer.(printTo,printReprTo);
 
-
+
 /// @section  UniquePointer 
 record UniquePointer[T] (ptr: Pointer[T]);
 
@@ -8,7 +8,7 @@ record UniquePointer[T] (ptr: Pointer[T]);
 overload RegularRecord?(#UniquePointer[T]) = false;
 
 
-
+
 /// @section  newUnique 
 [T]
 alias newUnique(x:T) {
@@ -23,7 +23,7 @@ alias newUnique(x:T) {
 }
 
 
-
+
 /// @section  constructors, moveUnsafe, resetUnsafe, assign, destroy 
 [T]
 overload UniquePointer[T]() = UniquePointer(null(T));
@@ -53,7 +53,7 @@ forceinline overload destroy(p: UniquePointer[T]) {
 }
 
 
-
+
 /// @section  dereference, null?, nullUnique 
 [T]
 forceinline overload dereference(p: UniquePointer[T]) = ref p.ptr^;
@@ -65,13 +65,13 @@ forceinline overload null?(p: UniquePointer[T]) = null?(p.ptr);
 forceinline nullUnique(#T) = UniquePointer[T]();
 
 
-
+
 /// @section  equality 
 [T]
 forceinline overload equals?(p: UniquePointer[T], q: UniquePointer[T])
     = p.ptr == q.ptr;
 
-
+
 /// @section  UniqueValue -- deep-copies on copy or assignment 
 
 record UniqueValue[T] (ptr: UniquePointer[T]);
@@ -109,7 +109,7 @@ forceinline nullUniqueValue(#T) = UniqueValue[T]();
 
 
 
-
+
 /// @section  printTo - UniqueValue 
 
 [T]
@@ -123,7 +123,7 @@ overload printTo(stream, v:UniqueValue[T]) {
     }
 }
 
-
+
 /// @section  printReprTo - UniqueValue 
 
 [T]

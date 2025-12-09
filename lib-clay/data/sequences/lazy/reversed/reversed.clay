@@ -2,7 +2,7 @@
 import data.sequences.util.*;
 import data.sequences.force.*;
 
-
+
 /// @section  reversed 
 
 forceinline reversed(forward seq) = Reversed(wrapSequence(seq));
@@ -25,7 +25,7 @@ forceinline overload iterator(a:Reversed[A]) = reverseIterator(a.seq);
 forceinline overload reverseIterator(a:Reversed[A]) = iterator(a.seq);
 
 
-
+
 /// @section  size, index 
 
 [A when CallDefined?(size, A)]

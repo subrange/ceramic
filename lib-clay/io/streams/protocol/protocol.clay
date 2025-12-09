@@ -1,6 +1,6 @@
 import data.vectors.*;
 
-
+
 /// @section  readBytes, writeBytes, flush - byte stream operations 
 ///
 /// readBytes and writeBytes are SPI functions, orinary clients don't
@@ -14,7 +14,7 @@ define writeBytes(stream, buf:Pointer[Byte], n:SizeT) : SizeT;
 define flush(stream) :;
 
 
-
+
 /// @section InputStream, OutputStream types
 
 
@@ -25,7 +25,7 @@ InputStream?(#S) = CallDefined?(readBytes, S, Pointer[Byte], SizeT);
 OutputStream?(#S) = CallDefined?(writeBytes, S, Pointer[Byte], SizeT);
 
 
-
+
 /// @section  read, write wrappers to readBytes, writeBytes
 
 
@@ -35,7 +35,7 @@ define read(stream:I, ..args);
 define write(stream:O, ..args) :;
 
 
-
+
 /// @section misc type functions
 
 [T]

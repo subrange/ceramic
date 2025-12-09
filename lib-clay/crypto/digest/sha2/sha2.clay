@@ -5,7 +5,7 @@ public import crypto.digest.*;
 import crypto.digest.internal.*;
 
 
-
+
 // SHA-256
 
 alias SHA256_NAME = #"SHA-256";
@@ -123,7 +123,7 @@ overload digestFinish(context: SHA256Context) = digestFinishGeneric(context);
 
 sha256(message) = digest(message, #SHA256_NAME);
 
-
+
 // SHA-512
 
 alias SHA512_NAME = #"SHA-512";

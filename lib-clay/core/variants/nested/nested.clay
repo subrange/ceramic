@@ -1,12 +1,12 @@
 
-
+
 /// @section  SubVariants 
 
 private SubVariants(V) =
     ..filterValues(Variant?, ..VariantMembers(V));
 
 
-
+
 /// @section  VariantNestingPaths 
 
 [V,M when Variant?(V)]
@@ -43,7 +43,7 @@ default VariantNestingPaths3(Vs, M, Prefix, #i) {
 overload VariantNestingPaths3(Vs:T, M, Prefix, #i) = ;
 
 
-
+
 /// @section  nestedVariantIs? 
 
 [V, T when Variant?(V)]
@@ -53,7 +53,7 @@ forceinline nestedVariantIs?(x:V, #T) : Bool {
 }
 
 
-
+
 /// @section  nestedVariantAs 
 
 [V, T when Variant?(V)]
@@ -74,7 +74,7 @@ forceinline overload nestedVariantAs(rvalue x:V, #T) {
 }
 
 
-
+
 /// @section  nestedVariantAsPtr 
 
 [V, Target when Variant?(V)]

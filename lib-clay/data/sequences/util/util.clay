@@ -2,7 +2,7 @@
 import data.sequences.handle.*;
 
 
-
+
 /// @section  wrapSequence 
 
 define wrapSequence;
@@ -14,7 +14,7 @@ forceinline overload wrapSequence(ref x) = sequenceHandle(x);
 forceinline overload wrapSequence(ref x:A) = x;
 
 
-
+
 /// @section  packSequences, unpackSequences 
 
 forceinline packSequences(forward ..args) = [..mapValues(wrapSequence, ..args)];
@@ -23,7 +23,7 @@ forceinline packSequences(forward ..args) = [..mapValues(wrapSequence, ..args)];
 forceinline unpackSequences(x:Tuple[..T]) = ref ..unpackTupleRef(x);
 
 
-
+
 /// @section  CapturedElementsType 
 
 alias CapturedElementsType(packedSeq) =
@@ -35,7 +35,7 @@ private forceinline dummyElement(seq) = forward ..getValue(nextValue(iterator(se
 private forceinline dummyElements(..seqs) = forward ..mapValues(dummyElement, ..seqs);
 
 
-
+
 /// @section  multiIterators, multiReverseIterators 
 
 forceinline multiIterators(packedSeq) =

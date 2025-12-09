@@ -11,14 +11,14 @@ record BufferVector[T] (
 );
 
 
-
+
 /// @section  predicates 
 
 [T]
 overload ContiguousSequence?(#BufferVector[T]) = true;
 
 
-
+
 /// @section  constructors 
 
 // disable all constructors
@@ -59,7 +59,7 @@ overload BufferVector[T](src:BufferVector[T]) =
     BufferVector[T](src.begin, src.end, src.current);
 
 
-
+
 /// @section  generic vector requirements 
 
 [T]

@@ -11,7 +11,7 @@ import data.algorithms.(log2);
 import printer.(str);
 import data.sequences.*;
 
-
+
 /// @section  class, selector, and ivar data 
 
 private define objcClassMake;
@@ -36,14 +36,14 @@ private var objcConstantString[value]
     );
 
 
-
+
 /// @section  constant NSStrings 
 
 [value when StringLiteral?(value)]
 NSSTR(#value) = ObjectHandle(@objcConstantString[value]);
 
 
-
+
 /// @section  encode 
 
 define Void; // stand-in symbol for "no return value"
@@ -100,7 +100,7 @@ overload encodeIdentifier(..types: T)
 // fixme
 encode(..types) = encodeIdentifier(..types);
 
-
+
 /// @section  object parameters 
 
 define objectHandle;
@@ -117,7 +117,7 @@ ObjectParameterType?(T)
 objectParameter(forward x: T) = forward ObjectParameterType(T)(objectHandle(x));
 
 
-
+
 /// @section  reference counting methods 
 
 private release(x) {
@@ -130,7 +130,7 @@ private retain(x) {
 }
 
 
-
+
 /// @section  object references 
 
 define ObjectType?;
@@ -158,7 +158,7 @@ overload assign(ref left: O1, right: O2) {
 }
 
 
-
+
 /// @section  generic object reference 
 
 record Id (__handle__: ObjectHandle);
@@ -171,7 +171,7 @@ overload nil() = nil(Id);
 overload Id(object: T) = Id(objectHandle(object));
 
 
-
+
 /// @section  cast between raw pointer and object types 
 
 [O when ObjectType?(O)]
@@ -180,7 +180,7 @@ overload RawPointer(o: O) = RawPointer(o.__handle__);
 overload O(o: RawPointer) = O(ObjectHandle(o));
 
 
-
+
 /// @section  managed object references 
 
 record Retained[O] (__handle__: ObjectHandle);
@@ -254,14 +254,14 @@ overload BitwiseMovedType?(#Retained[O]) = true;
 overload resetUnsafe(obj: Retained[O]) { obj.__handle__ = nilHandle; }
 
 
-
+
 /// @section  raw object handles as parameters 
 
 overload objectHandle(x: ObjectHandle) : ObjectHandle = x;
 overload ObjectParameterType(#ObjectHandle) = Id;
 
 
-
+
 /// @section  class hierarchy 
 
 define SuperclassType;
@@ -275,7 +275,7 @@ overload Subclass?(#Super, #Sub)
 [Super] overload Subclass?(#Super, #Void) = false;
 
 
-
+
 /// @section  literal types for passing class attributes to class type definers 
 
 record InstanceVars[T] (value: T);
@@ -287,7 +287,7 @@ overload ClassMethods(..values) = ClassMethods[Type(Tuple(..values))](Tuple(..va
 overload InstanceMethods(..values) = InstanceMethods[Type(Tuple(..values))](Tuple(..values));
 
 
-
+
 /// @section  class properties 
 
 [T when Class?(T)]
@@ -333,7 +333,7 @@ overload ClassInstanceVar?(#T, #ivar) = ClassInstanceVar?(SuperclassType(T), iva
 overload ClassInstanceVar?(#T, #ivar) = true;
 
 
-
+
 /// @section  bindings to external classes 
 
 Class?(T) = Type?(T) and CallDefined?(SuperclassType, Static[T]);
@@ -389,7 +389,7 @@ overload objcInitIvarOffset(#T, ivarName)
     = ivar_getOffset(objcIvar[Class, ivarName]);
 
 
-
+
 /// @section  defining new classes in Clay 
 
 ClayClass?(T) = false;
@@ -651,7 +651,7 @@ overload objcInitIvar(#T, ivarName) = Ivar();
 overload objcInitIvarOffset(#T, ivarName) = PtrInt();
 
 
-
+
 /// @section  Class objects as objc params 
 
 [T when Class?(T)] classHandle(#T) = objcClass[T];
@@ -663,7 +663,7 @@ overload objcInitIvarOffset(#T, ivarName) = PtrInt();
 // XXX class container
 
 
-
+
 /// @section  generic selectors 
 //
 
@@ -690,7 +690,7 @@ overload GenericSelector(#sel) = ..selector(sel);
 overload GenericSelector(#sel) = ..varargSelector(sel);
 
 
-
+
 /// @section  typed selectors 
 
 define TypedSelector;
@@ -733,7 +733,7 @@ overload TypedSelector?(#Static[T], #sel)
     = CallDefined?(externalVarargClassMethod, Static[Static[T]], Static[sel]);
  
 
-
+
 /// @section  selector signatures by type 
 
 private define Selector;
@@ -770,7 +770,7 @@ overload SelectorReturnType(#T, #sel) = firstValue(..Selector(T, sel));
 SelectorArgumentTypes(#T, #sel) = ..restValues(..Selector(T, sel));
 
 
-
+
 /// @section  retaining and forwarding selectors 
 
 define AllocatingSelector?;
@@ -813,7 +813,7 @@ overload SelectorReturnType(#Static[T], #sel) = T;
 overload SelectorReturnType(#T, #sel) = T;
 
 
-
+
 /// @section  argument conversion 
 
 define ObjectRef?;
@@ -913,7 +913,7 @@ SelectorTypeEncoding(T, S)
     );
 
 
-
+
 /// @section  message sending 
 
 private define objc_msgSend_for;
@@ -1001,7 +1001,7 @@ msgSend(#SelfT, imp, self, #S, forward ..args: T) {
 }
 
 
-
+
 /// @section  identifier-selector conversion 
 
 private define _identifierSelectorChar;
@@ -1046,7 +1046,7 @@ ValidMethodIdentifier?(#identifier) = true;
     //);
 
 
-
+
 /// @section  method syntax 
 
 private record MethodRef[T, Captured, identifier] (self: Captured);
@@ -1092,7 +1092,7 @@ overload call(method: MethodRef[T, Captured, identifier], forward ..args: Args) 
 }
 
 
-
+
 /// @section  method delegate (cached method pointer) 
 
 record MethodDelegate[T, selector] (self: ObjectHandle, imp: IMP);
@@ -1118,7 +1118,7 @@ overload call(delegate: MethodDelegate[T, selector], forward ..args)
     );
 
 
-
+
 /// @section  instance variable access 
 
 private record IvarsRef[T] (__handle__: ObjectHandle);
@@ -1136,7 +1136,7 @@ overload fieldRef(ivars: IvarsRef[T], #ivar)
     )^;
 
 
-
+
 /// @section  superclass method invocation 
 
 private record SuperRef[T, Captured] (__self__: Captured);

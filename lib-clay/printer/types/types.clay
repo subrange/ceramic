@@ -14,7 +14,7 @@ import data.vectors.*;
 import data.sequences.(interleave);
 import simd.(unpackVec);
 
-
+
 /// @section  printTo 
 
 forceinline overload printTo(stream) {
@@ -26,7 +26,7 @@ forceinline overload printTo(stream, a, b, ..rest) {
 }
 
 
-
+
 /// @section  printTo - Bool 
 
 overload printTo(stream, x:Bool) {
@@ -37,7 +37,7 @@ overload printTo(stream, x:Bool) {
 }
 
 
-
+
 /// @section  printTo - integers, floats, pointers 
 
 [I when SignedInteger?(I)]
@@ -150,7 +150,7 @@ forceinline printFloatWithSprintf(stream, nanString, formatString, ..values) {
     printWithSprintf(stream, formatString, ..values);
 }
 
-
+
 /// @section  printTo - statics 
 
 [X]
@@ -168,7 +168,7 @@ overload printTo(stream, x:Static[X]) {
     printTo(stream, StaticName(x));
 }
 
-
+
 /// @section  printTo - enums 
 
 [E when Enum?(E)]
@@ -177,7 +177,7 @@ overload printTo(stream, x:E) {
 }
 
 
-
+
 /// @section  printTo - tuples, records, arrays, vectors 
 
 [..T]
@@ -215,7 +215,7 @@ overload printTo(stream, xs:Vector[T]) {
 }
 
 
-
+
 /// @section  printTo - variants 
 
 [T when Variant?(T)]
@@ -224,7 +224,7 @@ overload printTo(stream, x:T) {
 }
 
 
-
+
 /// @section  printTo - Char, String?, ContiguousString? 
 
 overload printTo(stream, x:Char) {
@@ -260,7 +260,7 @@ overload printTo(stream, s: UTF8[T]) {
 }
 
 
-
+
 /// @section  printReprTo 
 
 // printReprTo - Bool, Numeric?, Pointer[T], Enum
@@ -376,7 +376,7 @@ overload printReprTo(stream, x:E) {
     printTo(stream, x);
 }
 
-
+
 /// @section  printReprTo - statics 
 
 [X]
@@ -403,7 +403,7 @@ overload printReprTo(stream, #StringRef) {
     printTo(stream, "StringRef");
 }
 
-
+
 /// @section  printReprTo - tuples 
 
 [..T]
@@ -413,7 +413,7 @@ overload printReprTo(stream, x:Tuple[..T]) {
     printTo(stream, "]");
 }
 
-
+
 /// @section  printReprTo - records 
 
 [T when Record?(T) and not LambdaRecord?(T)]
@@ -428,7 +428,7 @@ overload printReprTo(stream, x:T) {
 }
 
 
-
+
 /// @section  printReprValuesTo, printReprArgumentsTo, printReprElementsTo 
 
 define printReprValuesTo;
@@ -456,7 +456,7 @@ printReprElementsTo(stream, seq) {
     );
 }
 
-
+
 /// @section  printReprTo - arrays, vectors 
 
 [T,n]
@@ -474,7 +474,7 @@ overload printReprTo(stream, a:Vector[T]) {
 }
 
 
-
+
 /// @section  printReprTo - variants 
 
 [T when Variant?(T)]
@@ -485,7 +485,7 @@ overload printReprTo(stream, x:T) {
 }
 
 
-
+
 /// @section  printReprTo - Char, String 
 
 printCharReprTo(stream, c:Char) {
@@ -549,7 +549,7 @@ overload printReprTo(stream, #S) {
 }
 
 
-
+
 /// @section  simd printing 
 
 [T,n]

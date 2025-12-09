@@ -7,7 +7,7 @@ import data.vectors.*;
 
 public import io.streams.bytevector.*;
 
-
+
 /// @section  read, write wrappers to readBytes, writeBytes
 
 [B, N when ByteLike?(B) and Integer?(N)]
@@ -21,7 +21,7 @@ overload write(stream, buf:Pointer[B], n:N) {
     }
 }
 
-
+
 /// @section  readByte, readChar, writeByte, writeChar
 
 readByte(stream) {
@@ -164,7 +164,7 @@ overload readLine(stream, buf:V) {
 
 overload readLine(stream) = readUpto(stream, '\n');
 
-
+
 /// @section  write - write one byte 
 
 [I when Integer?(I)]
@@ -185,7 +185,7 @@ overload write(stream, x:V) {
     write(stream, Pointer[Byte](begin(x)), size(x));
 }
 
-
+
 /// @section  write, flush - write to ByteVector 
 
 [V when ByteVector?(V)]
@@ -202,7 +202,7 @@ overload flush(stream:V) {
 }
 
 
-
+
 /// @section  collection protocols
 
 [I when InputStream?(I)]

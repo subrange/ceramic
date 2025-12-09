@@ -4,7 +4,7 @@ import data.sequences.handle.*;
 import data.sequences.force.*;
 
 
-
+
 /// @section  Sliced 
 
 record Sliced[A](
@@ -24,7 +24,7 @@ overload UnderlyingContainerConstructor(#Sliced[A]) =
     UnderlyingContainerConstructor(A);
 
 
-
+
 /// @section  sliced, slicedFrom, slicedUpto 
 
 define sliced;
@@ -82,7 +82,7 @@ forceinline overload slicedUpto(forward a:A, last:I) {
 }
 
 
-
+
 /// @section  sequence operations 
 
 [A]

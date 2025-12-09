@@ -42,7 +42,7 @@ deleteFile(path: CStringRef) {
 
 
 
-
+
 /// @section DirectoryIterator
 
 record DirectoryIterator (
@@ -89,7 +89,7 @@ overload nextValue(x:DirectoryIterator) {
 }
 
 
-
+
 /// @section makeDirectory, deleteDirectory
 
 makeDirectoryImpl(path: CStringRef) {
@@ -109,7 +109,7 @@ deleteDirectoryImpl(path: CStringRef) {
 
 
 
-
+
 /// @section  PATH_SEPARATOR, PATH_LIST_SEPARATOR, rootDirectory?, absolutePath? 
 
 private alias PATH_SEPARATOR = '/';
@@ -120,7 +120,7 @@ rootDirectory?(s) = (s == "/");
 absolutePath?(s) = beginsWith?(s, '/');
 
 
-
+
 /// @section  slicedPath, splitPath, pathComponents 
 
 slicedPath(path) {
@@ -156,7 +156,7 @@ pathComponents(path) {
 }
 
 
-
+
 /// @section  joinPath 
 
 define joinPath;
@@ -196,7 +196,7 @@ private trimDirectoryTail(path:String) {
 }
 
 
-
+
 /// @section  pathExists? 
 
 pathExistsImpl?(p: CStringRef) {
@@ -231,7 +231,7 @@ pathIsRegularFileImpl?(p: CStringRef) {
 }
 
 
-
+
 /// @section  systemPath, currentDirectory 
 
 // TODO: implement on windows
@@ -260,7 +260,7 @@ currentDirectory() {
 }
 
 
-
+
 /// @section  pathToExecutable 
 
 // TODO: implement on windows

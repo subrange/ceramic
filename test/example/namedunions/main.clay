@@ -1,6 +1,6 @@
 import printer.(println);
 
-
+
 //
 // sample code for named unions
 //
@@ -14,7 +14,7 @@ main() {
 }
 
 
-
+
 //
 // NamedUnion
 //

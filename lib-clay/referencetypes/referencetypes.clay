@@ -1,7 +1,7 @@
 import printer.(printTo,printReprTo,printReprArgumentsTo);
 import sharedpointers.*;
 
-
+
 /// @section  reference type properties 
 
 
@@ -13,7 +13,7 @@ define ReferenceTypeFieldNames;
 define ReferenceTypeFieldTypes;
 
 
-
+
 /// @section  reference type type-definers 
 
 [..F when (countValues(..F) > 0)]
@@ -41,7 +41,7 @@ referenceTypeWithPredicate(predicate, ..fields:F) =
 referenceType(..fields:F) = referenceTypeWithProperties([], ..fields);
 
 
-
+
 /// @section  referencePtr 
 
 [T when ReferenceType?(T)]
@@ -49,7 +49,7 @@ forceinline referencePtr(x:T) =
     ref ..recordFieldRef(x, #0);
 
 
-
+
 /// @section  fieldRef, staticIndex 
 
 [T when ReferenceType?(T)]
@@ -85,14 +85,14 @@ overload fieldRef(x:T, #Field) =
     ref staticIndex(x, #fieldNameIndex(T, Field));
 
 
-
+
 /// @section  referenceTypeFields 
 
 [T when ReferenceType?(T)]
 referenceTypeFields(x:T) = ref ..tupleElements(referencePtr(x)^);
 
 
-
+
 /// @section  default constructor 
 
 [T when ReferenceType?(T)]
@@ -101,7 +101,7 @@ overload T() --> returned:T {
 }
 
 
-
+
 /// @section  field order constructor 
 
 [T, ..A when ReferenceType?(T) and (Tuple[..A] == Tuple[..ReferenceTypeFieldTypes(T)])]
@@ -110,7 +110,7 @@ alias overload T(..args:A) --> returned:T {
 }
 
 
-
+
 /// @section  allocateRef 
 
 [T when ReferenceType?(T)]
@@ -126,7 +126,7 @@ allocateUninitializedRefUnsafe(#T) --> returned:T {
 }
 
 
-
+
 /// @section  copy constructor 
 
 [T when ReferenceType?(T)]
@@ -135,7 +135,7 @@ overload T(src:T) --> returned:T {
 }
 
 
-
+
 /// @section  moveUnsafe, resetUnsafe 
 
 [T when ReferenceType?(T)]
@@ -147,7 +147,7 @@ overload resetUnsafe(x:T) {
 }
 
 
-
+
 /// @section  destroy, assign 
 
 [T when ReferenceType?(T)]
@@ -161,7 +161,7 @@ overload assign(ref dest:T, ref src:T) {
 }
 
 
-
+
 /// @section  equals?, lesser? 
 
 [T when ReferenceType?(T)]
@@ -175,14 +175,14 @@ overload lesser?(a:T, b:T) {
 }
 
 
-
+
 /// @section  null? 
 
 [T when ReferenceType?(T)]
 overload null?(x:T) = null?(referencePtr(x));
 
 
-
+
 /// @section  is? 
 
 [T when ReferenceType?(T)]
@@ -190,7 +190,7 @@ overload is?(x:T, y:T) = referencePtr(x) == referencePtr(y);
 
 
 
-
+
 /// @section  printTo - reference types 
 
 [T when ReferenceType?(T)]
@@ -202,7 +202,7 @@ overload printTo(stream, x:T) {
     printTo(stream, T, "(", ..weaveValues(", ", ..referenceTypeFields(x)), ")");
 }
 
-
+
 /// @section  printReprTo - reference types 
 
 [T when ReferenceType?(T)]

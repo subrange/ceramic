@@ -7,7 +7,7 @@ import data.sequences.lazy.*;
 
 alias log2 = introsort.log2;
 
-
+
 /// @section  reduce 
 
 private getNext(iter) {
@@ -36,7 +36,7 @@ overload reduce(f:F, initial:X, a:A) {
 }
 
 
-
+
 /// @section  reduceBy 
 [KeyF, F, A, X when Sequence?(A) and CallDefined?(call, F, X, SequenceElementType(A))]
 reduceBy(keyF: KeyF, f: F, initial: X, a:A) {
@@ -56,7 +56,7 @@ reduceBy(keyF: KeyF, f: F, initial: X, a:A) {
 }
 
 
-
+
 /// @section  sum, product, count 
 
 [A when Sequence?(A)]
@@ -77,7 +77,7 @@ count(pred, a:A) {
 }
 
 
-
+
 /// @section  select 
 
 private define select;
@@ -103,7 +103,7 @@ overload select(a:A, f) {
 }
 
 
-
+
 /// @section  selectMin, selectMax for sequences 
 
 [A when Sequence?(A)]
@@ -113,7 +113,7 @@ selectMin(a:A) = forward select(a, lesser?);
 selectMax(a:A) = forward select(a, greater?);
 
 
-
+
 /// @section  findIf, reverseFindIf 
 
 define findIf;
@@ -150,7 +150,7 @@ overload reverseFindIf(_first, _last, pred) {
 any?(seq, pred) = findIf(seq, pred) != end(seq);
 all?(seq, pred) = findIf(seq, x -> not pred(x)) != end(seq);
 
-
+
 /// @section  find 
 
 define find;
@@ -196,7 +196,7 @@ overload find(begin_:C, end_:C, b:B) {
 }
 
 
-
+
 /// @section  reverseFind 
 
 define reverseFind;
@@ -220,12 +220,12 @@ overload reverseFind(begin:C, end:C, x:T) {
 }
 
 
-
+
 /// @section  in? 
 in?(seq, elem) = find(seq, elem) != end(seq);
 
 
-
+
 /// @section  beginsWith?, endsWith? 
 
 define beginsWith?;
@@ -250,7 +250,7 @@ overload endsWith?(seq:A, x:T) =
     (size(seq) > 0) and (seq[size(seq)-1] == x);
 
 
-
+
 /// @section  reverseInPlace 
 
 [A when RandomAccessSequence?(A) and LValueSequence?(A)]
@@ -261,7 +261,7 @@ reverseInPlace(a:A) {
 }
 
 
-
+
 /// @section  split 
 
 [A when CoordinateSequence?(A)]
@@ -293,7 +293,7 @@ overload advancePast(pos:C, x:T) {
 }
 
 
-
+
 /// @section  join 
 
 define concat(seq);
@@ -331,7 +331,7 @@ overload join(sep:S, a:A) {
 overload join(sep:S, a:A) = ..join(array(sep), a);
 
 
-
+
 /// @section  binarySearch, binarySearchLowerBound, binarySearchUpperBound 
 
 define binarySearch;
@@ -383,7 +383,7 @@ overload binarySearchUpperBound(begin_, end_, x) {
 }
 
 
-
+
 /// @section  sort - use quicksort with median-of-3 partitioning 
 
 [C when Comparator?(C)]

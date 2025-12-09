@@ -152,7 +152,7 @@ void evalCollectLabels(llvm::ArrayRef<StatementPtr> statements,
 EnvPtr evalBinding(BindingPtr x, EnvPtr env);
 
 
-
+
 //
 // staticToType
 //
@@ -174,7 +174,7 @@ TypePtr staticToType(MultiStaticPtr x, size_t index)
 }
 
 
-
+
 //
 // evaluator wrappers
 //
@@ -389,7 +389,7 @@ ValueHolderPtr boolToValueHolder(bool x)
 }
 
 
-
+
 //
 // makeTupleValue
 //
@@ -430,7 +430,7 @@ ObjectPtr makeTupleValue(llvm::ArrayRef<ObjectPtr> elements)
     return evaluateOneStatic(tupleExpr, new Env());
 }
 
-
+
 //
 // evalueToStatic
 //
@@ -450,7 +450,7 @@ ObjectPtr evalueToStatic(EValuePtr ev)
 }
 
 
-
+
 //
 // evaluator
 //
@@ -458,7 +458,7 @@ ObjectPtr evalueToStatic(EValuePtr ev)
 static vector<EValuePtr> stackEValues;
 
 
-
+
 //
 // utility procs
 //
@@ -488,7 +488,7 @@ static EValuePtr derefValueForPValue(EValuePtr ev, PVData const &pv)
 }
 
 
-
+
 //
 // evaluate value ops
 //
@@ -583,7 +583,7 @@ bool evalToBoolFlag(EValuePtr a, bool acceptStatics)
 }
 
 
-
+
 //
 // evaluator temps
 //
@@ -638,7 +638,7 @@ EValuePtr evalAllocValueForPValue(PVData const &pv)
         return evalAllocValue(pointerType(pv.type));
 }
 
-
+
 //
 // evalMultiArgsAsRef, evalArgExprAsRef
 //
@@ -675,7 +675,7 @@ MultiEValuePtr evalArgExprAsRef(ExprPtr x, EnvPtr env)
 }
 
 
-
+
 //
 // evalForwardOneAsRef, evalForwardMultiAsRef, evalForwardExprAsRef
 //
@@ -729,7 +729,7 @@ MultiEValuePtr evalForwardExprAsRef(ExprPtr expr, EnvPtr env)
 }
 
 
-
+
 //
 // evalOneAsRef, evalMultiAsRef, evalExprAsRef
 //
@@ -784,7 +784,7 @@ MultiEValuePtr evalExprAsRef(ExprPtr expr, EnvPtr env)
 }
 
 
-
+
 //
 // evalOneInto, evalMultiInto, evalExprInto
 //
@@ -872,7 +872,7 @@ void evalExprInto(ExprPtr expr, EnvPtr env, MultiEValuePtr out)
 }
 
 
-
+
 //
 // evalMulti
 //
@@ -923,7 +923,7 @@ void evalMulti(ExprListPtr exprs, EnvPtr env, MultiEValuePtr out, size_t wantCou
 }
 
 
-
+
 //
 // evalOne
 //
@@ -934,7 +934,7 @@ void evalOne(ExprPtr expr, EnvPtr env, EValuePtr out)
 }
 
 
-
+
 //
 // evalExpr
 //
@@ -1169,7 +1169,7 @@ void evalExpr(ExprPtr expr, EnvPtr env, MultiEValuePtr out)
 }
 
 
-
+
 //
 // evalStaticObject
 //
@@ -1373,7 +1373,7 @@ void evalStaticObject(ObjectPtr x, MultiEValuePtr out)
 }
 
 
-
+
 //
 // evalValueHolder
 //
@@ -1405,7 +1405,7 @@ void evalValueHolder(ValueHolderPtr x, MultiEValuePtr out)
 }
 
 
-
+
 //
 // evalIndexingExpr
 //
@@ -1460,7 +1460,7 @@ void evalIndexingExpr(ExprPtr indexable,
 }
 
 
-
+
 //
 // evalAliasIndexing
 //
@@ -1493,7 +1493,7 @@ void evalAliasIndexing(GlobalAliasPtr x,
 }
 
 
-
+
 //
 // evalCallExpr
 //
@@ -1604,7 +1604,7 @@ void evalCallExpr(ExprPtr callable,
 }
 
 
-
+
 //
 // evalDispatch
 //
@@ -1688,7 +1688,7 @@ void evalDispatch(ObjectPtr obj,
 }
 
 
-
+
 //
 // evalCallValue
 //
@@ -1777,7 +1777,7 @@ void evalCallValue(EValuePtr callable,
 }
 
 
-
+
 //
 // evalCallPointer
 //
@@ -1790,7 +1790,7 @@ void evalCallPointer(EValuePtr /*x*/,
 }
 
 
-
+
 //
 // evalCallCode
 //
@@ -1884,7 +1884,7 @@ void evalCallCode(InvokeEntry* entry,
 }
 
 
-
+
 //
 // evalCallCompiledCode
 //
@@ -1922,7 +1922,7 @@ void evalCallCompiledCode(InvokeEntry* entry,
 }
 
 
-
+
 //
 // evalCallByName
 //
@@ -2014,7 +2014,7 @@ void evalCallByName(InvokeEntry* entry,
 }
 
 
-
+
 //
 // evalStatement
 //
@@ -2377,7 +2377,7 @@ whileContinue:
 }
 
 
-
+
 //
 // evalCollectLabels
 //
@@ -2406,7 +2406,7 @@ void evalCollectLabels(llvm::ArrayRef<StatementPtr> statements,
 }
 
 
-
+
 //
 // evalBinding
 //
@@ -2562,4 +2562,4 @@ EnvPtr evalBinding(BindingPtr x, EnvPtr env)
 }
 
 
-}
+}

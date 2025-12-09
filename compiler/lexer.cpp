@@ -86,7 +86,7 @@ static bool str(const char *s) {
 }
 
 
-
+
 //
 // keywords and identifiers
 //
@@ -161,7 +161,7 @@ static bool keywordIdentifier(Token &x) {
 }
 
 
-
+
 //
 // symbols
 //
@@ -237,7 +237,7 @@ static bool opIdentifier(Token &x) {
 }
 
 
-
+
 //
 // hex and decimal digits
 //
@@ -269,7 +269,7 @@ static bool decimalDigit(int &x) {
 }
 
 
-
+
 //
 // characters and strings
 //
@@ -374,7 +374,7 @@ static bool stringToken(Token &x) {
 }
 
 
-
+
 //
 // integer tokens
 //
@@ -454,7 +454,7 @@ success :
 }
 
 
-
+
 //
 // float tokens
 //
@@ -528,7 +528,7 @@ static bool floatToken(Token &x) {
 }
 
 
-
+
 //
 // space
 //
@@ -553,7 +553,7 @@ static bool space(Token &x) {
 }
 
 
-
+
 //
 // comments
 //
@@ -589,7 +589,7 @@ static bool blockComment(Token &x) {
     return true;
 }
 
-
+
 //
 // llvmToken
 //
@@ -702,7 +702,7 @@ static bool llvmStringChar() {
     return c != '"';
 }
 
-
+
 //
 // static index
 //
@@ -728,7 +728,7 @@ static bool staticIndex(Token &x) {
     }
 }
 
-
+
 //
 // nextToken
 //

@@ -11,13 +11,13 @@ import data.vectors.*;
 public import cocoa.util.platform.*;
 
 
-
+
 /// @section  object identity 
 [T1, T2 when ObjectRef?(T1) and ObjectRef?(T2)]
 overload is?(x: T1, y: T2) = objectHandle(x) == objectHandle(y);
 
 
-
+
 /// @section  NSNumber overloads 
 overload NSNumber(x: Int8)  = NSNumber.numberWithChar(x);
 overload NSNumber(x: Int16) = NSNumber.numberWithShort(x);
@@ -44,7 +44,7 @@ overload NSNumber(x: Bool) = NSNumber.numberWithBool(x);
 [O when ObjectRef?(O)] overload Bool(o: O) = o.boolValue();
 
 
-
+
 /// @section  NSString overloads 
 [ident when StringLiteral?(ident)]
 overload NSString(#ident) = NSString(NSSTR(ident));
@@ -62,7 +62,7 @@ overload String(o: O) = String(CStringRef(o.UTF8String()));
 overload cstring(o: O) = o.UTF8String();
 
 
-
+
 /// @section  NSValue overloads 
 define makeNSValue;
 [T]
@@ -92,7 +92,7 @@ overload fromNSValueUnsafe(#T, o: O) --> returned: T {
 [T, O when ObjectRef?(O)]
 overload fromNSValueUnsafe(#Pointer[T], o: O) = Pointer[T](o.pointerValue());
 
-
+
 /// @section  primitive-as-object boxing 
 
 [N when Numeric?(N) or N == Bool]
@@ -116,7 +116,7 @@ overload ObjectParameterType(#Static[i]) = NSString;
 overload objectHandle(#i) = NSSTR(i);
 
 
-
+
 /// @section  object equality and comparison 
 
 [O1, O2 when ObjectRef?(O1) and ObjectRef?(O2)]
@@ -138,14 +138,14 @@ overload lesser?(o: O, v: T) = o.compare(objectHandle(v)) < 0;
 overload lesser?(v: T, o: O) = o.compare(objectHandle(v)) > 0;
 
 
-
+
 /// @section  object hashing 
 
 [O when ObjectRef?(O)]
 overload hash(o: O) = o.hash();
 
 
-
+
 /// @section  object enumeration 
 
 private alias FAST_ENUMERATION_BUFFER_SIZE = 16;
@@ -189,7 +189,7 @@ overload nextValue(i: NSFastEnumerationIterator) --> returned: Maybe[Id] {
 overload size(o: O) = SizeT(o.count());
 
 
-
+
 /// @section  object indexing as array, dictionary 
 
 [OD, OK when ObjectRef?(OD) and ObjectParameterType?(OK)]
@@ -199,7 +199,7 @@ overload index(o: OD, k: OK) = o.objectForKey(objectHandle(k));
 overload index(o: O, n: I) = o.objectAtIndex(NSUInteger(n));
 
 
-
+
 /// @section  array and dictionary constructors 
 [T, ..E when Class?(T) and allValues?(ObjectParameterType?, ..E)]
 makeArrayOfClass(#T, forward ..elements: E)
@@ -236,7 +236,7 @@ makeNSMutableDictionary(forward ..kvs: E)
     = makeDictionaryOfClass(NSMutableDictionary, ..kvs);
 
 
-
+
 /// @section  push, insert, remove operations on objects as arrays 
 
 [O, OV when ObjectRef?(O) and ObjectParameterType?(OV)]
@@ -251,7 +251,7 @@ overload insert(o: O, n: I, v: OV) {
 overload remove(o: O, n: I) { o.removeObjectAtIndex(NSUInteger(n)); }
 
 
-
+
 /// @section  withAutoreleasePool 
 
 private record Drained (pool: NSAutoreleasePool);
@@ -263,7 +263,7 @@ withAutoreleasePool(fn) {
 }
 
 
-
+
 /// @section  standard implementations of lifecycle methods (init*, copyWithZone:, dealloc)  
 
 [O, superSelector, F, ..A when
@@ -342,7 +342,7 @@ deallocObject(self: O) {
 }
 
 
-
+
 /// @section  templates to define lifecycle methods 
 
 define AutoreleasedClassMethod;
@@ -489,7 +489,7 @@ overload PropertyInstanceMethods(#ivarName)
     = ..PropertyInstanceMethods(ivarName, ivarName, defaultWriterSelector(ivarName));
 
 
-
+
 /// @section  printing 
 
 [O when ObjectRef?(O)]
@@ -501,7 +501,7 @@ overload printTo(stream, o: O) {
 }
 
 
-
+
 /// @section  IBOutlets/IBActions 
 
 private toIBOutlet(ivar) = [ivar.0, IBOutlet(ivar.1)];
@@ -513,7 +513,7 @@ IBOutlets(..ivars) = ..mapValues(toIBOutlet, ..ivars);
 IBActions(..methods) = ..mapValues(toIBAction, ..methods);
 
 
-
+
 /// @section  regularClass 
 
 private regularClassInstanceMethods(..fields)
@@ -544,7 +544,7 @@ regularClass(..fields) = newClass(NSObject,
 );
 
 
-
+
 /// @section  indexSetIndices 
 
 [O when ObjectRef?(O)]

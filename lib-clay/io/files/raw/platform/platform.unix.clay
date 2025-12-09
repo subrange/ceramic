@@ -4,7 +4,7 @@ import io.files.api.*;
 import io.streams.*;
 import data.strings.*;
 
-
+
 /// @section  RawFile 
 
 record RawFile (
@@ -16,7 +16,7 @@ record RawFile (
 overload RegularRecord?(#RawFile) = false;
 
 
-
+
 /// @section  stdinRawFile, stdoutRawFile, stderrRawFile 
 
 stdinRawFile()  = RawFile(0, false);
@@ -24,7 +24,7 @@ stdoutRawFile() = RawFile(1, false);
 stderrRawFile() = RawFile(2, false);
 
 
-
+
 /// @section  constructors, destroy 
 
 private openFlags(mode) {
@@ -76,13 +76,13 @@ overload resetUnsafe(x:RawFile) {
 }
 
 
-
+
 /// @section  fileHandle 
 
 overload fileHandle(f:RawFile) = f.handle;
 
 
-
+
 /// @section  read, write, flush 
 
 overload readBytes(f:RawFile, buffer:Pointer[Byte], n:SizeT) : SizeT {
@@ -103,7 +103,7 @@ overload flush(f:RawFile) {
 }
 
 
-
+
 /// @section  fileSize, seek 
 
 overload fileSize(f:RawFile) {
@@ -133,7 +133,7 @@ overload seek(f:RawFile, offset, whence) {
 }
 
 
-
+
 /// @section  terminal? 
 
 overload terminal?(f:RawFile) {

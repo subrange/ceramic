@@ -1,7 +1,7 @@
 import data.sequences.handle.*;
 import data.sequences.*;
 
-
+
 /// @section  Deque coordinates 
 
 record DequeCoordinate[T] (
@@ -96,7 +96,7 @@ record DequeCoordinate[T] (
 [T] forceinline overload hasValue?(i: DequeCoordinate[T]) = not null?(i.current);
 [T] forceinline overload getValue(i: DequeCoordinate[T]) = ref i.current^;
 
-
+
 /// @section  Deque object interface 
 record Deque[T] (
     map: Pointer[Pointer[T]],
@@ -426,7 +426,7 @@ overload remove(deque: Deque[T], i: DequeCoordinate[T]) {
 
 // XXX deque comparison
 
-
+
 /// @section  Deque implementation details 
 
 private alias DEQUE_TARGET_BUFFER_SIZE = SizeT(512);

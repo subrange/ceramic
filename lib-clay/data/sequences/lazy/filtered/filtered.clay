@@ -2,7 +2,7 @@ import data.sequences.force.*;
 import data.sequences.util.*;
 import data.sequences.lazy.zipped.*;
 
-
+
 /// @section  filtered 
 
 define filtered(predicate, ..seqs);
@@ -26,7 +26,7 @@ overload UnderlyingContainerConstructor(#Filtered[F,A]) =
     UnderlyingContainerConstructor(A);
 
 
-
+
 /// @section  iterator, reverseIterator 
 
 [F, A]
@@ -37,7 +37,7 @@ forceinline overload iterator(a:Filtered[F, A])
 forceinline overload reverseIterator(a:Filtered[F, A])
     = FilteredIterator(a.predicate, reverseIterator(a.seq));
 
-
+
 /// @section  FilteredIterator 
 
 private record FilteredIterator[F, ITER] (

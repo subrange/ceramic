@@ -15,7 +15,7 @@ import data.strings.(String);
 
 import printer.exceptions as unused;
 
-
+
 /// @section  print, println, printlnTo 
 
 forceinline print(..x) {
@@ -30,7 +30,7 @@ forceinline printlnTo(stream, ..x) {
     printTo(stream, ..x, '\n');
 }
 
-
+
 /// @section  str, strln 
 
 overload str(forward ..x) {
@@ -39,7 +39,7 @@ overload str(forward ..x) {
     return move(s);
 }
 
-
+
 /// @section  error, errorNoThrow, assert with pretty-printed message 
 
 errorNoThrow(..e) {

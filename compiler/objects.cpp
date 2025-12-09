@@ -4,7 +4,7 @@
 
 namespace clay {
 
-
+
 //
 // ValueHolder constructor and destructor
 //
@@ -22,7 +22,7 @@ ValueHolder::~ValueHolder()
 }
 
 
-
+
 //
 // objectEquals
 //
@@ -65,7 +65,7 @@ bool _objectValueEquals(ObjectPtr a, ObjectPtr b)
 }
 
 
-
+
 //
 // objectHash
 //
@@ -115,7 +115,7 @@ unsigned objectHash(ObjectPtr a)
 }
 
 
-
+
 //
 // ObjectTable
 //

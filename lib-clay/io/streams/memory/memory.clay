@@ -3,7 +3,7 @@ import io.errors.(GenericIOError);
 public import io.streams.*;
 
 
-
+
 /// @section  memory streams: read or write to raw memory
 /// MemoryOutputStream throws on attempt to write beyond it capacity
 

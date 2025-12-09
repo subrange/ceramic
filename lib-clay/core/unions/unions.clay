@@ -1,5 +1,5 @@
 
-
+
 /// @section  Union? 
 
 [T]
@@ -8,13 +8,13 @@ define Union?(#T) : Bool;
 overload Union?(x) : Bool = false;
 [..T] overload Union?(#Union[..T]) : Bool = true;
 
-
+
 /// @section  UnionMembers 
 
 [..T] UnionMembers(#Union[..T]) = ..T;
 
 
-
+
 /// @section  constructors, resetUnsafe, destroy 
 
 [..T]
@@ -28,7 +28,7 @@ forceinline overload Union[..T](x:U) --> returned:Union[..T] {
 }
 
 
-
+
 /// @section  staticIndex 
 
 [..T, i]

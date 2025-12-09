@@ -62,7 +62,7 @@ forceinline overload reduceToScalar(forward i, forward a:T,forward ..args) = for
 forceinline overload reduceToScalar(forward i) = ;
 
 
-
+
 /// @section  concatenation 
 
 [A, ..B when Sequence?(A) and allValues?(Sequence?,..B)

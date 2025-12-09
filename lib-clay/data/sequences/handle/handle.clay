@@ -1,6 +1,6 @@
 import data.sequences.force.*;
 
-
+
 /// @section  SequenceHandle 
 
 record SequenceHandle[A] (
@@ -18,14 +18,14 @@ overload UnderlyingContainerConstructor(#SequenceHandle[A]) =
     UnderlyingContainerConstructor(A);
 
 
-
+
 /// @section  sequenceHandle 
 
 [A when Sequence?(A)]
 forceinline sequenceHandle(seq:A) = SequenceHandle(@seq);
 
 
-
+
 /// @section  sequence operations 
 
 [A, ..ARGS when CallDefined?(iterator, A, ..ARGS)]

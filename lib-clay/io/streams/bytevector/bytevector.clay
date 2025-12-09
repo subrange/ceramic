@@ -2,7 +2,7 @@ import data.vectors.*;
 
 public import io.streams.protocol.*;
 
-
+
 /// @section  write, flush - write to ByteVector 
 
 [V when ByteVector?(V)]

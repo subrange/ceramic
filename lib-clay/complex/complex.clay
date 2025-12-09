@@ -2,7 +2,7 @@
 import numbers.floats.*;
 import math.native.abscomplex.(abs);
 
-
+
 /// @section  (==), (!=), less?, lessEquals?, (>), (>=) 
 
 [T,C when Numeric?(T) and Complex?(C)]

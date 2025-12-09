@@ -1,4 +1,4 @@
-
+
 /// @section  copy*Memory*, move*Memory*, *assign*Memory* for POD types 
 
 [P]
@@ -53,7 +53,7 @@ forceinline overload moveAssignNonoverlappingMemory(destBegin:Pointer[P], srcBeg
     copyNonovPODs(destBegin, srcBegin, srcEnd);
 }
 
-
+
 /// @section  resetMemoryUnsafe, destroyMemory for POD 
 
 [P when ResetDoesNothingType?(P)]
@@ -62,7 +62,7 @@ forceinline overload resetMemoryUnsafe(begin:Pointer[P], end:Pointer[P]) : { }
 [P when DestroyDoesNothingType?(P)]
 forceinline overload destroyMemory(begin:Pointer[P], end:Pointer[P]) : { }
 
-
+
 /// @section  value semantics for POD 
 
 define copyPOD;

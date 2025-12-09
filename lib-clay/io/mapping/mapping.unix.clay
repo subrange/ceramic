@@ -3,7 +3,7 @@ import io.errors.*;
 import io.files.*;
 import sharedpointers.*;
 
-
+
 /// @section  FileMapping 
 
 private record InnerFileMapping (
@@ -18,7 +18,7 @@ record FileMapping (
 );
 
 
-
+
 /// @section  constructors, destroy 
 
 enum MappingMode (
@@ -78,14 +78,14 @@ overload destroy(x:InnerFileMapping) {
 }
 
 
-
+
 /// @section  mappingAddress, mappingLength 
 
 mappingAddress(fm:FileMapping) = fm.inner^.address;
 mappingLength(fm:FileMapping) = fm.inner^.length;
 
 
-
+
 /// @section  flushMapping 
 
 flushMapping(fm:FileMapping) {

@@ -77,7 +77,7 @@ static void staticToTypeTuple(MultiStaticPtr x, unsigned index,
 static int staticToInt(MultiStaticPtr x, unsigned index);
 
 
-
+
 //
 // utility procs
 //
@@ -334,7 +334,7 @@ MultiPValuePtr safeAnalyzeGVarInstance(GVarInstancePtr x)
 }
 
 
-
+
 //
 // analyzeMulti
 //
@@ -384,7 +384,7 @@ static MultiPValuePtr analyzeMulti2(ExprListPtr exprs, EnvPtr env, size_t wantCo
 }
 
 
-
+
 //
 // analyzeOne
 //
@@ -400,7 +400,7 @@ PVData analyzeOne(ExprPtr expr, EnvPtr env)
 }
 
 
-
+
 //
 // analyzeMultiArgs, analyzeOneArg, analyzeArgExpr
 //
@@ -490,7 +490,7 @@ MultiPValuePtr analyzeArgExpr(ExprPtr x,
 }
 
 
-
+
 //
 // analyzeExpr
 //
@@ -736,7 +736,7 @@ static MultiPValuePtr analyzeExpr2(ExprPtr expr, EnvPtr env)
 }
 
 
-
+
 //
 // analyzeStaticObject
 //
@@ -890,7 +890,7 @@ MultiPValuePtr analyzeStaticObject(ObjectPtr x)
 }
 
 
-
+
 //
 // lookupGVarInstance, defaultGVarInstance
 // analyzeGVarIndexing, analyzeGVarInstance
@@ -965,7 +965,7 @@ MultiPValuePtr analyzeGVarInstance(GVarInstancePtr x)
 }
 
 
-
+
 //
 // analyzeExternalVariable
 //
@@ -978,7 +978,7 @@ PVData analyzeExternalVariable(ExternalVariablePtr x)
 }
 
 
-
+
 //
 // analyzeExternalProcedure
 //
@@ -1005,7 +1005,7 @@ void analyzeExternalProcedure(ExternalProcedurePtr x)
 }
 
 
-
+
 //
 // verifyAttributes
 //
@@ -1183,7 +1183,7 @@ void verifyAttributes(ModulePtr mod)
     }
 }
 
-
+
 //
 // analyzeIndexingExpr
 //
@@ -1248,7 +1248,7 @@ MultiPValuePtr analyzeIndexingExpr(ExprPtr indexable,
 }
 
 
-
+
 //
 // unwrapByRef
 //
@@ -1274,7 +1274,7 @@ bool unwrapByRef(TypePtr &t)
 }
 
 
-
+
 //
 // constructType
 //
@@ -1386,7 +1386,7 @@ TypePtr constructType(ObjectPtr constructor, MultiStaticPtr args)
 }
 
 
-
+
 //
 // analyzeTypeConstructor
 //
@@ -1398,7 +1398,7 @@ PVData analyzeTypeConstructor(ObjectPtr obj, MultiStaticPtr args)
 }
 
 
-
+
 //
 // analyzeAliasIndexing
 //
@@ -1432,7 +1432,7 @@ MultiPValuePtr analyzeAliasIndexing(GlobalAliasPtr x,
 }
 
 
-
+
 //
 // analyzeReturn
 //
@@ -1844,7 +1844,7 @@ static MultiPValuePtr analyzeIntrinsic(IntrinsicSymbol *intrin, MultiPValue *arg
         }
     }
 }
-
+
 //
 // analyzeCallExpr
 //
@@ -1921,7 +1921,7 @@ MultiPValuePtr analyzeCallExpr(ExprPtr callable,
 }
 
 
-
+
 //
 // analyzeDispatch
 //
@@ -2024,7 +2024,7 @@ MultiPValuePtr analyzeDispatch(ObjectPtr obj,
 }
 
 
-
+
 //
 // analyzeCallValue
 //
@@ -2090,7 +2090,7 @@ MultiPValuePtr analyzeCallValue(PVData const &callable,
 }
 
 
-
+
 //
 // analyzeCallPointer
 //
@@ -2113,7 +2113,7 @@ MultiPValuePtr analyzeCallPointer(PVData const &x,
 }
 
 
-
+
 //
 // analyzeIsDefined, analyzeCallable
 //
@@ -2161,7 +2161,7 @@ InvokeEntry* analyzeCallable(ObjectPtr x,
 }
 
 
-
+
 //
 // analyzeCallByName
 //
@@ -2227,7 +2227,7 @@ MultiPValuePtr analyzeCallByName(InvokeEntry* entry,
 }
 
 
-
+
 //
 // analyzeCodeBody
 //
@@ -2356,7 +2356,7 @@ void analyzeCodeBody(InvokeEntry* entry)
 }
 
 
-
+
 //
 // analyzeStatement
 //
@@ -2759,7 +2759,7 @@ bool returnKindToByRef(ReturnKind returnKind, PVData const &pv)
 }
 
 
-
+
 BoolKind typeBoolKind(TypePtr type) {
     if (type == boolType) {
         return BOOL_EXPR;

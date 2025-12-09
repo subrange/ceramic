@@ -11,7 +11,7 @@ namespace clay {
 bool shouldPrintFullMatchErrors;
 set<pair<string,string> > logMatchSymbols;
 
-
+
 //
 // invoke stack - a compilation call stack
 //
@@ -66,7 +66,7 @@ CompileContextPusher::CompileContextPusher(ObjectPtr obj, llvm::ArrayRef<PVData>
 
 
 
-
+
 //
 // source location of the current item being processed
 //
@@ -93,7 +93,7 @@ Location topLocation() {
 }
 
 
-
+
 //
 // DebugPrinter
 //
@@ -122,7 +122,7 @@ DebugPrinter::~DebugPrinter()
 }
 
 
-
+
 //
 // report error
 //

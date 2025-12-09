@@ -18,7 +18,7 @@ private record Node[K,V] (
 );
 
 
-
+
 /// @section  default constructor 
 
 [K,V]
@@ -35,7 +35,7 @@ overload HashMap[K,V]() --> returned:HashMap[K,V] {
 }
 
 
-
+
 /// @section  clear 
 
 [K,V]
@@ -46,14 +46,14 @@ forceinline overload clear(a:HashMap[K,V]) {
 }
 
 
-
+
 /// @section  size 
 
 [K,V]
 overload size(a:HashMap[K,V]) = a.size;
 
 
-
+
 /// @section  lookup 
 
 [K,V]
@@ -63,7 +63,7 @@ overload lookup(a:HashMap[K,V], key:K) {
 }
 
 
-
+
 /// @section  put 
 
 [K,V]
@@ -83,7 +83,7 @@ overload put(a:HashMap[K,V], key:K, forward value:V) {
 }
 
 
-
+
 /// @section  index 
 
 [K,V]
@@ -103,7 +103,7 @@ overload index(a:HashMap[K,V], key:K) {
 }
 
 
-
+
 /// @section  remove 
 
 [K,V]
@@ -128,7 +128,7 @@ overload remove(a:HashMap[K,V], key:K) {
 }
 
 
-
+
 /// @section  items 
 
 [K,V]
@@ -169,7 +169,7 @@ overload hasValue?(x:HashMapItem[K,V]) = not null?(x.node);
 [K,V]
 overload getValue(x:HashMapItem[K,V]) = ref x.node^.key, x.node^.value;
 
-
+
 /// @section  assignment 
 
 [K,V]
@@ -180,7 +180,7 @@ overload assign(ref to: HashMap[K,V], ref from: HashMap[K,V]) {
 }
 
 
-
+
 /// @section  helper procs 
 
 [K,V]
@@ -215,7 +215,7 @@ private grow(a:HashMap[K,V]) {
 }
 
 
-
+
 /// @section  printTo - HashMap 
 
 [K,V]
@@ -223,7 +223,7 @@ overload printTo(stream, x:HashMap[K,V]) {
     printReprTo(stream, x);
 }
 
-
+
 /// @section  printReprTo - HashMap 
 
 [K, V]

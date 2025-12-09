@@ -1,6 +1,6 @@
 
 
-
+
 /// @section  eachValue, mapValues, foldValues, weaveValues, reverseValues
 
 forceinline eachValue(fn, ..xs) {
@@ -54,7 +54,7 @@ define reverseValues private overload;
 forceinline overload reverseValues() = ;
 forceinline overload reverseValues(forward x, forward ..xs) = forward ..reverseValues(..xs), x;
 
-
+
 /// @section  countOccurrences, firstValue 
 
 define countOccurrences private overload;
@@ -73,7 +73,7 @@ forceinline restValues(a, forward ..rest) = forward ..rest;
 forceinline lastValue(..a, forward last) = forward last;
 
 
-
+
 /// @section  replicateValue, allValues?, anyValues?, equalValues?, inValues? 
 
 [n when n >= 0]
@@ -105,7 +105,7 @@ forceinline equalValues?(a, ..rest) = allValues?(x => a == x, ..rest);
 inValues?(a, ..rest) = anyValues?(x => a == x, ..rest);
 
 
-
+
 /// @section  capture/forward values 
 
 // captureValue, forwardValue, capturedRef
@@ -153,7 +153,7 @@ forceinline capturedRefs(x:Tuple[..T]) =
     forward ..mapValues(capturedRef, ..unpackTupleRef(x));
 
 
-
+
 /// @section  expand values from sequence or iterator  
 [S, n when Sequence?(S)]
 sequenceValues(seq: S, #n) = forward ..iteratorValues(iterator(seq), #n);
@@ -170,7 +170,7 @@ overload iteratorValues(iter, #n) {
 }
 
 
-
+
 /// @section  iterate over two sets of values in tandem 
 define eachValue2 private overload;
 
@@ -189,7 +189,7 @@ overload mapValues2(fn, #n, forward x, forward ..xs)
 overload mapValues2(fn, #0, forward ..xs) = ;
 
 
-
+
 /// @section  treat multiple #tuple values as key-values pairs 
 
 define assocValue private overload;
@@ -220,7 +220,7 @@ overload assocCountValues(#key, kv, ..kvs) = assocCountValues(key, ..kvs);
 overload assocCountValues(#key, kv: Tuple[Static[key], ..T], ..kvs) = countValues(..T);
 
 
-
+
 /// @section  find the index of a value within a value list 
 
 private define _valueIndex;

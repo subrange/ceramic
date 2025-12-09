@@ -1,7 +1,7 @@
 import printer.(println);
 import data.strings.*;
 
-
+
 //
 // permissiveAssign
 //
@@ -24,7 +24,7 @@ overload permissiveAssign(dest:T, src:T) {
 }
 
 
-
+
 //
 // permissive record constructor
 //
@@ -47,7 +47,7 @@ T(..args:A) --> returned:T {
     }
 }
 
-
+
 //
 // test permissive record constructor
 //

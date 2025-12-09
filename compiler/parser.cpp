@@ -57,7 +57,7 @@ static Location currentLocation() {
 }
 
 
-
+
 //
 // symbol, keyword
 //
@@ -103,7 +103,7 @@ static bool ellipsis() {
     return symbol("..");
 }
 
-
+
 //
 // identifier, identifierList,
 // identifierListNoTail, dottedName
@@ -175,7 +175,7 @@ static bool dottedName(DottedNamePtr &x) {
 }
 
 
-
+
 //
 // literals
 //
@@ -273,7 +273,7 @@ static bool literal(ExprPtr &x) {
 }
 
 
-
+
 //
 // expression misc
 //
@@ -321,7 +321,7 @@ static bool optExpressionList(ExprListPtr &x) {
 }
 
 
-
+
 //
 // atomic expr
 //
@@ -416,7 +416,7 @@ static bool atomicExpr(ExprPtr &x) {
 }
 
 
-
+
 //
 // suffix expr
 //
@@ -546,7 +546,7 @@ static bool suffixExpr(ExprPtr &x) {
 }
 
 
-
+
 //
 // prefix expr
 //
@@ -688,7 +688,7 @@ static bool operatorExpr(ExprPtr &x) {
 }
 
 
-
+
 //
 // not, and, or
 //
@@ -758,7 +758,7 @@ static bool orExpr(ExprPtr &x) {
 }
 
 
-
+
 //
 // ifExpr
 //
@@ -782,7 +782,7 @@ static bool ifExpr(ExprPtr &x) {
 }
 
 
-
+
 //
 // returnKind, returnExprList, returnExpr
 //
@@ -815,7 +815,7 @@ static bool returnExpr(ReturnKind &rkind, ExprPtr &expr) {
 }
 
 
-
+
 //
 // lambda
 //
@@ -891,7 +891,7 @@ static bool lambda(ExprPtr &x) {
 }
 
 
-
+
 //
 // unpack
 //
@@ -907,7 +907,7 @@ static bool unpack(ExprPtr &x) {
 }
 
 
-
+
 //
 // pairExpr
 //
@@ -929,7 +929,7 @@ static bool pairExpr(ExprPtr &x) {
     return true;
 }
 
-
+
 //
 // expression
 //
@@ -950,7 +950,7 @@ success:
     return true;
 }
 
-
+
 //
 // pattern
 //
@@ -1007,7 +1007,7 @@ static bool pattern(ExprPtr &x) {
 }
 
 
-
+
 //
 // typeSpec, optTypeSpec, exprTypeSpec, optExprTypeSpec
 //
@@ -1041,7 +1041,7 @@ static bool optExprTypeSpec(ExprPtr &x) {
 }
 
 
-
+
 //
 // statements
 //
@@ -1585,7 +1585,7 @@ static bool statementExprStatement(StatementPtr &stmt) {
 }
 
 
-
+
 //
 // staticParams
 //
@@ -1658,7 +1658,7 @@ static bool optStaticParams(vector<IdentifierPtr> &params,
     return true;
 }
 
-
+
 //
 // code
 //
@@ -1976,7 +1976,7 @@ static bool optBody(StatementPtr &x) {
 }
 
 
-
+
 //
 // topLevelVisibility, importVisibility
 //
@@ -2006,7 +2006,7 @@ bool importVisibility(Visibility &x) {
 }
 
 
-
+
 //
 // records
 //
@@ -2123,7 +2123,7 @@ static bool record(TopLevelItemPtr &x, Module *module, unsigned s) {
 }
 
 
-
+
 //
 // variant, instance
 //
@@ -2205,7 +2205,7 @@ static bool newtype(TopLevelItemPtr &x, Module *module) {
     return true;
 }
 
-
+
 //
 // returnSpec
 //
@@ -2360,7 +2360,7 @@ static bool allReturnSpecs(vector<ReturnSpecPtr> &returnSpecs,
     return allReturnSpecsWithFlag(returnSpecs, varReturnSpec, exprRetSpecs);
 }
 
-
+
 //
 // define, overload
 //
@@ -2612,7 +2612,7 @@ static bool overload(TopLevelItemPtr &x, Module *module, unsigned s) {
 }
 
 
-
+
 //
 // enumerations
 //
@@ -2670,7 +2670,7 @@ static bool enumeration(TopLevelItemPtr &x, Module *module, unsigned s) {
 }
 
 
-
+
 //
 // global variable
 //
@@ -2701,7 +2701,7 @@ static bool globalVariable(TopLevelItemPtr &x, Module *module, unsigned s) {
 }
 
 
-
+
 //
 // external procedure, external variable
 //
@@ -2852,7 +2852,7 @@ static bool externalVariable(TopLevelItemPtr &x, Module *module) {
 }
 
 
-
+
 //
 // global alias
 //
@@ -2883,7 +2883,7 @@ static bool globalAlias(TopLevelItemPtr &x, Module *module, unsigned s) {
 }
 
 
-
+
 //
 // imports
 //
@@ -3114,7 +3114,7 @@ static bool documentation(TopLevelItemPtr &x, Module *module)
 
 }
 
-
+
 //
 // module
 //
@@ -3272,7 +3272,7 @@ static bool replItems(ReplItem& x, bool = false) {
     return true;
 }
 
-
+
 //
 // parse
 //
@@ -3315,7 +3315,7 @@ ModulePtr parse(llvm::StringRef moduleName, SourcePtr source, ParserFlags flags)
     return m;
 }
 
-
+
 //
 // parseExpr
 //
@@ -3326,7 +3326,7 @@ ExprPtr parseExpr(SourcePtr source, unsigned offset, size_t length) {
     return expr;
 }
 
-
+
 //
 // parseExprList
 //
@@ -3337,7 +3337,7 @@ ExprListPtr parseExprList(SourcePtr source, unsigned offset, size_t length) {
     return exprList;
 }
 
-
+
 //
 // parseStatements
 //
@@ -3348,7 +3348,7 @@ void parseStatements(SourcePtr source, unsigned offset, size_t length,
     applyParser(source, offset, length, blockItems, false, stmts);
 }
 
-
+
 //
 // parseTopLevelItems
 //

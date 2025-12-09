@@ -2,7 +2,7 @@ import printer.*;
 import printer.platform.*;
 import data.strings.*;
 
-
+
 /// @section  Formatter types 
 
 define Formatter?;
@@ -20,7 +20,7 @@ overload printTo(stream, forward formatter: F) {
 }
 
 
-
+
 /// @section  Repr formatter 
 
 private record ReprFormatter[T] (values: T);
@@ -31,7 +31,7 @@ repr(forward ..values) = ReprFormatter(captureValues(..values));
     printReprValuesTo(stream, ..forwardValues(f.values));
 }
 
-
+
 /// @section  stringRepr formatter 
 
 private record StringReprFormatter[T] (value: T);
@@ -42,7 +42,7 @@ stringRepr(forward value) = StringReprFormatter(captureValue(value));
     printStringReprTo(stream, forwardValue(f.value));
 }
 
-
+
 /// @section  Number base formatters 
 
 private record HexFormatter[T] (value: T);
@@ -147,7 +147,7 @@ overload formatBase128(stream, value: Int128, wideFormat, narrowFormat)
 }
 
 
-
+
 /// @section  hexString 
 
 record HexStringFormatter[T] (value: T);
@@ -164,7 +164,7 @@ hexString(forward s:S) = formatter(HexStringFormatter, s);
 }
 
 
-
+
 /// @section  printedWidth function 
 
 // printedWidth(object) SizeT
@@ -206,7 +206,7 @@ overload printedWidth(c: Char) = 1;
 overload printedWidth(b: Bool) = if (b) 4 else 5;
 
 
-
+
 /// @section  minimum-width alignment formatter 
 
 [..C when allValues?(CapturedValue?, ..C)]

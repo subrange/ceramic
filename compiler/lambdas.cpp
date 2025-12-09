@@ -34,7 +34,7 @@ void convertFreeVars(ExprPtr &x, EnvPtr env, LambdaContext &ctx);
 void convertFreeVars(ExprList* x, EnvPtr env, LambdaContext &ctx);
 
 
-
+
 //
 // initializeLambda
 //
@@ -272,7 +272,7 @@ static void initializeLambdaWithoutFreeVars(LambdaPtr x, EnvPtr env,
 }
 
 
-
+
 //
 // addFreeVar, typeOfValue, typesOfValues
 //
@@ -287,7 +287,7 @@ static void addFreeVar(LambdaContext &ctx, llvm::StringRef str)
 }
 
 
-
+
 //
 // convertFreeVars
 //

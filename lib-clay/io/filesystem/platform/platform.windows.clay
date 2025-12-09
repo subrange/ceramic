@@ -32,7 +32,7 @@ readLinkImpl(path: CStringRef) {
 }
 
 
-
+
 /// @section DirectoryIterator
 
 
@@ -89,7 +89,7 @@ overload nextValue(it: DirectoryIterator) {
 }
 
 
-
+
 /// @section makeDirectory, deleteDirectory
 
 makeDirectoryImpl(path: CStringRef) {
@@ -107,7 +107,7 @@ deleteDirectoryImpl(path: CStringRef) {
 }
 
 
-
+
 /// @section  separators 
 
 private alias PATH_SEPARATOR1 = '\\';
@@ -132,7 +132,7 @@ private reverseFindPathSeparator(path) = reverseFindIf(path, pathSeparator?);
 private absoluteDirectory?(s) = beginsWithPathSeparator?(s);
 
 
-
+
 /// @section  path predicates 
 
 private uppercaseLetter?(c) = (c >= 'A') and (c <= 'Z');
@@ -144,7 +144,7 @@ private hasDrive?(path) = (size(path) >= 2) and letter?(path[0]) and (path[1] ==
 private uncPath?(path) = beginsWith?(path, "//") or beginsWith?(path, "\\\\");
 
 
-
+
 /// @section  slicedWindowsPath. returns (volume, directory, name) 
 
 slicedWindowsPath(path) {
@@ -190,7 +190,7 @@ private directoryTailTrimmed(path) {
 }
 
 
-
+
 /// @section  splitWindowsPath, slicedPath, splitPath, pathComponents 
 
 splitWindowsPath(path) = ..mapValues(force, ..slicedWindowsPath(path));
@@ -222,7 +222,7 @@ pathComponents(path) {
 }
 
 
-
+
 /// @section  joinPath 
 
 define joinPath;
@@ -275,7 +275,7 @@ private appendComponent(base:String, suffix) {
 }
 
 
-
+
 /// @section  pathExists? 
 
 pathExistsImpl?(p: CStringRef) {

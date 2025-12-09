@@ -7,7 +7,7 @@ import sharedpointers.*;
 import data.strings.*;
 import data.algorithms.(in?);
 
-
+
 /// @section  File 
 
 record File (
@@ -22,7 +22,7 @@ private record FileData (
 );
 
 
-
+
 /// @section  constructors 
 
 [S when CCompatibleString?(S)]
@@ -45,20 +45,20 @@ overload FileData(rvalue file:RawFile) {
 }
 
 
-
+
 /// @section  stdinFile, stdoutFile, stderrFile 
 
 stdinFile()  = File(new(FileData(stdinRawFile())));
 stdoutFile() = File(new(FileData(stdoutRawFile())));
 stderrFile() = File(new(FileData(stderrRawFile())));
 
-
+
 /// @section  fileHandle 
 
 overload fileHandle(f:File) = fileHandle(f.ptr^.file);
 
 
-
+
 /// @section  read, write, flush 
 
 overload readBytes(f:File, buffer:Pointer[Byte], _requested:SizeT) =
@@ -71,7 +71,7 @@ overload flush(f:File) {
     flush(f.ptr^.outputStream);
 }
 
-
+
 /// @section  fileSize, seek 
 
 overload fileSize(f:File) {
@@ -85,13 +85,13 @@ overload seek(f:File, offset, whence) {
 }
 
 
-
+
 /// @section  terminal? 
 
 overload terminal?(f:File) = terminal?(f.ptr^.file);
 
 
-
+
 /// @section  asserts
 
 staticassert(OutputStream?(File));

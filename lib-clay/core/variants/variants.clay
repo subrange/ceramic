@@ -1,6 +1,6 @@
 import __operators__;
 
-
+
 /// @section  VariantRepr 
 
 record VariantRepr[..T] (
@@ -11,14 +11,14 @@ record VariantRepr[..T] (
 [V when Variant?(V)]
 overload __operators__.variantReprType(#V) = VariantRepr[..VariantMembers(V)];
 
-
+
 /// @section  VariantMember?, VariantMembers 
 
 [V,M when Variant?(V)]
 VariantMember?(#V, #M) =
     VariantMemberIndex(V, M) < VariantMemberCount(V);
 
-
+
 /// @section  construct from value of member type 
 
 [V when Variant?(V)]
@@ -68,7 +68,7 @@ overload V(src:V) --> returned:V {
 forceinline overload V(rvalue src:V) = move(src);
 
 
-
+
 /// @section  moveUnsafe, resetUnsafe 
 
 [V when Variant?(V) and not BitwiseMovedType?(V)]
@@ -100,7 +100,7 @@ forceinline overload resetUnsafe(x:V) : {
 }
 
 
-
+
 /// @section  assign 
 
 [V when Variant?(V) and not BitwiseAssignedType?(V)]
@@ -136,7 +136,7 @@ overload assign(ref dest:V, ref src:V) : {
 }
 
 
-
+
 /// @section  destroy 
 
 [V when Variant?(V) and not DestroyDoesNothingType?(V)]
@@ -156,7 +156,7 @@ overload destroy(x:V) : {
 }
 
 
-
+
 /// @section  equals? 
 
 [V when Variant?(V)]
@@ -176,7 +176,7 @@ overload equals?(a:V, b:V) : Bool {
 }
 
 
-
+
 /// @section  variantIs? 
 
 [V,T when Variant?(V) and VariantMember?(V, T)]
@@ -187,7 +187,7 @@ forceinline variantIs?(x:V, #T) : Bool {
 }
 
 
-
+
 /// @section  variantAs 
 
 define variantAs private overload;
@@ -206,7 +206,7 @@ forceinline overload variantAs(rvalue x:V, #T) {
 }
 
 
-
+
 /// @section  variantAsPtr - test and unbox in one operation 
 
 [V,T when Variant?(V) and VariantMember?(V,T)]
@@ -220,13 +220,13 @@ forceinline variantAsPtr(x:V, #T) {
 }
 
 
-
+
 /// @section  variantTag 
 
 [V when Variant?(V)]
 forceinline variantTag(x:V) = variantRepr(x).tag;
 
-
+
 /// @section  dispatch operators 
 
 [V when Variant?(V)]
@@ -247,7 +247,7 @@ forceinline overload __operators__.invalidDispatch(x:V) {
         __operators__.dispatchTag(x));
 }
 
-
+
 /// @section  variant matching 
 
 private define matchValue;
@@ -260,7 +260,7 @@ forceinline overload matchValue(forward x:T, forward f:F, forward ..fs)
 
 forceinline match(forward v, forward ..fs) = forward ..matchValue(*v, ..fs);
 
-
+
 /// @section  VariantRef tagged pointer 
 
 [V when Variant?(V)]
@@ -293,7 +293,7 @@ forceinline overload __operators__.dispatchTag(vr:VariantRef[V]) = vr.tag;
 forceinline overload __operators__.dispatchIndex(vr:VariantRef[V], #i) =
     ref staticIndex(vr.data^, #i);
 
-
+
 /// @section  MemberTypeName 
 
 private alias TypeName(x) = StringLiteralRef(StaticName(Type(x)));

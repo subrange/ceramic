@@ -19,7 +19,7 @@ void setFinalOverloadsEnabled(bool enabled)
     _finalOverloadsEnabled = enabled;
 }
 
-
+
 //
 // callableOverloads
 //
@@ -100,7 +100,7 @@ static llvm::ArrayRef<OverloadPtr> callableOverloads(ObjectPtr x)
 }
 
 
-
+
 //
 // invoke tables
 //
@@ -118,7 +118,7 @@ static void initInvokeTables() {
 }
 
 
-
+
 //
 // lookupInvokeSet
 //
@@ -184,7 +184,7 @@ vector<InvokeSet*> lookupInvokeSets(ObjectPtr callable) {
     return r;
 }
 
-
+
 //
 // lookupInvokeEntry
 //

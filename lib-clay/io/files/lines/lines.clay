@@ -2,13 +2,13 @@ import io.files.easy.*;
 import io.streams.(readLine);
 import data.strings.*;
 
-
+
 /// @section  lines 
 
 lines(f:File) = LineSequence(f);
 
 
-
+
 /// @section  LineSequence 
 
 private record LineSequence (
@@ -18,7 +18,7 @@ private record LineSequence (
 overload iterator(x:LineSequence) = LineIterator(@x.f);
 
 
-
+
 /// @section  LineIterator 
 
 private record LineIterator (file : Pointer[File]);

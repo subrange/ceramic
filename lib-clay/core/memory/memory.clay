@@ -1,7 +1,7 @@
 import core.memory.platform.(SystemMallocAlignment);
 import core.libc as libc;
 
-
+
 /// @section  allocateObject, freeObject 
 
 [T]
@@ -43,7 +43,7 @@ freeArray(array:CoordinateRange[T]) : {
     freeRawMemory(begin(array));
 }
 
-
+
 /// @section  alignedMalloc, alignedFree 
 
 alignedMalloc(numBytes:SizeT, alignment:SizeT) --> returned:Pointer[UInt8] {
@@ -67,7 +67,7 @@ alignedFree(ptr:Pointer[UInt8]) : {
     libc.free(originalPtr);
 }
 
-
+
 /// @section  allocateRawMemoryAligned, freeRawMemoryAligned 
 
 [T, I, J when Integer?(I) and Integer?(J)]
@@ -80,7 +80,7 @@ freeRawMemoryAligned(ptr:Pointer[T]) : {
 }
 
 
-
+
 /// @section  allocateRawMemory, freeRawMemory 
 
 define allocateRawMemory;
@@ -111,7 +111,7 @@ overload freeRawMemory(ptr:Pointer[T]) : {
 }
 
 
-
+
 /// @section  initializeMemory 
 
 [T]
@@ -120,7 +120,7 @@ initializeMemory(begin:Pointer[T], end:Pointer[T]) : {
 }
 
 
-
+
 /// @section  destroyMemory 
 
 define destroyMemory;
@@ -131,7 +131,7 @@ overload destroyMemory(begin:Pointer[T], end:Pointer[T]) : {
 }
 
 
-
+
 /// @section  copyNonoverlappingMemory 
 
 define copyNonoverlappingMemory;
@@ -145,7 +145,7 @@ overload copyNonoverlappingMemory(destBegin:Pointer[T], srcBegin:Pointer[T], src
     });
 }
 
-
+
 /// @section  move*Memory* 
 
 define moveMemory;
@@ -207,7 +207,7 @@ overload moveNonoverlappingMemoryUnsafe(destBegin:Pointer[T], srcBegin:Pointer[T
 }
 
 
-
+
 /// @section  resetMemoryUnsafe 
 
 define resetMemoryUnsafe;
@@ -218,7 +218,7 @@ overload resetMemoryUnsafe(begin:Pointer[T], end:Pointer[T]) : {
 }
 
 
-
+
 /// @section  fillMemory, zeroMemory 
 
 [T]
@@ -234,7 +234,7 @@ zeroMemory(begin:Pointer[T], end:Pointer[T]) : {
 
 zeroObject(o) : { zeroMemory(Pointer[UInt8](@o), Pointer[UInt8](@o + 1)); }
 
-
+
 /// @section  assignNonoverlappingMemory, moveAssignNonoverlappingMemory 
 
 define assignNonoverlappingMemory;
@@ -269,7 +269,7 @@ overload moveAssignNonoverlappingMemory(destBegin:Pointer[T], srcBegin:Pointer[T
 }
 
 
-
+
 /// @section  eachLocation, eachLocationBackwards, eachLocationWithCleanup 
 
 [T]

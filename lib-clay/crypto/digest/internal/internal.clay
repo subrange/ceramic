@@ -173,7 +173,7 @@ overload wordsToBytes(words, #true) = bigWordsToBytes(words);
 overload wordsToBytes(words, #false) = littleWordsToBytes(words);
 
 
-
+
 /// Poor man UInt128
 
 /// 128-bit types are not available everywhere
@@ -204,7 +204,7 @@ overload PoorManUInt128(i: UInt64) --> returned:PoorManUInt128 {
 }
 
 
-
+
 /// generic digestFinish. Works for SHA-2, MD5 and probably something else
 
 [A when Algorithm?(A)]

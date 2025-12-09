@@ -256,7 +256,7 @@ void setExceptionsEnabled(bool enabled)
 }
 
 
-
+
 //
 // utility procs
 //
@@ -296,7 +296,7 @@ static CValuePtr derefValueForPValue(CValuePtr cv, PVData const &pv, CodegenCont
 }
 
 
-
+
 //
 // codegen value ops
 //
@@ -437,7 +437,7 @@ llvm::Value *codegenToBoolFlag(CValuePtr a, CodegenContext* ctx)
 }
 
 
-
+
 //
 // temps
 //
@@ -470,7 +470,7 @@ static void clearTemps(size_t marker, CodegenContext* ctx) {
 }
 
 
-
+
 //
 // codegen value stack
 //
@@ -542,7 +542,7 @@ CValuePtr codegenAllocNewValue(TypePtr t, CodegenContext* ctx)
 }
 
 
-
+
 //
 // codegenMultiArgsAsRef, codegenArgExprAsRef
 //
@@ -583,7 +583,7 @@ MultiCValuePtr codegenArgExprAsRef(ExprPtr x,
 }
 
 
-
+
 //
 // codegenForwardOneAsRef, codegenForwardMultiAsRef, codegenForwardExprAsRef
 //
@@ -637,7 +637,7 @@ MultiCValuePtr codegenForwardExprAsRef(ExprPtr expr,
 }
 
 
-
+
 //
 // codegenOneAsRef, codegenMultiAsRef, codegenExprAsRef
 //
@@ -760,7 +760,7 @@ MultiCValuePtr codegenExprAsRef(ExprPtr expr,
 }
 
 
-
+
 //
 // codegenOneInto, codegenMultiInto, codegenExprInto
 //
@@ -873,7 +873,7 @@ void codegenExprInto(ExprPtr expr,
 }
 
 
-
+
 //
 // codegenMulti, codegenOne, codegenExpr
 //
@@ -1204,7 +1204,7 @@ void codegenExpr(ExprPtr expr,
 }
 
 
-
+
 //
 // codegenStaticObject
 //
@@ -1397,7 +1397,7 @@ void codegenStaticObject(ObjectPtr x,
 }
 
 
-
+
 //
 // codegenGVarInstance
 //
@@ -1474,7 +1474,7 @@ void codegenGVarInstance(GVarInstancePtr x)
 }
 
 
-
+
 //
 // codegenExternalVariable
 //
@@ -1511,7 +1511,7 @@ void codegenExternalVariable(ExternalVariablePtr x)
 
 }
 
-
+
 //
 // codegenExternalProcedure
 //
@@ -1722,7 +1722,7 @@ void codegenExternalProcedure(ExternalProcedurePtr x, bool codegenBody)
 }
 
 
-
+
 //
 // codegenValueHolder
 //
@@ -1736,7 +1736,7 @@ void codegenValueHolder(ValueHolderPtr v,
 }
 
 
-
+
 //
 // codegenCompileTimeValue
 //
@@ -1826,7 +1826,7 @@ void codegenCompileTimeValue(EValuePtr ev,
 }
 
 
-
+
 //
 // codegenSimpleConstant
 //
@@ -1935,7 +1935,7 @@ llvm::Value *codegenSimpleConstant(EValuePtr ev)
 
 
 
-
+
 //
 // codegenIndexingExpr
 //
@@ -1990,7 +1990,7 @@ void codegenIndexingExpr(ExprPtr indexable,
 }
 
 
-
+
 //
 // codegenAliasIndexing
 //
@@ -2108,7 +2108,7 @@ static void codegenIntrinsic(IntrinsicSymbol *intrin, MultiCValue *args,
         ctx->builder->CreateStore(retValue, out->values[0]->llValue);
     }
 }
-
+
 //
 // codegenCallExpr
 //
@@ -2209,7 +2209,7 @@ void codegenCallExpr(ExprPtr callable,
 }
 
 
-
+
 //
 // codegenDispatch
 //
@@ -2322,7 +2322,7 @@ void codegenDispatch(ObjectPtr obj,
 }
 
 
-
+
 //
 // codegenCallValue
 //
@@ -2419,7 +2419,7 @@ void codegenCallValue(CValuePtr callable,
 }
 
 
-
+
 //
 // codegenShortcut
 //
@@ -2469,7 +2469,7 @@ bool codegenShortcut(ObjectPtr callable,
 }
 
 
-
+
 //
 // codegenCallPointer
 //
@@ -2503,7 +2503,7 @@ void codegenCallPointer(CValuePtr x,
 }
 
 
-
+
 //
 // codegenCallCode
 //
@@ -2543,7 +2543,7 @@ void codegenCallCode(InvokeEntry* entry,
 }
 
 
-
+
 //
 // codegenLowlevelCall - generate exception checked call
 //
@@ -2588,7 +2588,7 @@ void codegenLowlevelCall(llvm::Value *llCallable,
 }
 
 
-
+
 //
 // codegenCallable
 //
@@ -2606,7 +2606,7 @@ InvokeEntry* codegenCallable(ObjectPtr x,
 }
 
 
-
+
 //
 // interpolateLLVMCode
 //
@@ -2738,7 +2738,7 @@ static bool interpolateLLVMCode(LLVMCodePtr llvmBody, string &out, EnvPtr env)
 }
 
 
-
+
 //
 // codegenLLVMBody
 //
@@ -2809,7 +2809,7 @@ void codegenLLVMBody(InvokeEntry* entry, llvm::StringRef callableName)
 }
 
 
-
+
 //
 // getCodeName
 //
@@ -2878,7 +2878,7 @@ string getCodeName(InvokeEntry* entry)
 }
 
 
-
+
 //
 // codegenCodeBody
 //
@@ -3246,7 +3246,7 @@ void codegenCodeBody(InvokeEntry* entry)
 }
 
 
-
+
 //
 // codegenCallInline
 //
@@ -3354,7 +3354,7 @@ void codegenCallInline(InvokeEntry* entry,
 }
 
 
-
+
 //
 // codegenCallByName
 //
@@ -3469,7 +3469,7 @@ void codegenCallByName(InvokeEntry* entry,
 }
 
 
-
+
 //
 // codegenStatement
 //
@@ -4098,7 +4098,7 @@ bool codegenStatement(StatementPtr stmt,
 }
 
 
-
+
 //
 // codegenCollectLabels
 //
@@ -4129,7 +4129,7 @@ void codegenCollectLabels(llvm::ArrayRef<StatementPtr> statements,
 }
 
 
-
+
 //
 // codegenBinding
 //
@@ -4402,7 +4402,7 @@ EnvPtr codegenBinding(BindingPtr x, EnvPtr env, CodegenContext* ctx)
 }
 
 
-
+
 //
 // codegenExprAssign, codegenMultiExprAssign
 //
@@ -4495,7 +4495,7 @@ void codegenMultiExprAssign(ExprListPtr left,
 }
 
 
-
+
 //
 // codegenTopLevelLLVM
 //
@@ -4547,7 +4547,7 @@ void codegenTopLevelLLVM(ModulePtr m) {
 }
 
 
-
+
 //
 // codegenEntryPoints, codegenMain
 //
@@ -4804,7 +4804,7 @@ void codegenEntryPoints(ModulePtr module, bool importedExternals)
 }
 
 
-
+
 //
 // initLLVM
 //

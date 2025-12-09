@@ -3,7 +3,7 @@ import data.sequences.util.*;
 import data.sequences.lazy.zipped.*;
 import data.sequences.force.*;
 
-
+
 /// @section  mapped 
 
 define mapped(mapper, ..seqs);
@@ -26,7 +26,7 @@ overload UnderlyingContainerConstructor(#Mapped[F,A]) =
     UnderlyingContainerConstructor(A);
 
 
-
+
 /// @section  MappedIterator 
 
 [F,A]
@@ -56,7 +56,7 @@ forceinline overload hasValue?(v:MappedValue[F,V]) = hasValue?(v.value);
 [F, V]
 forceinline overload getValue(forward v:MappedValue[F,V]) = forward ..v.mapper^(..getValue(v.value));
 
-
+
 /// @section  MappedCoordinate, mappedInnerCoordinate 
 
 private record MappedCoordinate[F, COORD] (
@@ -101,7 +101,7 @@ forceinline overload dec(ref x:MappedCoordinate[F, COORD]) {
 }
 
 
-
+
 /// @section  size, StaticSize, index 
 
 [F, A when CallDefined?(size, A)]

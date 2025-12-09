@@ -2,7 +2,7 @@
 public import __primitives__.(Static);
 
 
-
+
 /// @section  Static? predicate 
 
 define Static?(x) : Bool private overload;
@@ -10,7 +10,7 @@ alias overload Static?(x) : Bool = false;
 [T] alias overload Static?(#T) : Bool = true;
 
 
-
+
 /// @section  constructors, moveUnsafe, resetUnsafe, destroy 
 
 [A]
@@ -26,7 +26,7 @@ forceinline overload moveUnsafe(src:Static[A]) --> returned:Static[A] {
 }
 
 
-
+
 /// @section  equals?, lesser? 
 
 [A, B]
@@ -39,14 +39,14 @@ forceinline overload equals?(a:Static[A], b:Static[A]) : Bool = true;
 forceinline overload lesser?(a:Static[A], b:Static[A]) : Bool = false;
 
 
-
+
 /// @section  unwrapStatic 
 
 [A]
 forceinline unwrapStatic(#A) = A;
 
 
-
+
 /// @section  call 
 
 [F, ..AA when CallDefined?(F, ..AA)]
@@ -54,7 +54,7 @@ forceinline overload call(#F, forward ..args:AA) =
     forward ..F(..args);
 
 
-
+
 /// @section  fieldRef 
 
 [Module, Ident]

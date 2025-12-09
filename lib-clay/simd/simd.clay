@@ -1,13 +1,13 @@
 import simd.primitives as prims;
 
-
+
 /// @section  index 
 
 [T,n,I when Integer?(I)]
 forceinline overload index(a:Vec[T,n], i:I) = ref prims.vecElementRef(a, Int(i));
 
 
-
+
 /// @section  type inferring constructor 
 
 [..A when (countValues(..A) > 0) and equalValues?(..A)]
@@ -18,7 +18,7 @@ forceinline overload Vec(..args:A) {
 }
 
 
-
+
 /// @section  basic constructor 
 
 [T,n,..A when (countValues(..A) == n) and equalValues?(T, ..A)]
@@ -33,7 +33,7 @@ forceinline overload Vec[T,n](..args:A) {
 }
 
 
-
+
 /// @section  single element replicating constructor 
 
 [T,n]
@@ -45,7 +45,7 @@ forceinline overload Vec[T,n](x:T) {
 }
 
 
-
+
 /// @section  other constructors, moveUnsafe, resetUnsafe, assign, destroy 
 
 [T,n]
@@ -69,7 +69,7 @@ forceinline overload assign(ref dest:Vec[T,n], src:Vec[T,n]) {
 }
 
 
-
+
 /// @section  unpackVec 
 
 [T,n]
@@ -85,7 +85,7 @@ forceinline overload unpackElements(a:Vec[T,n], #i) =
 forceinline overload unpackElements(a:Vec[T,n], #i) = ;
 
 
-
+
 /// @section  numeric ops 
 
 [T,n]
@@ -138,7 +138,7 @@ forceinline overload remainder(a:Vec[T,n], x:X) = a % Vec[T,n](T(x));
 forceinline overload remainder(x:X, a:Vec[T,n]) = Vec[T,n](T(x)) % a;
 
 
-
+
 /// @section  bitwise ops 
 
 [T,n]
@@ -198,7 +198,7 @@ forceinline overload bitxor(a:Vec[T,n], x:X) = bitxor(a, Vec[T,n](T(x)));
 forceinline overload bitxor(x:X, a:Vec[T,n]) = bitxor(Vec[T,n](T(x)),  a);
 
 
-
+
 /// @section  unary ops 
 
 [T,n]
@@ -210,7 +210,7 @@ forceinline overload subtract(a:Vec[T,n]) = Vec[T,n](T(0)) - a;
 [T,n]
 forceinline overload bitnot(a:Vec[T,n]) = bitxor(Vec[T,n](componentMask(T)), a);
 
-
+
 /// @section  casting 
 
 define CompatibleVectorTypes?(X, Y) : Bool;
@@ -222,7 +222,7 @@ overload CompatibleVectorTypes?(#Vec[T,n], #Vec[U,m]) = true;
 forceinline overload Vec[T,n](v: Vec[U,m]) = bitcast(Vec[T,n], v);
 
 
-
+
 /// @section  boolean masks 
 
 define componentMask;

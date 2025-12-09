@@ -50,12 +50,12 @@ define moveUnsafe(a:A) : A;
 define resetUnsafe(a) :;
 
 
-
+
 /// @section  uninitialized stack allocation 
 
 [T] uninitializedUnsafe(#T) --> x:T {}
 
-
+
 /// @section  LValue?, RValue? 
 
 define LValue?;
@@ -65,7 +65,7 @@ alias overload LValue?(rvalue a) : Bool = false;
 alias RValue?(x) : Bool = not LValue?(x);
 
 
-
+
 /// @section  defaults 
 
 define initialize;
@@ -450,7 +450,7 @@ forceinline overload swap(a:T, b:T) : {
     bitcast(TBytes, b) <-- temp;
 }
 
-
+
 /// @section  min, max 
 
 [T]
@@ -491,7 +491,7 @@ forceinline overload max(ref a:T, ref b:T)  : ByRef[T] {
 }
 
 
-
+
 /// @section  ifExpression 
 
 [T]
@@ -533,7 +533,7 @@ forceinline overload asExpression(value:T, #T) : ByRef[T] = ref value;
 [T]
 forceinline overload asExpression(rvalue value:T, #T) : T = value;
 
-
+
 /// @section  bitnand, bitandc, bitblend 
 
 forceinline bitnand(a, b) = (~)((&)(a, b));
@@ -542,7 +542,7 @@ forceinline bitblend(mask, ones, zeros)
     = (|)((&)(ones, mask), bitandc(zeros, mask));
 
 
-
+
 /// @section  bitrol, bitror 
 
 [I, J when Integer?(I) and Integer?(J)]
@@ -552,7 +552,7 @@ bitrol(x:I, n:J) = (|)(wrapBitshl(x, n), (>>)(x, TypeSize(I)*8 - n));
 bitror(x:I, n:J) = (|)((>>)(x, n), wrapBitshl(x, TypeSize(I)*8 - n));
 
 
-
+
 /// @section  PrimitiveType? 
 
 [T]
@@ -589,7 +589,7 @@ overload PrimitiveType?(#Complex80) : Bool = true;
 overload PrimitiveType?(#Tuple[]) : Bool = true;
 
 
-
+
 /// @section  PrimitiveCompoundType?, PrimitiveCompoundMemberTypes 
 
 [T]
@@ -609,7 +609,7 @@ overload PrimitiveCompoundMemberTypes(#R) = ..RecordFieldTypes(R);
 [V when Variant?(V)]
 overload PrimitiveCompoundMemberTypes(#V) = ..VariantMembers(V);
 
-
+
 /// @section  PODType? 
 
 [T]
@@ -623,7 +623,7 @@ overload PODType?(#T) : Bool = true;
 overload PODType?(#T) : Bool = allValues?(PODType?, ..PrimitiveCompoundMemberTypes(T));
 
 
-
+
 /// @section  Finer-grained POD-related properties 
 
 [T]
@@ -684,7 +684,7 @@ overload BitwiseMoveAssignedType?(#T) : Bool
     = allValues?(BitwiseMoveAssignedType?, ..PrimitiveCompoundMemberTypes(T));
 
 
-
+
 /// @section  identity test 
 
 define is?;
@@ -693,7 +693,7 @@ forceinline overload is?(x, y) : Bool = @x == @y;
 
 forceinline isNot?(x, y) : Bool = not is?(x, y);
 
-
+
 /// @section  case? 
 
 forceinline overload case?(x, forward ..ys) : Bool {
@@ -703,7 +703,7 @@ forceinline overload case?(x, forward ..ys) : Bool {
     return false;
 }
 
-
+
 /// @section  CallDefined?, CallOutputTypes 
 
 define CallDefined?;
@@ -718,7 +718,7 @@ alias default CallOutputTypes(f:F, ..In) = ..StaticCallOutputTypes(call, F, ..In
 [f]
 alias overload CallOutputTypes(#f, ..In) = ..StaticCallOutputTypes(f, ..In);
 
-
+
 /// @section  Mono?, MonoInputTypes, MonoOutputTypes 
 
 define MonoInputTypes;
@@ -737,7 +737,7 @@ alias MonoOutputTypes(f:F) = ..CallOutputTypes(f, ..MonoInputTypes(f));
 public define Monad?;
 overload Monad?(T) : Bool = false;
 
-
+
 /// @section  operator functions for closure conversion 
 
 overload packMultiValuedFreeVar(..x) = [..x];

@@ -454,7 +454,7 @@ TypePtr newtypeReprType(NewTypePtr t)
 }
 
 
-
+
 //
 // isPrimitiveType, isPrimitiveAggregateType, isPointerOrCodePointerType
 //
@@ -574,7 +574,7 @@ bool isStaticOrTupleOfStatics(TypePtr t) {
 }
 
 
-
+
 //
 // recordFieldTypes
 //
@@ -769,7 +769,7 @@ const llvm::StringMap<size_t> &recordFieldIndexMap(RecordTypePtr t) {
 }
 
 
-
+
 //
 // variantMemberTypes, variantReprType, dispatchTagCount
 //
@@ -888,7 +888,7 @@ unsigned dispatchTagCount(TypePtr t) {
     return unsigned(tag);
 }
 
-
+
 //
 // tupleTypeLayout, recordTypeLayout
 //
@@ -921,7 +921,7 @@ const llvm::StructLayout *recordTypeLayout(RecordType *t) {
 }
 
 
-
+
 //
 // verifyRecursionCorrectness
 //
@@ -995,7 +995,7 @@ static void verifyRecursionCorrectness(TypePtr t,
 }
 
 
-
+
 //
 // llvmIntType, llvmFloatType, llvmPointerType, llvmArrayType, llvmVoidType
 //
@@ -1058,7 +1058,7 @@ llvm::Type *CCodePointerType::getCallType() {
     return this->callType;
 }
 
-
+
 //
 // llvmType
 //
@@ -1702,7 +1702,7 @@ static void defineLLVMType(TypePtr t) {
 }
 
 
-
+
 //
 // typeSize
 //

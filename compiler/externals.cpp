@@ -248,7 +248,7 @@ ExternalFunction* ExternalTarget::getExternalFunction(
     return func;
 }
 
-
+
 //
 // Use the LLVM calling convention as-is with no argument mangling.
 //
@@ -345,7 +345,7 @@ ExtArgInfo LLVMExternalTarget::pushArgumentType(
     }
 }
 
-
+
 //
 // x86-32 (and Windows x64)
 //
@@ -541,7 +541,7 @@ struct X86_32_ExternalTarget : public LLVMExternalTarget {
     }
 };
 
-
+
 //
 // Unix x86-64
 //
@@ -1194,7 +1194,7 @@ ExtArgInfo Mips32_ExternalTarget::classifyReturnType(TypePtr type) {
     return ExtArgInfo::getDirect();;
 }
 
-
+
 //
 // getExternalTarget
 //

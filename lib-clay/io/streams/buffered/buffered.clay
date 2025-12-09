@@ -5,7 +5,7 @@ import io.streams.memory.*;
 public import io.streams.*;
 
 
-
+
 /// @section  Buffer
 
 private alias BUFFER_SIZE = 4096;
@@ -38,7 +38,7 @@ compact(buffer: Buffer) {
 }
 
 
-
+
 /// @section  BufferedInputStream, BufferedOutputStream
 
 

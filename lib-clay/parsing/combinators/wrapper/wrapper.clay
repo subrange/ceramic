@@ -2,7 +2,7 @@
 import parsing.combinators.generic as generic;
 
 
-
+
 /// @section  Combinators 
 
 record Combinators[TokenInput] ();
@@ -14,7 +14,7 @@ overload fieldRef(x:Combinators[TokenInput], #Name) {
 }
 
 
-
+
 /// @section  partialApply 
 
 private partialApply(f, ..args) = CallableAndArgs(f, [..args]);

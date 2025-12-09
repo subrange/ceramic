@@ -11,7 +11,7 @@ using namespace std;
 typedef llvm::StringMap<ObjectPtr>::iterator MapIter;
 
 
-
+
 //
 // addGlobal
 //
@@ -33,7 +33,7 @@ void addGlobal(ModulePtr module,
 }
 
 
-
+
 //
 // module errors
 //
@@ -87,7 +87,7 @@ static void undefinedNameError(IdentifierPtr name) {
 
 }
 
-
+
 //
 // getPublicSymbols, getAllSymbols
 //
@@ -274,7 +274,7 @@ static void addImportedSymbols(ModulePtr module,
 }
 
 
-
+
 //
 // lookupPrivate
 //
@@ -303,7 +303,7 @@ retry:
 }
 
 
-
+
 //
 // lookupPublic, safeLookupPublic
 //
@@ -336,7 +336,7 @@ ObjectPtr safeLookupPublic(ModulePtr module, IdentifierPtr name) {
 }
 
 
-
+
 //
 // addLocal, safeLookupEnv
 //
@@ -413,7 +413,7 @@ llvm::DINamespace lookupModuleDebugInfo(EnvPtr env) {
     }
 }
 
-
+
 //
 // lookupEnvEx
 //
@@ -460,7 +460,7 @@ ObjectPtr lookupEnvEx(EnvPtr env, IdentifierPtr name,
 }
 
 
-
+
 //
 // foreignExpr
 //
@@ -474,7 +474,7 @@ ExprPtr foreignExpr(EnvPtr env, ExprPtr expr)
     return new ForeignExpr(env, expr);
 }
 
-
+
 //
 // lookupCallByNameExprHead
 //
@@ -500,7 +500,7 @@ ExprPtr lookupCallByNameExprHead(EnvPtr env)
     return NULL;
 }
 
-
+
 //
 // safeLookupCallByNameLocation
 //

@@ -25,7 +25,7 @@ readLink(path) =
     readLinkImpl(tempCString(path).cstring);
 
 
-
+
 /// @section  listDirectory
 
 listDirectory(x) {

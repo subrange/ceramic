@@ -1,7 +1,7 @@
 import core.platform.(OSFamily, Unix, CPU, X86_64);
 import core.operators.(private staticEquals?);
 
-
+
 /// @section  numeric type predicates 
 
 [T]
@@ -103,7 +103,7 @@ define Numeric?(..T) : Bool;
 [A, B] overload Numeric?(#A, #B) : Bool = Numeric?(A) and Numeric?(B);
 
 
-
+
 /// @section  BiggerInteger?, BiggerFloat?, BiggerNumeric? 
 
 [A,B when Integer?(A,B)]
@@ -140,7 +140,7 @@ overload BiggerNumeric?(#A, #B) : Bool = BiggerFloat?(A,B);
 
 
 
-
+
 /// @section  toBiggerNumericType 
 
 define toBiggerNumericType;
@@ -171,7 +171,7 @@ overload ImagBaseType(#Imag64) = Double;
 overload ImagBaseType(#Imag80) = LongDouble;
 
 
-
+
 /// @section  constructors 
 
 [T when Numeric?(T)]
@@ -187,7 +187,7 @@ forceinline overload T(a:I) : T = T(0.);
 forceinline overload I(a:T) : I = I(0.j);
 
 
-
+
 /// @section  assign 
 
 [A, B when Numeric?(A,B) and BiggerNumeric?(A,B)]
@@ -201,7 +201,7 @@ forceinline overload assign(ref dest:A, src:B) : {
 }
 
 
-
+
 /// @section  equals?,  notEquals?, lesser?, lesserEquals?, greater?, greaterEquals? 
 
 [A,B when not staticEquals?(A,B) and Numeric?(A,B)]
@@ -267,7 +267,7 @@ define zero?;
 forceinline overload zero?(x:T) : Bool = (==)(x, T(0));
 
 
-
+
 /// @section  binary ops 
 
 [A,B when not staticEquals?(A,B) and Numeric?(A,B)]
@@ -350,7 +350,7 @@ forceinline overload (/)(a:A, b:B) = (/)(a, numericConvert(A,b));
 [A when Imaginary?(A)]
 forceinline overload (/)(a:A, b:A) = numericConvert(ImagBaseType(A),floatDivide(a, b));
 
-
+
 /// @section  unary ops 
 
 [A when Numeric?(A)]
@@ -360,7 +360,7 @@ forceinline overload (+)(a:A) : A = a;
 forceinline overload (-)(a:A) : A = numericNegate(a);
 
 
-
+
 /// @section  inc, dec 
 
 forceinline default inc(ref ..a) : { eachValue(inc, ..a); }
@@ -377,7 +377,7 @@ forceinline overload dec(ref a:A) : {
 }
 
 
-
+
 /// @section  bitwise ops 
 
 [A,B when Integer?(A,B)]
@@ -414,7 +414,7 @@ forceinline overload (~)(a:A, b:A) : A = integerBitwiseXor(a, b);
 forceinline overload (~)(a:A) : A = integerBitwiseNot(a);
 
 
-
+
 //
 // octal()
 
@@ -426,7 +426,7 @@ define octal;
 overload octal(T, I) = unwrapStatic(_octal(T, I));
 overload octal(I) = octal(Int, I);
 
-
+
 /// @section  overflow-checked math 
 
 IntegerOverflowChecks?() = AllAssertionsEnabled?()
@@ -460,7 +460,7 @@ forceinline overload (-)(a:A) : A
 forceinline overload A(b:B) : A
     = integerConvertChecked(A, b);
 
-
+
 /// @section  never-checked wrap-on-overflow math 
 
 define wrapAdd;

@@ -1,6 +1,6 @@
 import byteorder.*;
 
-
+
 /// @section  flags for 'open' 
 
 alias O_RDONLY   = 0;
@@ -18,7 +18,7 @@ alias O_SYMLINK  = 0x200000;
 alias O_EVTONLY  = 0x8000;
 
 
-
+
 /// @section  flags for 'chmod'/'stat' 
 
 alias S_IRWXU = octal("0700");
@@ -50,7 +50,7 @@ alias S_IFLNK  = octal("0120000");
 alias S_IFSOCK = octal("0140000");
 alias S_IFWHT  = octal("0160000");
 
-
+
 /// @section  flags for lseek 
 
 alias SEEK_SET = 0;
@@ -58,7 +58,7 @@ alias SEEK_CUR = 1;
 alias SEEK_END = 2;
 
 
-
+
 /// @section  flags for mmap 
 
 alias PROT_NONE  = 0;
@@ -77,7 +77,7 @@ alias MAP_NOCACHE      = 1024;
 alias MAP_FAILED = RawPointer(-1);
 
 
-
+
 /// @section  flags for msync 
 
 alias MS_ASYNC      = 1;
@@ -85,7 +85,7 @@ alias MS_SYNC       = 16;
 alias MS_INVALIDATE = 2;
 
 
-
+
 /// @section  flags for dlsym 
 
 alias RTLD_LAZY = 0x1;
@@ -101,7 +101,7 @@ alias RTLD_SELF = RawPointer(-3);
 alias RTLD_MAIN_ONLY = RawPointer(-5);
 
 
-
+
 /// @section  socket protocol families 
 alias AF_UNSPEC = 0uss;
 alias AF_LOCAL = 1uss;
@@ -109,7 +109,7 @@ alias AF_INET = 2uss;
 alias AF_INET6 = 30uss;
 
 
-
+
 /// @section  socket protocol families 
 alias PF_UNSPEC = AF_UNSPEC;
 alias PF_LOCAL = AF_LOCAL;
@@ -117,14 +117,14 @@ alias PF_INET = AF_INET;
 alias PF_INET6 = AF_INET6;
 
 
-
+
 /// @section  socket types 
 alias SOCK_STREAM = 1;
 alias SOCK_DGRAM = 2;
 alias SOCK_RAW = 3;
 
 
-
+
 /// @section  IP protocols 
 alias IPPROTO_ICMP   =  1;
 alias IPPROTO_IGMP   =  2;
@@ -133,7 +133,7 @@ alias IPPROTO_UDP    = 17;
 alias IPPROTO_ICMPV6 = 58;
 
 
-
+
 /// @section  special IPv4 addresses 
 alias INADDR_ANY       = 0x00_00_00_00u;
 alias INADDR_BROADCAST = 0xFF_FF_FF_FFu;
@@ -145,14 +145,14 @@ alias INADDR_ALLRTRS_GROUP   = 0xE0_00_00_02u;
 alias INADDR_MAX_LOCAL_GROUP = 0xE0_00_00_FFu;
 
 
-
+
 /// @section  getsockopt/setsockopt constants 
 alias SOL_SOCKET = 0xffff;
 
 alias SO_REUSEADDR = 4;
 
 
-
+
 /// @section  byte order macros 
 htons(x: UInt16) = hostToNetwork(x);
 ntohs(x: UInt16) = networkToHost(x);
@@ -161,7 +161,7 @@ htonl(x: UInt32) = hostToNetwork(x);
 ntohl(x: UInt32) = networkToHost(x);
 
 
-
+
 /// @section  signals 
 
 alias SIGHUP    = 1;

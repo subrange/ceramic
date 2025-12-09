@@ -24,7 +24,7 @@ public import io.sockets.platform.(
     SOL_SOCKET, SO_REUSEADDR
 );
 
-
+
 /// @section  wrapper for socket API calls 
 
 record GenericSocketError (code: Int);
@@ -55,7 +55,7 @@ socketCall(callable, forward ..args) {
 }
 
 
-
+
 /// @section  high-level socket addresses 
 
 // makeSockaddr(addr) --> Sockaddr
@@ -148,7 +148,7 @@ overload lookupInetHostname(hostname: S) {
 }
 
 
-
+
 /// @section  socket objects 
 
 define Socket?;
@@ -182,7 +182,7 @@ overload assign(ref x: S, ref y: S);
 overload fileHandle(s: S) { return s.raw; }
 
 
-
+
 /// @section  ListenSocket() 
 [T, I when StreamSocketAddress?(T) and Integer?(I)]
 overload ListenSocket(addr: T, backlog: I)
@@ -229,7 +229,7 @@ accept(listener: ListenSocket[T])
 }
 
 
-
+
 /// @section  StreamSocket() 
 [T]
 overload StreamSocket(listener: ListenSocket[T])
@@ -253,7 +253,7 @@ overload StreamSocket(addr: T) --> socket: StreamSocket {
 }
 
 
-
+
 /// @section  StreamSocket implementation of stream protocol 
 overload readBytes(s: StreamSocket, buffer: Pointer[Byte], n: SizeT)
     = SizeT(socketCall(platform.recv, s.raw,
@@ -268,7 +268,7 @@ overload writeBytes(s: StreamSocket, buffer: Pointer[Byte], n: SizeT)
 overload flush(s: StreamSocket) { }
 
 
-
+
 /// @section  Print support for In_addr 
 overload printTo(stream, addr: In_addr) {
     var host = networkToHost(platform.s_addr(addr));

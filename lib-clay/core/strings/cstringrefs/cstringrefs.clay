@@ -1,18 +1,18 @@
 import core.libc.(strlen);
 
-
+
 /// @section  CStringRef - null terminated string 
 
 record CStringRef (ptr : Pointer[Int8]);
 
 
-
+
 /// @section  predicates 
 
 overload ContiguousSequence?(#CStringRef) : Bool = true;
 
 
-
+
 /// @section  constructors 
 
 [T when ByteLike?(T)]
@@ -24,7 +24,7 @@ forceinline overload CStringRef(ptr : Pointer[T]) --> returned:CStringRef {
 forceinline overload CStringRef(#S) = CStringRef(cstring(S));
 
 
-
+
 /// @section  size, index 
 
 forceinline overload size(a:CStringRef) : SizeT = SizeT(strlen(a.ptr));
@@ -36,7 +36,7 @@ forceinline overload index(a:CStringRef, i:I) {
 }
 
 
-
+
 /// @section  coordinates and iteration 
 
 forceinline overload begin(a:CStringRef) = Pointer[Char](a.ptr);
@@ -48,7 +48,7 @@ forceinline overload reverseIterator(a:CStringRef) =
     reverseCoordinateRange(end(a), begin(a));
 
 
-
+
 /// @section  cstring 
 
 forceinline overload cstring(a:CStringRef) = a.ptr;

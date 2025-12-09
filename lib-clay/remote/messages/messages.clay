@@ -23,12 +23,12 @@ private writeMarshalSize(stream, n: MarshalSize) {
 }
 
 
-
+
 /// @section  remote message protocols 
 alias DefaultProtocol = call;
 
 
-
+
 /// @section  entry point generation 
 alias RemoteEntryPoint = CodePointer[[Vector[Byte]], []];
 
@@ -52,7 +52,7 @@ private createRemoteCode(#Protocol, ..Args) {
 private var remoteCode[Protocol, ..Args] = createRemoteCode(Protocol, ..Args);
 
 
-
+
 /// @section  client interface 
 define remoteMessage;
 
@@ -72,7 +72,7 @@ overload remoteMessage(outstream, forward ..args: Args) {
 }
 
 
-
+
 /// @section  server interface 
 record InvalidRemoteMessage(code: MarshalSize);
 instance Exception (InvalidRemoteMessage);

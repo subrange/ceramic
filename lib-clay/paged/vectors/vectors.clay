@@ -2,7 +2,7 @@
 import paged.allocator.*;
 import data.vectors.generic.*;
 import data.sequences.lazy.*;
-
+
 /// @section  Vector[T] 
 
 record Vector[T] (
@@ -12,7 +12,7 @@ record Vector[T] (
 );
 
 
-
+
 /// @section  predicates 
 
 [T] overload RegularRecord?(#Vector[T]) = false;
@@ -20,7 +20,7 @@ record Vector[T] (
 [T] overload ContiguousSequence?(#Vector[T]) = true; 
 
 
-
+
 /// @section  constructors 
 
 [T]
@@ -50,7 +50,7 @@ overload Vector(a:A) {
 }
 
 
-
+
 /// @section  varargs constructor 
 
 [T, ..A when (countValues(..A) > 0) and equalValues?(T, ..A)]
@@ -62,7 +62,7 @@ alias overload Vector[T](..args:A) {
 }
 
 
-
+
 /// @section  moveUnsafe, resetUnsafe, assign, destroy 
 
 [T]
@@ -89,7 +89,7 @@ overload destroy(a:Vector[T]) {
 }
 
 
-
+
 /// @section  generic vector requirements 
 
 [T]

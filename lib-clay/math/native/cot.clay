@@ -71,7 +71,7 @@ private forceinline redupi(x:T){
     return ((x - t * T(DP1)) - t * T(DP2)) - t * T(DP3);
 }
 
-
+
 //  Taylor series expansion for cosh(2y) - cos(2x)  
 [C when Complex?(C)]
 private tans(z:C){

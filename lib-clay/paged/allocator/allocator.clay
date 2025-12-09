@@ -4,7 +4,7 @@ import paged.misc.*;
 import io.files.*;
 import data.strings.*;
 
-
+
 /// @section  paged allocator global state 
 
 alias nullBlock = Greatest(SizeT);
@@ -28,7 +28,7 @@ dataBegin() = state.dataBegin;
 dataEnd() = state.dataEnd;
 
 
-
+
 /// @section  Header (block header) 
 
 record Header (
@@ -82,7 +82,7 @@ blockInit(b, size, previous, nextInBucket, previousInBucket) {
 }
 
 
-
+
 /// @section  free list 
 
 bucketId(size) = floorLog2(size);
@@ -144,7 +144,7 @@ removeFromFreeList(b) {
 }
 
 
-
+
 /// @section  initializePaging 
 
 resetState() {
@@ -185,7 +185,7 @@ initializePaging(fileName, fileSize) {
 }
 
 
-
+
 /// @section  PagedPointer 
 
 record PagedPointer[T] (
@@ -231,7 +231,7 @@ overload null?(p : PagedPointer[T]) = (p.offset == 0);
 nullPaged(#T) = PagedPointer[T]();
 
 
-
+
 /// @section  allocatePaged 
 
 splitBlock?(b, n) {
@@ -262,7 +262,7 @@ allocatePaged(#T, n_:I) {
 }
 
 
-
+
 /// @section  freePaged 
 
 firstBlock?(b) = (b == 0);
@@ -302,7 +302,7 @@ freePaged(p:PagedPointer[T]) {
 }
 
 
-
+
 /// @section  display state 
 
 printPagingState() {

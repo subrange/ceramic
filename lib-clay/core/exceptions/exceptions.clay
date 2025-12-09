@@ -11,7 +11,7 @@ import __operators__.(
     exceptionInFinalizer,
 );
 
-
+
 /// @section  Exception, NoException, currentException 
 
 variant Exception;
@@ -47,7 +47,7 @@ private exceptionObject(exp:RawPointer) : ByRef[ExceptionData]
     = ref Pointer[ExceptionData](exp)^;
 
 
-
+
 /// @section  printUnhandledExceptionToStderr
 
 // Print unhandled exception to stderr.
@@ -63,7 +63,7 @@ default printUnhandledExceptionToStderr(e) : {
 }
 
 
-
+
 /// @section  throwValue, continueException 
 
 [T when Type?(T)]
@@ -108,7 +108,7 @@ private signalException(exp:RawPointer) __llvm__ {
 }
 
 
-
+
 /// @section  throwButPropagate 
 
 throwButPropagate(ex, ..T) {
@@ -126,7 +126,7 @@ alias throwButPropagateLike(ex, ..expr) {
 }
 
 
-
+
 /// @section  exceptionIs?, exceptionAs, exceptionAsAny 
 
 [T]
@@ -148,7 +148,7 @@ overload exceptionAsAny(exp:RawPointer) : Exception, ExceptionContext {
 }
 
 
-
+
 /// @section  unhandledExceptionInExternal 
 //
 

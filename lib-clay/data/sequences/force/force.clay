@@ -1,6 +1,6 @@
 import data.vectors.*;
 
-
+
 /// @section  UnderlyingContainerConstructor 
 
 define UnderlyingContainerConstructor;
@@ -12,7 +12,7 @@ overload UnderlyingContainerConstructor(#Array[T,n]) = Array;
 overload UnderlyingContainerConstructor(#Vector[T]) = Vector;
 
 
-
+
 /// @section  ForcedContainerConstructor 
 
 define ForcedContainerConstructor;
@@ -29,7 +29,7 @@ overload ForcedContainerConstructor(#T) = UnderlyingContainerConstructor(T);
 overload ForcedContainerConstructor(#T) = Vector;
 
 
-
+
 /// @section  force 
 
 [A when Sequence?(A)]

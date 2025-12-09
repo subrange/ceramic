@@ -3,7 +3,7 @@
 /// Default string implementation is in module `strings` (not `core.strings`).
 
 
-
+
 /// @section  String? 
 
 private define StringOfChar(S, C);
@@ -21,7 +21,7 @@ String?(#A) = StringOfChar(#A, Char);
 UniString?(#A) = StringOfChar(#A, UniChar);
 
 
-
+
 /// @section  SizedString? 
 
 [A]
@@ -31,7 +31,7 @@ SizedString?(#A) = String?(A) and SizedSequence?(A);
 SizedUniString?(A) = UniString?(A) and SizedSequence?(A);
 
 
-
+
 /// @section  ContiguousString? 
 
 [A]
@@ -41,7 +41,7 @@ ContiguousString?(#A) = String?(A) and ContiguousSequence?(A);
 ContiguousUniString?(#A) = UniString?(A) and ContiguousSequence?(A);
 
 
-
+
 /// @section  CCompatibleString? 
 
 [A]

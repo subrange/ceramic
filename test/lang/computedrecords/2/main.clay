@@ -1,7 +1,7 @@
 import printer.(println);
 import data.vectors.*;
 
-
+
 //
 // Vectorized[R] is a type that is derived from the record type R.
 //
@@ -17,7 +17,7 @@ vectorizeField(field) {
 }
 
 
-
+
 //
 // testing code
 //

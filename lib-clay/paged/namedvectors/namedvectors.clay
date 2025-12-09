@@ -6,7 +6,7 @@ import io.mapping.*;
 import io.filesystem.*;
 import io.files.*;
 
-
+
 /// @section  NamedVector[T] 
 
 record NamedVector[T] (
@@ -23,7 +23,7 @@ record Header (
 );
 
 
-
+
 /// @section  predicates 
 
 [T] overload RegularRecord?(#NamedVector[T]) = false;
@@ -31,7 +31,7 @@ record Header (
 [T] overload ContiguousSequence?(#NamedVector[T]) = true;
 
 
-
+
 /// @section  constructor 
 
 private headerSpace() = alignUp(TypeSize(Header), 16u);
@@ -65,7 +65,7 @@ overload NamedVector[T](fileName:S) {
 }
 
 
-
+
 /// @section  destroy 
 
 [T]
@@ -76,7 +76,7 @@ overload destroy(x:NamedVector[T]) {
 }
 
 
-
+
 /// @section  generic vector requirements 
 
 [T]

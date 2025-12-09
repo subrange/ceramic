@@ -16,7 +16,7 @@ main() {
 }
 
 
-
+
 //
 // properties
 //
@@ -30,7 +30,7 @@ overload NodeFieldCount(x) = -1;
 overload NodeFields(x) = false;
 
 
-
+
 //
 // obj1, obj2
 //

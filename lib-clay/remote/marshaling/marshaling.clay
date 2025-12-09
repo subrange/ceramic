@@ -5,7 +5,7 @@ import sharedpointers.*;
 import data.vectors.*;
 import data.sequences.*;
 
-
+
 //
 // marshaling/unmarshaling context
 //
@@ -32,7 +32,7 @@ record UnmarshalContext (
 );
 
 
-
+
 //
 // marshaling object protocol
 //
@@ -75,7 +75,7 @@ overload Marshalable?(#MarshalContext) = false;
 overload Marshalable?(#UnmarshalContext) = false;
 
 
-
+
 //
 // bitwise-marshalable implementation
 //
@@ -118,7 +118,7 @@ overload BitwiseMarshalable?(#Union[..UnionMembers]) = true;
 [T, n when BitwiseMarshalable?(T)] overload BitwiseMarshalable?(#Array[T, n]) = true;
 
 
-
+
 //
 // memberwise record marshaling
 //
@@ -173,7 +173,7 @@ overload unmarshalFrom(context, begin_: Pointer[Byte], end: Pointer[Byte], #R)
 }
 
 
-
+
 //
 // memberwise tuple marshaling
 //
@@ -203,7 +203,7 @@ overload unmarshalFrom(context, begin_: Pointer[Byte], end: Pointer[Byte], #T)
 }
 
 
-
+
 //
 // memberwise variant marshaling
 //
@@ -268,7 +268,7 @@ overload unmarshalFrom(context, begin_: Pointer[Byte], end: Pointer[Byte], #V)
 }
 
 
-
+
 //
 // general sequence marshaling
 //
@@ -325,7 +325,7 @@ overload unmarshalFrom(context, begin_: Pointer[Byte], end: Pointer[Byte], #S) {
 [S when UnmarshalAsVectorSequence?(S)]
 overload UnmarshaledType(#S) = Vector[UnmarshaledType(SequenceElementType(S))];
 
-
+
 //
 // null marshaling of #values
 //
@@ -336,7 +336,7 @@ overload UnmarshaledType(#S) = Vector[UnmarshaledType(SequenceElementType(S))];
 ) = #x, begin;
 
 
-
+
 //
 // null marshaling of empty records, tuples
 //
@@ -357,7 +357,7 @@ overload unmarshalFrom(context, begin: Pointer[Byte], end: Pointer[Byte], #T)
     = [], begin;
 
 
-
+
 //
 // unique pointers
 //
@@ -404,7 +404,7 @@ overload unmarshalFrom(
 overload UnmarshaledType(#UniquePointer[T]) = UniquePointer[UnmarshaledType(T)];
 
 
-
+
 //
 // shared pointers
 //
@@ -527,7 +527,7 @@ overload unmarshalFrom(context: UnmarshalContext,
 overload UnmarshaledType(#SharedPointer[T]) = SharedPointer[UnmarshaledType(T)];
 
 
-
+
 //
 // high-level interface
 //

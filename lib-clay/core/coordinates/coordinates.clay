@@ -1,4 +1,4 @@
-
+
 /// @section  coordinate type predicates 
 
 Coordinate?(T) : Bool = CallDefined?(dereference, T);
@@ -21,7 +21,7 @@ define ContiguousCoordinate?(#T) : Bool;
 default ContiguousCoordinate?(T) : Bool = false;
 
 
-
+
 /// @section  ValueCoordinate 
 
 record ValueCoordinate[T] (hasValue? : Bool, value : T);
@@ -61,7 +61,7 @@ forceinline overload dec(ref c:ValueCoordinate[T]) : {
 }
 
 
-
+
 /// @section  ValueReverseCoordinate 
 
 record ValueReverseCoordinate[T] (value : T);
@@ -92,7 +92,7 @@ forceinline overload dec(ref c:ValueReverseCoordinate[T]) : {
 }
 
 
-
+
 /// @section  ReverseCoordinate 
 
 record ReverseCoordinate[T] (coord : T);

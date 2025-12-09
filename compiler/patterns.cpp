@@ -15,7 +15,7 @@
 
 namespace clay {
 
-
+
 //
 // derefDeep
 //
@@ -88,7 +88,7 @@ MultiStaticPtr derefDeep(MultiPatternPtr x)
 }
 
 
-
+
 //
 // objectToPattern, objectToPatternStruct
 //
@@ -280,7 +280,7 @@ static PatternPtr objectToPattern(ObjectPtr obj)
 }
 
 
-
+
 //
 // unify
 //
@@ -500,7 +500,7 @@ bool unifyEmpty(MultiPatternPtr x)
 }
 
 
-
+
 //
 // isPatternHead
 //
@@ -537,7 +537,7 @@ static bool isPatternHead(ObjectPtr x)
 }
 
 
-
+
 //
 // evaluateOnePattern
 //
@@ -658,7 +658,7 @@ PatternPtr evaluateOnePattern(ExprPtr expr, EnvPtr env)
 }
 
 
-
+
 //
 // evaluateAliasPattern
 //
@@ -684,7 +684,7 @@ PatternPtr evaluateAliasPattern(GlobalAliasPtr x, MultiPatternPtr params)
 }
 
 
-
+
 //
 // evaluateMultiPattern
 //

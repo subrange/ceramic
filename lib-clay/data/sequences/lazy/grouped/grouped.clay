@@ -49,7 +49,7 @@ overload iterator(group: Group[S])
     = CoordinateRange(begin(group), end(group));
 
 
-
+
 /// @section  group iterator 
 private record GroupIterator[I] (
     iter: I,
@@ -70,7 +70,7 @@ private record GroupIterator[I] (
 }
 
 
-
+
 /// @section  forward group coordinate 
 private record FGroupCoordinate[Coordinate] (
     beginCoord: Coordinate,
@@ -136,7 +136,7 @@ overload hasValue?(c: FGroupCoordinate[C]) {
 }
 
 
-
+
 /// @section  random access group coordinate 
 private record RAGroupCoordinate[Coordinate] (
     coord: Coordinate,

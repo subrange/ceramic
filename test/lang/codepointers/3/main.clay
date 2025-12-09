@@ -1,7 +1,7 @@
 import libc;
 
 
-
+
 //
 // doCall
 //
@@ -15,7 +15,7 @@ doCall(f:VarArgsCCodePointer[[..ArgTypes], [..ReturnTypes]], ..args:VarArgTypes)
     f(..args);
 }
 
-
+
 //
 // testing code
 

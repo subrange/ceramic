@@ -5,7 +5,7 @@ import io.mapping.*;
 import io.filesystem.*;
 import io.files.*;
 
-
+
 /// @section  NamedScalar[T] 
 
 record NamedScalar[T] (
@@ -18,7 +18,7 @@ record NamedScalar[T] (
 overload RegularRecord?(#NamedScalar[T]) = false;
 
 
-
+
 /// @section  constructor 
 
 [S,T when String?(S)]
@@ -40,7 +40,7 @@ overload NamedScalar[T](fileName:S, initial:T) {
 }
 
 
-
+
 /// @section  destroy 
 
 [T]
@@ -51,7 +51,7 @@ overload destroy(x:NamedScalar[T]) {
 }
 
 
-
+
 /// @section  dereference 
 
 [T]

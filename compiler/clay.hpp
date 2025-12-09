@@ -156,14 +156,14 @@ inline long double clay_cimag(_Complex long double c) { return __imag__ c; }
 
 namespace clay {
 
-
+
 //
 // container typedefs
 //
 
 typedef llvm::SmallString<260> PathString;
 
-
+
 //
 // Target-specific types
 //
@@ -173,7 +173,7 @@ typedef long long ptrdiff64_t;
 typedef unsigned size32_t;
 typedef unsigned long long size64_t;
 
-
+
 //
 // ObjectKind
 //
@@ -272,7 +272,7 @@ struct Object : public RefCounted {
 typedef Pointer<Object> ObjectPtr;
 
 
-
+
 //
 // forwards
 //
@@ -425,7 +425,7 @@ struct ValueStackEntry;
 struct MatchResult;
 struct MatchFailureError;
 
-
+
 //
 // Pointer typedefs
 //
@@ -575,7 +575,7 @@ typedef Pointer<ObjectTable> ObjectTablePtr;
 typedef Pointer<MatchResult> MatchResultPtr;
 
 
-
+
 //
 // Source, Location
 //
@@ -614,7 +614,7 @@ struct Location {
 };
 
 
-
+
 //
 // error module
 //
@@ -708,7 +708,7 @@ struct DebugPrinter {
 
 extern "C" void displayCompileContext();
 
-
+
 //
 // AST
 //
@@ -767,7 +767,7 @@ struct DottedName : public ANode {
 
 
 
-
+
 //
 // Expr
 //
@@ -1101,7 +1101,7 @@ struct EvalExpr : public Expr {
 };
 
 
-
+
 //
 // ExprList
 //
@@ -1137,7 +1137,7 @@ inline ExprListPtr Call::allArgs() {
     return _allArgs;
 }
 
-
+
 //
 // Stmt
 //
@@ -1586,7 +1586,7 @@ struct Code : public ANode {
 };
 
 
-
+
 //
 // Visibility
 //
@@ -1598,7 +1598,7 @@ enum Visibility {
 };
 
 
-
+
 //
 // TopLevelItem
 //
@@ -2034,7 +2034,7 @@ struct Documentation : public TopLevelItem {
 };
 
 
-
+
 //
 // GlobalAlias
 //
@@ -2065,7 +2065,7 @@ struct GlobalAlias : public TopLevelItem {
 };
 
 
-
+
 //
 // Imports
 //
@@ -2114,7 +2114,7 @@ struct ImportMembers : public Import {
         : Import(IMPORT_MEMBERS, dottedName) {}
 };
 
-
+
 //
 // Module
 //
@@ -2284,7 +2284,7 @@ struct MultiPValue : public Object {
     }
 };
 
-
+
 //
 // Env
 //
@@ -2303,14 +2303,14 @@ struct Env : public Object {
 };
 
 
-
+
 //
 // interactive module
 //
 
 void runInteractive(llvm::Module *llvmModule, ModulePtr module);
 
-
+
 //
 // Types
 //
@@ -2537,7 +2537,7 @@ struct NewType : public Type {
 //
 // Pattern
 //
-
+
 enum PatternKind {
     PATTERN_CELL,
     PATTERN_STRUCT

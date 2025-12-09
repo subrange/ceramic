@@ -1,7 +1,7 @@
 
 import data.sequences.util.*;
 
-
+
 /// @section  zipped 
 
 forceinline zipped(forward first, forward ..rest) =
@@ -15,7 +15,7 @@ private record Zipped[A] (
 overload LightweightSequence?(#Zipped[Tuple[..S]]) = true;
 
 
-
+
 /// @section  ZippedIterator 
 
 [A]
@@ -35,7 +35,7 @@ forceinline overload hasValue?(v:ZippedValue[..V]) = allValues?(hasValue?, ..unp
 forceinline overload getValue(forward v:ZippedValue[..V])
     = forward ..mapValues(getValue, ..unpackTuple(v.values));
 
-
+
 /// @section  reverse iteration 
 
 private AllReversible?(A) {
@@ -48,7 +48,7 @@ forceinline overload reverseIterator(a:Zipped[A]) =
     ZippedIterator(multiReverseIterators(a.seqs));
 
 
-
+
 /// @section  size, index 
 
 private AllSized?(A) {

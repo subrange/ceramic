@@ -1,7 +1,7 @@
 import data.strings.*;
 import data.vectors.*;
 
-
+
 /// @section  trim, trimBegin, trimEnd 
 
 define trim;
@@ -25,7 +25,7 @@ overload trimBegin(seq:S) = trimBegin(seq, asciiSpace?);
 overload trimEnd(seq:S) = trimEnd(seq, asciiSpace?);
 
 
-
+
 /// @section  trimmed, beginTrimmed, endTrimmed 
 
 define trimmed;

@@ -4,7 +4,7 @@ public import data.sequences.lazy.*;
 public import data.sequences.operators.*;
 import data.vectors.*;
 
-
+
 //
 // strict wrappers around lazy sequences
 //
@@ -30,7 +30,7 @@ alias overload sliceUpto(..args) = force(slicedUpto(..args));
 alias overload group(..args) = force(grouped(..args));
 
 
-
+
 //
 // specializations for Maybe
 //
@@ -47,7 +47,7 @@ overload filter(f, m:Maybe[T]) =
         nothing(T);
 
 
-// 
+// 
 //
 // interleave
 //
