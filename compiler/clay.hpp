@@ -31,50 +31,46 @@
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringMap.h>
 #include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/Triple.h>
+#include <llvm/TargetParser/Triple.h>
 #include <llvm/Analysis/Passes.h>
-#include <llvm/Assembly/Writer.h>
-#include <llvm/Assembly/Parser.h>
-#include <llvm/Assembly/PrintModulePass.h>
-#include <llvm/BasicBlock.h>
-#include <llvm/Bitcode/ReaderWriter.h>
+#include <llvm/AsmParser/Parser.h>
+#include <llvm/IR/BasicBlock.h>
+#include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/CodeGen/LinkAllAsmWriterComponents.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/CodeGen/ValueTypes.h>
-#include <llvm/DataLayout.h>
-#include <llvm/DebugInfo.h>
-#include <llvm/DerivedTypes.h>
-#include <llvm/DIBuilder.h>
+#include <llvm/IR/DataLayout.h>
+#include <llvm/IR/DebugInfo.h>
+#include <llvm/IR/DerivedTypes.h>
+#include <llvm/IR/DIBuilder.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
-#include <llvm/ExecutionEngine/JIT.h>
-#include <llvm/Function.h>
-#include <llvm/Intrinsics.h>
-#include <llvm/IRBuilder.h>
-#include <llvm/LinkAllVMCore.h>
-#include <llvm/Linker.h>
-#include <llvm/LLVMContext.h>
-#include <llvm/Module.h>
-#include <llvm/PassManager.h>
+#include <llvm/IR/Function.h>
+#include <llvm/IR/Intrinsics.h>
+#include <llvm/IR/IRBuilder.h>
+#include <llvm/Linker/Linker.h>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/PassManager.h>
 #include <llvm/Support/Allocator.h>
-#include <llvm/Support/Dwarf.h>
+#include <llvm/BinaryFormat/Dwarf.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/FormattedStream.h>
-#include <llvm/Support/Host.h>
+#include <llvm/TargetParser/Host.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Path.h>
-#include <llvm/Support/PathV2.h>
 #include <llvm/Support/SourceMgr.h>
-#include <llvm/Support/TargetRegistry.h>
-#include <llvm/Support/TargetSelect.h>
+#include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetOptions.h>
-#include <llvm/Transforms/IPO/PassManagerBuilder.h>
+#include <llvm/Passes/PassBuilder.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/Scalar.h>
-#include <llvm/Transforms/Vectorize.h>
-#include <llvm/Type.h>
+#include <llvm/Transforms/Vectorize/LoadStoreVectorizer.h>
+#include <llvm/IR/Type.h>
+#include <llvm/Support/Alignment.h>
+#include <llvm/IR/DebugInfoMetadata.h>
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -584,7 +580,7 @@ struct Location;
 
 struct Source : public Object {
     string fileName;
-    llvm::OwningPtr<llvm::MemoryBuffer> buffer;
+    std::unique_ptr<llvm::MemoryBuffer> buffer;
     llvm::TrackingVH<llvm::MDNode> debugInfo;
 
     Source(llvm::StringRef fileName);
@@ -720,7 +716,7 @@ struct ANode : public Object {
     ANode(ObjectKind objKind)
         : Object(objKind) {}
     void *operator new(size_t num_bytes) {
-        return ANodeAllocator->Allocate(num_bytes, llvm::AlignOf<ANode>::Alignment);
+        return ANodeAllocator->Allocate(num_bytes, alignof(ANode));
     }
     void operator delete(void* anode) {
         ANodeAllocator->Deallocate(anode);
@@ -730,14 +726,14 @@ struct ANode : public Object {
 struct Identifier : public ANode {
     const llvm::SmallString<16> str;
     bool isOperator:1;
-    
+
     Identifier(llvm::StringRef str)
         : ANode(IDENTIFIER), str(str), isOperator(false) {}
     Identifier(llvm::StringRef str, bool isOperator)
         : ANode(IDENTIFIER), str(str), isOperator(isOperator) {}
 
     static map<llvm::StringRef, IdentifierPtr> freeIdentifiers; // in parser.cpp
-    
+
     static Identifier *get(llvm::StringRef str, bool isOperator = false) {
         map<llvm::StringRef, IdentifierPtr>::const_iterator iter = freeIdentifiers.find(str);
         if (iter == freeIdentifiers.end()) {
@@ -747,7 +743,7 @@ struct Identifier : public ANode {
         } else
             return iter->second.ptr();
     }
-    
+
     static Identifier *get(llvm::StringRef str, Location const &location, bool isOperator = false) {
         Identifier *ident = new Identifier(str, isOperator);
         ident->location = location;
@@ -1285,7 +1281,7 @@ struct Return : public Statement {
         : Statement(RETURN), values(values),
           returnKind(returnKind), isExprReturn(false), isReturnSpecs(false) {}
     Return(ReturnKind returnKind, ExprListPtr values, bool exprRet)
-        : Statement(RETURN), values(values), 
+        : Statement(RETURN), values(values),
           returnKind(returnKind), isExprReturn(exprRet), isReturnSpecs(false) {}
 };
 
@@ -1668,10 +1664,10 @@ struct RecordBody : public ANode {
         : ANode(RECORD_BODY), computed(computed), isComputed(true),
         hasVarField(false) {}
     RecordBody(llvm::ArrayRef<RecordFieldPtr> fields)
-        : ANode(RECORD_BODY), fields(fields), isComputed(false), 
+        : ANode(RECORD_BODY), fields(fields), isComputed(false),
         hasVarField(false) {}
     RecordBody(llvm::ArrayRef<RecordFieldPtr> fields, bool hasVarField)
-        : ANode(RECORD_BODY), fields(fields), isComputed(false), 
+        : ANode(RECORD_BODY), fields(fields), isComputed(false),
         hasVarField(hasVarField) {}
 };
 
@@ -1758,7 +1754,7 @@ struct Overload : public TopLevelItem {
              InlineAttribute isInline)
         : TopLevelItem(OVERLOAD, module), target(target), code(code),
           isInline(isInline), patternsInitializedState(0),
-          callByName(callByName), nameIsPattern(false), 
+          callByName(callByName), nameIsPattern(false),
           hasAsConversion(false), isDefault(false) {}
     Overload(Module *module, ExprPtr target,
              CodePtr code,
@@ -1767,7 +1763,7 @@ struct Overload : public TopLevelItem {
              bool hasAsConversion)
         : TopLevelItem(OVERLOAD, module), target(target), code(code),
           isInline(isInline), patternsInitializedState(0),
-          callByName(callByName), nameIsPattern(false), 
+          callByName(callByName), nameIsPattern(false),
           hasAsConversion(hasAsConversion), isDefault(false) {}
 };
 
@@ -1796,7 +1792,7 @@ struct IntrinsicInstance {
 struct IntrinsicSymbol : public TopLevelItem {
     llvm::Intrinsic::ID id;
     map<vector<TypePtr>, IntrinsicInstance> instances;
-    
+
     IntrinsicSymbol(Module *module, IdentifierPtr name, llvm::Intrinsic::ID id)
         : TopLevelItem(INTRINSIC, module, name, PUBLIC), id(id) {}
 };
@@ -1811,8 +1807,8 @@ struct NewTypeDecl : public TopLevelItem {
             ExprPtr expr)
         : TopLevelItem(NEW_TYPE_DECL, module, name, visibility), expr(expr),
         initialized(false) {}
-    
-    
+
+
 };
 
 struct EnumDecl : public TopLevelItem {
@@ -2146,11 +2142,11 @@ struct ImportSet {
 
     void clear() { values.clear(); }
 };
-    
+
 struct ModuleLookup {
     ModulePtr module;
     llvm::StringMap<ModuleLookup> parents;
-    
+
     ModuleLookup() : module(NULL), parents() {}
     ModuleLookup(Module *m) : module(m), parents() {}
 };
@@ -2171,7 +2167,7 @@ struct Module : public ANode {
 
     llvm::StringMap<ObjectPtr> globals;
     llvm::StringMap<ObjectPtr> publicGlobals;
-    
+
     llvm::StringMap<ModuleLookup> importedModuleNames;
 
     EnvPtr env;
@@ -2228,7 +2224,7 @@ struct Module : public ANode {
           isIntrinsicsModule(false),
           debugInfo(NULL) {}
 
-    llvm::DINameSpace getDebugInfo() { return llvm::DINameSpace(debugInfo); }
+    llvm::DINamespace getDebugInfo() { return llvm::DINamespace(debugInfo); }
 };
 
 
@@ -2353,7 +2349,7 @@ struct Type : public Object {
     bool overloadsInitialized:1;
     bool defined:1;
     bool typeInfoInitialized:1;
-    
+
     Type(TypeKind typeKind)
         : Object(TYPE), typeKind(typeKind),
           llType(NULL), debugInfo(NULL),
@@ -2363,7 +2359,7 @@ struct Type : public Object {
     {}
 
     void *operator new(size_t num_bytes) {
-        return ANodeAllocator->Allocate(num_bytes, llvm::AlignOf<Type>::Alignment);
+        return ANodeAllocator->Allocate(num_bytes, alignof(Type));
     }
     void operator delete(void* type) {
         ANodeAllocator->Deallocate(type);
@@ -2477,7 +2473,7 @@ struct RecordType : public Type {
 
     vector<IdentifierPtr> fieldNames;
     vector<TypePtr> fieldTypes;
-    
+
     llvm::StringMap<size_t> fieldIndexMap;
 
     const llvm::StructLayout *layout;
@@ -2485,7 +2481,7 @@ struct RecordType : public Type {
     unsigned varFieldPosition;
     bool fieldsInitialized:1;
     bool hasVarField:1;
-    
+
     RecordType(RecordDeclPtr record, llvm::ArrayRef<ObjectPtr> params);
 
     size_t varFieldSize() {
