@@ -983,7 +983,7 @@ namespace clay {
             } while (*end);
         }
         // Add the relative path from the executable
-        PathString clayExe(llvm::sys::Path::GetMainExecutable(argv[0], (void *) (uintptr_t) &usage).c_str());
+        PathString clayExe(llvm::sys::fs::getMainExecutable(argv[0], (void *) (uintptr_t) &usage));
         llvm::StringRef clayDir = llvm::sys::path::parent_path(clayExe);
 
         PathString libDirDevelopment(clayDir);
