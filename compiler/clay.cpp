@@ -49,7 +49,7 @@ namespace clay {
                                       llvm::FunctionPassManager &fpasses,
                                       unsigned optLevel,
                                       bool internalize) {
-        llvm::Pass *inliningPass = 0;
+        llvm::Pass *inliningPass = nullptr;
         if (optLevel > 1) {
             int threshold = 225;
             if (optLevel > 2)
@@ -160,11 +160,11 @@ namespace clay {
                               llvm::ArrayRef<string> libs) {
         if (libs.empty())
             return true;
+
         llvm::Linker linker("clay", llvmModule, llvm::Linker::Verbose);
         linker.addSystemPaths();
         linker.addPaths(libSearchPaths);
-        for (size_t i = 0; i < libs.size(); ++i) {
-            string lib = libs[i];
+        for (auto lib : libs) {
             llvmModule->addLibrary(lib);
             //as in cling/lib/Interpreter/Interpreter.cpp
             bool isNative = true;
@@ -202,11 +202,9 @@ namespace clay {
                 bool hasError = llvm::sys::DynamicLibrary
                         ::LoadLibraryPermanently(SoFile.str().c_str(), &errMsg);
                 if (hasError) {
-                    if (hasError) {
-                        llvm::errs() << "Couldn't load shared library " << lib << "\n" << errMsg.c_str();
-                        linker.releaseModule();
-                        return false;
-                    }
+                    llvm::errs() << "Couldn't load shared library " << lib << "\n" << errMsg.c_str();
+                    linker.releaseModule();
+                    return false;
                 }
             }
         }
@@ -242,7 +240,7 @@ namespace clay {
         llvm::PassManager passes;
 
         string moduleDataLayout = module->getDataLayout();
-        llvm::DataLayout *dl = new llvm::DataLayout(moduleDataLayout);
+        auto *dl = new llvm::DataLayout(moduleDataLayout);
         passes.add(dl);
 
         llvm::FunctionPassManager fpasses(module);
@@ -252,9 +250,8 @@ namespace clay {
         addOptimizationPasses(passes, fpasses, optLevel, internalize);
 
         fpasses.doInitialization();
-        for (llvm::Module::iterator i = module->begin(), e = module->end();
-             i != e; ++i) {
-            fpasses.run(*i);
+        for (auto & i : *module) {
+            fpasses.run(i);
         }
 
         passes.add(llvm::createVerifierPass());
@@ -290,15 +287,15 @@ namespace clay {
         assert(!result);
 
         fpasses.doInitialization();
-        for (llvm::Module::iterator i = module->begin(), e = module->end();
-             i != e; ++i) {
-            fpasses.run(*i);
+        for (auto & i : *module) {
+            fpasses.run(i);
         }
         fpasses.doFinalization();
     }
 
-    static string joinCmdArgs(llvm::ArrayRef<llvm::StringRef> args) {
-        string s;
+    [[maybe_unused]] static std::string joinCmdArgs(llvm::ArrayRef<llvm::StringRef> args)
+    {
+        std::string s;
         llvm::raw_string_ostream ss(s);
         for (const llvm::StringRef &arg : args) {
             if (&arg != args.begin()) {
@@ -335,43 +332,43 @@ namespace clay {
         string outputFilePathStr = outputFilePath.str();
 
         std::vector<llvm::StringRef> clangArgs;
-        clangArgs.push_back(clangPath.data());
+        clangArgs.emplace_back(clangPath.data());
 
         switch (llvmDataLayout->getPointerSizeInBits()) {
             case 32:
-                clangArgs.push_back("-m32");
+                clangArgs.emplace_back("-m32");
                 break;
             case 64:
-                clangArgs.push_back("-m64");
+                clangArgs.emplace_back("-m64");
                 break;
             default:
                 assert(false);
         }
 
         llvm::Triple triple(llvmModule->getTargetTriple());
-        string linkerFlags;
         if (sharedLib) {
-            clangArgs.push_back("-shared");
+            clangArgs.emplace_back("-shared");
 
             if (triple.isOSWindows()) {
+                string linkerFlags;
                 PathString defPath;
                 outputFilePath.toVector(defPath);
                 llvm::sys::path::replace_extension(defPath, "def");
 
                 linkerFlags = "-Wl,--output-def," + string(defPath.begin(), defPath.end());
 
-                clangArgs.push_back(linkerFlags.c_str());
+                clangArgs.emplace_back(linkerFlags);
             }
         }
         if (debug) {
             if (triple.getOS() == llvm::Triple::Win32)
-                clangArgs.push_back("-Wl,/debug");
+                clangArgs.emplace_back("-Wl,/debug");
         }
-        clangArgs.push_back("-o");
-        clangArgs.push_back(outputFilePathStr);
+        clangArgs.emplace_back("-o");
+        clangArgs.emplace_back(outputFilePathStr);
         clangArgs.push_back(tempObj);
-        for (unsigned i = 0; i < arguments.size(); ++i)
-            clangArgs.push_back(arguments[i].c_str());
+        for (const auto & argument : arguments)
+            clangArgs.emplace_back(argument);
 
         if (verbose) {
             llvm::errs() << "executing clang to generate binary:\n";
@@ -392,10 +389,10 @@ namespace clay {
                 outputDSYMPath.append(".dSYM");
 
                 std::vector<llvm::StringRef> dsymutilArgs;
-                dsymutilArgs.push_back(dsymutilPath);
-                dsymutilArgs.push_back("-o");
-                dsymutilArgs.push_back(outputDSYMPath);
-                dsymutilArgs.push_back(outputFilePathStr);
+                dsymutilArgs.emplace_back(dsymutilPath);
+                dsymutilArgs.emplace_back("-o");
+                dsymutilArgs.emplace_back(outputDSYMPath);
+                dsymutilArgs.emplace_back(outputFilePathStr);
 
                 if (verbose) {
                     llvm::errs() << "executing dsymutil:";
@@ -414,7 +411,7 @@ namespace clay {
         return (result == 0);
     }
 
-    static void usage(char *argv0) {
+    static void usage(const char *argv0) {
         llvm::errs() << "usage: " << argv0 << " <options> <clay file>\n";
         llvm::errs() << "       " << argv0 << " <options> -e <clay code>\n";
         llvm::errs() << "options:\n";
@@ -630,7 +627,7 @@ namespace clay {
                 if (dot == nullptr) {
                     logMatchSymbols.insert(make_pair(string("*"), argv[i]));
                 } else {
-                    logMatchSymbols.insert(make_pair(string((char const *) argv[i], dot), string(dot + 1)));
+                    logMatchSymbols.insert(make_pair(string(static_cast<char const *>(argv[i]), dot), string(dot + 1)));
                 }
             } else if (strcmp(argv[i], "-e") == 0) {
                 if (i + 1 == argc) {
@@ -832,7 +829,7 @@ namespace clay {
                         return 1;
                     }
                 }
-                searchPath.push_back(PathString(path));
+                searchPath.emplace_back(path);
             } else if (strstr(argv[i], "-version") == argv[i]
                        || strcmp(argv[i], "--version") == 0) {
                 printVersion();
@@ -964,24 +961,23 @@ namespace clay {
         initExternalTarget(targetTriple);
 
         // Try environment variables first
-        char *libclayPath = getenv("CLAY_PATH");
-        if (libclayPath) {
+        if (char *libclayPath = getenv("CLAY_PATH")) {
             // Parse the environment variable
-            // Format expected is standard PATH form, i.e
-            // CLAY_PATH=path1:path2:path3  (on unix)
-            // CLAY_PATH=path1;path2;path3  (on windows)
+            // Format expected is standard PATH form, i.e.
+            // CLAY_PATH=path1:path2:path3  (on Unix)
+            // CLAY_PATH=path1;path2;path3  (on Windows)
             char *begin = libclayPath;
             char *end;
             do {
                 end = begin;
                 while (*end && (*end != ENV_SEPARATOR))
                     ++end;
-                searchPath.push_back(llvm::StringRef(begin, (size_t) (end - begin)));
+                searchPath.emplace_back(llvm::StringRef(begin, static_cast<size_t>(end - begin)));
                 begin = end + 1;
             } while (*end);
         }
         // Add the relative path from the executable
-        PathString clayExe(llvm::sys::fs::getMainExecutable(argv[0], (void *) (uintptr_t) &usage));
+        PathString clayExe(llvm::sys::fs::getMainExecutable(argv[0], reinterpret_cast<void *>(&usage)));
         llvm::StringRef clayDir = llvm::sys::path::parent_path(clayExe);
 
         PathString libDirDevelopment(clayDir);
@@ -995,14 +991,13 @@ namespace clay {
         searchPath.push_back(libDirDevelopment);
         searchPath.push_back(libDirProduction1);
         searchPath.push_back(libDirProduction2);
-        searchPath.push_back(PathString("."));
+        searchPath.emplace_back(".");
 
         if (verbose) {
             llvm::errs() << "using search path:\n";
 
-            for (std::vector<PathString>::const_iterator it = searchPath.begin();
-                 it != searchPath.end(); ++it) {
-                llvm::errs() << "    " << *it << "\n";
+            for (const auto & it : searchPath) {
+                llvm::errs() << "    " << it << "\n";
             }
         }
 
@@ -1061,9 +1056,9 @@ namespace clay {
             initLoader();
 
             ModulePtr m;
-            string clayScriptSource;
             vector<string> sourceFiles;
             if (!clayScript.empty()) {
+                string clayScriptSource;
                 clayScriptSource = clayScriptImports + "main() {\n" + clayScript + "}";
                 m = loadProgramSource("-e", clayScriptSource, verbose, repl);
             } else if (generateDeps)
@@ -1111,9 +1106,9 @@ namespace clay {
             optTimer.stop();
 
             if (run) {
-                vector<string> argv;
-                argv.push_back(clayFile);
-                runModule(llvmModule, argv, envp, libSearchPath, libraries);
+                vector<string> runArgs;
+                runArgs.push_back(clayFile);
+                runModule(llvmModule, runArgs, envp, libSearchPath, libraries);
             } else if (repl) {
                 linkLibraries(llvmModule, libSearchPath, libraries);
                 runInteractive(llvmModule, m);
@@ -1175,10 +1170,10 @@ namespace clay {
             return 1;
         }
         if (showTiming) {
-            llvm::errs() << "load time = " << (size_t) loadTimer.elapsedMillis() << " ms\n";
-            llvm::errs() << "compile time = " << (size_t) compileTimer.elapsedMillis() << " ms\n";
-            llvm::errs() << "optimization time = " << (size_t) optTimer.elapsedMillis() << " ms\n";
-            llvm::errs() << "codegen time = " << (size_t) outputTimer.elapsedMillis() << " ms\n";
+            llvm::errs() << "load time = " << static_cast<size_t>(loadTimer.elapsedMillis()) << " ms\n";
+            llvm::errs() << "compile time = " << static_cast<size_t>(compileTimer.elapsedMillis()) << " ms\n";
+            llvm::errs() << "optimization time = " << static_cast<size_t>(optTimer.elapsedMillis()) << " ms\n";
+            llvm::errs() << "codegen time = " << static_cast<size_t>(outputTimer.elapsedMillis()) << " ms\n";
             llvm::errs().flush();
         }
 
