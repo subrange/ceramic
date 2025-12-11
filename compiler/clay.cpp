@@ -1,16 +1,33 @@
 #include <llvm/Support/FileSystem.h>
-#include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/Process.h>
 #include <llvm/Support/Program.h>
-#include "llvm/Support/DynamicLibrary.h"
 #include <llvm/Support/ErrorOr.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Signals.h>
 #include <llvm/TargetParser/Host.h>
 #include <llvm/TargetParser/Triple.h>
-#include <llvm/Linker/Linker.h>
 #include <llvm/Support/FileUtilities.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/IR/Verifier.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/PassManager.h>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Passes/OptimizationLevel.h>
+#include <llvm/Support/FormattedStream.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/Error.h>
+#include <llvm/ExecutionEngine/Orc/LLJIT.h>
+#include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
+#include <llvm/Transforms/IPO/Internalize.h>
+#include <llvm/Bitcode/BitcodeWriterPass.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
+#include <llvm/ADT/ArrayRef.h>
+#include <llvm/ExecutionEngine/Orc/Core.h>
+#include <llvm/IR/Function.h>
+#include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/IRPrinter/IRPrintingPasses.h>
 
 #include <system_error>
 #include <string>
@@ -1130,9 +1147,6 @@ namespace clay {
                 outputTimer.stop();
             } else {
                 bool result;
-                llvm::sys::Path clangPath = llvm::sys::Program::FindProgramByName("clang");
-                if (!clangPath.isValid()) {
-                    llvm::errs() << "error: unable to find clang on the path\n";
                 llvm::ErrorOr<std::string> clangPathOrErr = llvm::sys::findProgramByName("clang");
                 if (std::error_code ec = clangPathOrErr.getError()) {
                     llvm::errs() << "error: unable to find clang on the path: " << ec.message() << "\n";
