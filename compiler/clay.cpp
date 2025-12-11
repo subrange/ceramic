@@ -30,7 +30,10 @@
 #include <llvm/IRPrinter/IRPrintingPasses.h>
 
 #include <system_error>
+#include <vector>
 #include <string>
+#include <memory>
+#include <utility>
 
 #include "clay.hpp"
 #include "hirestimer.hpp"
@@ -39,6 +42,9 @@
 #include "loader.hpp"
 #include "invoketables.hpp"
 #include "parachute.hpp"
+
+using std::string;
+using std::vector;
 
 // for _exit
 #ifdef _WIN32
@@ -60,254 +66,128 @@ namespace clay {
 #define ENV_SEPARATOR ':'
 #endif
 
-    using namespace std;
-
-    static void addOptimizationPasses(llvm::PassManager &passes,
-                                      llvm::FunctionPassManager &fpasses,
-                                      unsigned optLevel,
-                                      bool internalize) {
-        llvm::Pass *inliningPass = nullptr;
-        if (optLevel > 1) {
-            int threshold = 225;
-            if (optLevel > 2)
-                threshold = 275;
-            inliningPass = llvm::createFunctionInliningPass(threshold);
-        } else {
-            inliningPass = llvm::createAlwaysInlinerPass();
-        }
-
-        llvm::PassManagerBuilder builder;
-        builder.OptLevel = optLevel;
-        builder.Inliner = inliningPass;
-
-        builder.populateFunctionPassManager(fpasses);
-
-        // If all optimizations are disabled, just run the always-inline pass.
-        if (optLevel == 0) {
-            if (builder.Inliner) {
-                passes.add(builder.Inliner);
-                builder.Inliner = 0;
-            }
-        } else {
-            passes.add(llvm::createTypeBasedAliasAnalysisPass());
-            passes.add(llvm::createBasicAliasAnalysisPass());
-
-            passes.add(llvm::createGlobalOptimizerPass()); // Optimize out global vars
-
-            passes.add(llvm::createIPSCCPPass()); // IP SCCP
-            passes.add(llvm::createDeadArgEliminationPass()); // Dead argument elimination
-
-            passes.add(llvm::createInstructionCombiningPass()); // Clean up after IPCP & DAE
-            passes.add(llvm::createCFGSimplificationPass()); // Clean up after IPCP & DAE
-
-            // Start of CallGraph SCC passes.
-            if (builder.Inliner) {
-                passes.add(builder.Inliner);
-                builder.Inliner = 0;
-            }
-            if (optLevel > 2)
-                passes.add(llvm::createArgumentPromotionPass()); // Scalarize uninlined fn args
-
-            // Start of function pass.
-            // Break up aggregate allocas, using SSAUpdater.
-            passes.add(llvm::createScalarReplAggregatesPass(-1, false));
-            passes.add(llvm::createEarlyCSEPass()); // Catch trivial redundancies
-
-            passes.add(llvm::createJumpThreadingPass()); // Thread jumps.
-            // Disable Value Propagation pass until fixed LLVM bug #12503
-            // passes.add(llvm::createCorrelatedValuePropagationPass()); // Propagate conditionals
-            passes.add(llvm::createCFGSimplificationPass()); // Merge & remove BBs
-            passes.add(llvm::createInstructionCombiningPass()); // Combine silly seq's
-
-            passes.add(llvm::createTailCallEliminationPass()); // Eliminate tail calls
-            passes.add(llvm::createCFGSimplificationPass()); // Merge & remove BBs
-            passes.add(llvm::createReassociatePass()); // Reassociate expressions
-            passes.add(llvm::createLoopRotatePass()); // Rotate Loop
-            passes.add(llvm::createLICMPass()); // Hoist loop invariants
-            passes.add(llvm::createLoopUnswitchPass(builder.SizeLevel || optLevel < 3));
-            passes.add(llvm::createInstructionCombiningPass());
-            passes.add(llvm::createIndVarSimplifyPass()); // Canonicalize indvars
-            passes.add(llvm::createLoopIdiomPass()); // Recognize idioms like memset.
-            passes.add(llvm::createLoopDeletionPass()); // Delete dead loops
-
-            if (optLevel > 1)
-                passes.add(llvm::createGVNPass()); // Remove redundancies
-            passes.add(llvm::createMemCpyOptPass()); // Remove memcpy / form memset
-            passes.add(llvm::createSCCPPass()); // Constant prop with SCCP
-
-            // Run instcombine after redundancy elimination to exploit opportunities
-            // opened up by them.
-            passes.add(llvm::createInstructionCombiningPass());
-            passes.add(llvm::createJumpThreadingPass()); // Thread jumps
-            // Disable Value Propagation pass until fixed LLVM bug #12503
-            // passes.add(llvm::createCorrelatedValuePropagationPass());
-            passes.add(llvm::createDeadStoreEliminationPass()); // Delete dead stores
-
-            if (builder.Vectorize) {
-                passes.add(llvm::createBBVectorizePass());
-                passes.add(llvm::createInstructionCombiningPass());
-                if (optLevel > 1)
-                    passes.add(llvm::createGVNPass()); // Remove redundancies
-            }
-
-            passes.add(llvm::createAggressiveDCEPass()); // Delete dead instructions
-            passes.add(llvm::createCFGSimplificationPass()); // Merge & remove BBs
-            passes.add(llvm::createInstructionCombiningPass()); // Clean up after everything.
-
-            // GlobalOpt already deletes dead functions and globals, at -O3 try a
-            // late pass of GlobalDCE.  It is capable of deleting dead cycles.
-            if (optLevel > 2)
-                passes.add(llvm::createGlobalDCEPass()); // Remove dead fns and globals.
-
-            if (optLevel > 1)
-                passes.add(llvm::createConstantMergePass()); // Merge dup global constants
-        }
-
-        if (optLevel > 2) {
-            if (internalize) {
-                vector<const char *> do_not_internalize;
-                do_not_internalize.push_back("main");
-                passes.add(llvm::createInternalizePass(do_not_internalize));
-            }
-            builder.populateLTOPassManager(passes, false, true);
-        }
-    }
-
-    static bool linkLibraries(llvm::Module *module, llvm::ArrayRef<string> libSearchPaths,
-                              llvm::ArrayRef<string> libs) {
-        if (libs.empty())
-            return true;
-
-        llvm::Linker linker("clay", llvmModule, llvm::Linker::Verbose);
-        linker.addSystemPaths();
-        linker.addPaths(libSearchPaths);
-        for (auto lib : libs) {
-            llvmModule->addLibrary(lib);
-            //as in cling/lib/Interpreter/Interpreter.cpp
-            bool isNative = true;
-            if (linker.LinkInLibrary(lib, isNative)) {
-                // that didn't work, try bitcode:
-                llvm::sys::Path FilePath(lib);
-                std::string Magic;
-                if (!FilePath.getMagicNumber(Magic, 64)) {
-                    // filename doesn't exist...
-                    linker.releaseModule();
-                    return false;
-                }
-                if (llvm::sys::IdentifyFileType(Magic.c_str(), 64)
-                    == llvm::sys::Bitcode_FileType) {
-                    // We are promised a bitcode file, complain if it fails
-                    linker.setFlags(0);
-                    if (linker.LinkInFile(llvm::sys::Path(lib), isNative)) {
-                        linker.releaseModule();
-                        return false;
-                    }
-                } else {
-                    // Nothing the linker can handle
-                    linker.releaseModule();
-                    return false;
-                }
-            } else if (isNative) {
-                // native shared library, load it!
-                llvm::sys::Path SoFile = linker.FindLib(lib);
-                if (SoFile.isEmpty()) {
-                    llvm::errs() << "Couldn't find shared library " << lib << "\n";
-                    linker.releaseModule();
-                    return false;
-                }
-                std::string errMsg;
-                bool hasError = llvm::sys::DynamicLibrary
-                        ::LoadLibraryPermanently(SoFile.str().c_str(), &errMsg);
-                if (hasError) {
-                    llvm::errs() << "Couldn't load shared library " << lib << "\n" << errMsg.c_str();
-                    linker.releaseModule();
-                    return false;
-                }
-            }
-        }
-        linker.releaseModule();
-        return true;
-    }
-
     static bool runModule(llvm::Module *module,
-                          vector<string> &argv,
-                          char const *const*envp,
-                          llvm::ArrayRef<string> libSearchPaths,
-                          llvm::ArrayRef<string> libs) {
-        if (!linkLibraries(module, libSearchPaths, libs)) {
+                      const std::vector<std::string> &argv,
+                      char const *const*envp,
+                      llvm::ArrayRef<std::string> libSearchPaths,
+                      llvm::ArrayRef<std::string> libs) {
+        auto JIT_expected = llvm::orc::LLJITBuilder().create();
+        if (!JIT_expected) {
+            llvm::errs() << "error creating JIT: " << llvm::toString(JIT_expected.takeError()) << "\n";
             return false;
         }
-        llvm::EngineBuilder eb(llvmModule);
-        llvm::ExecutionEngine *engine = eb.create();
-        llvm::Function *mainFunc = module->getFunction("main");
-        if (!mainFunc) {
-            llvm::errs() << "no main function to -run\n";
-            delete engine;
-            return false;
-        }
-        engine->runStaticConstructorsDestructors(false);
-        engine->runFunctionAsMain(mainFunc, argv, envp);
-        engine->runStaticConstructorsDestructors(true);
+        auto JIT = std::move(JIT_expected.get());
+        llvm::orc::LLJIT &jit = *JIT;
 
-        delete engine;
+        llvm::orc::JITDylib& mainDylib = jit.getMainJITDylib();
+
+        auto Generator_expected = llvm::orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(
+            jit.getDataLayout().getGlobalPrefix()
+        );
+
+        if (!Generator_expected) {
+            llvm::errs() << "error creating generator: " << llvm::toString(Generator_expected.takeError()) << "\n";
+            return false;
+        }
+
+        std::unique_ptr<llvm::orc::DynamicLibrarySearchGenerator> Generator =
+            std::move(*Generator_expected);
+
+        mainDylib.addGenerator(std::move(Generator));
+
+        module->setDataLayout(jit.getDataLayout());
+
+        auto TSM = llvm::orc::ThreadSafeModule(std::unique_ptr<llvm::Module>(module),
+                                               std::make_unique<llvm::LLVMContext>());
+
+        if (llvm::Error AddIRErr = jit.addIRModule(std::move(TSM))) {
+            llvm::errs() << "error adding module to JIT: " << llvm::toString(std::move(AddIRErr)) << "\n";
+            return false;
+        }
+
+        auto mainAddr_expected = jit.lookup("main");
+        if (!mainAddr_expected) {
+            llvm::errs() << "error resolving main: " << llvm::toString(mainAddr_expected.takeError()) << "\n";
+            return false;
+        }
+
+        using MainPtr = int (*)(int, char *[], char *[]);
+
+        llvm::orc::ExecutorAddr mainAddr = mainAddr_expected.get();
+        MainPtr mainFunc = reinterpret_cast<MainPtr>(mainAddr.getValue());
+
+        std::vector<const char*> c_argv;
+        for (const auto& arg : argv) {
+            c_argv.push_back(arg.c_str());
+        }
+        c_argv.push_back(nullptr);
+
+        mainFunc(c_argv.size() - 1, const_cast<char **>(c_argv.data()), const_cast<char **>(envp));
+
         return true;
     }
 
     static void optimizeLLVM(llvm::Module *module, unsigned optLevel, bool internalize) {
-        llvm::PassManager passes;
+        llvm::LoopAnalysisManager LAM;
+        llvm::FunctionAnalysisManager FAM;
+        llvm::CGSCCAnalysisManager CGAM;
+        llvm::ModuleAnalysisManager MAM;
+        llvm::PassBuilder PB;
 
-        string moduleDataLayout = module->getDataLayout();
-        auto *dl = new llvm::DataLayout(moduleDataLayout);
-        passes.add(dl);
+        PB.registerModuleAnalyses(MAM);
+        PB.registerCGSCCAnalyses(CGAM);
+        PB.registerFunctionAnalyses(FAM);
+        PB.registerLoopAnalyses(LAM);
+        PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
 
-        llvm::FunctionPassManager fpasses(module);
+        llvm::OptimizationLevel O = llvm::OptimizationLevel::O0;
+        if (optLevel == 1) O = llvm::OptimizationLevel::O1;
+        else if (optLevel == 2) O = llvm::OptimizationLevel::O2;
+        else if (optLevel >= 3) O = llvm::OptimizationLevel::O3;
 
-        fpasses.add(new llvm::DataLayout(*dl));
+        llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(O);
 
-        addOptimizationPasses(passes, fpasses, optLevel, internalize);
-
-        fpasses.doInitialization();
-        for (auto & i : *module) {
-            fpasses.run(i);
+        if (optLevel > 2 && internalize) {
+            MPM.addPass(llvm::InternalizePass([=](const llvm::GlobalValue &GV) {
+                return GV.getName() == "main";
+            }));
         }
 
-        passes.add(llvm::createVerifierPass());
-        passes.run(*module);
+        MPM.addPass(llvm::VerifierPass());
+
+        MPM.run(*module, MAM);
     }
 
     static void generateLLVM(llvm::Module *module, bool emitAsm, llvm::raw_ostream *out) {
-        llvm::PassManager passes;
+        llvm::ModuleAnalysisManager MAM;
+        llvm::ModulePassManager passes;
+
         if (emitAsm)
-            passes.add(llvm::createPrintModulePass(out));
+            passes.addPass(llvm::PrintModulePass(*out));
         else
-            passes.add(llvm::createBitcodeWriterPass(*out));
-        passes.run(*module);
+            passes.addPass(llvm::BitcodeWriterPass(*out));
+
+        passes.run(*module, MAM);
     }
 
     static void generateAssembly(llvm::Module *module,
                                  llvm::TargetMachine *targetMachine,
-                                 llvm::raw_ostream *out,
+                                 llvm::raw_pwrite_stream *out,
                                  bool emitObject) {
-        llvm::FunctionPassManager fpasses(module);
+        llvm::legacy::PassManager passes;
 
-        fpasses.add(new llvm::DataLayout(module));
-        fpasses.add(llvm::createVerifierPass());
+        passes.add(llvm::createVerifierPass());
 
-        targetMachine->setAsmVerbosityDefault(true);
+        llvm::CodeGenFileType fileType = emitObject
+                                            ? llvm::CodeGenFileType::ObjectFile
+                                            : llvm::CodeGenFileType::AssemblyFile;
 
-        llvm::formatted_raw_ostream fout(*out);
-        llvm::TargetMachine::CodeGenFileType fileType = emitObject
-                                                            ? llvm::TargetMachine::CGFT_ObjectFile
-                                                            : llvm::TargetMachine::CGFT_AssemblyFile;
-
-        bool result = targetMachine->addPassesToEmitFile(fpasses, fout, fileType);
-        assert(!result);
-
-        fpasses.doInitialization();
-        for (auto & i : *module) {
-            fpasses.run(i);
+        if (targetMachine->addPassesToEmitFile(passes, *out, nullptr, fileType)) {
+            llvm::errs() << "error: adding codegen passes failed\n";
+            return;
         }
-        fpasses.doFinalization();
+
+        passes.run(*module);
     }
 
     [[maybe_unused]] static std::string joinCmdArgs(llvm::ArrayRef<llvm::StringRef> args)
@@ -1127,7 +1007,7 @@ namespace clay {
                 runArgs.push_back(clayFile);
                 runModule(llvmModule, runArgs, envp, libSearchPath, libraries);
             } else if (repl) {
-                linkLibraries(llvmModule, libSearchPath, libraries);
+                // TODO: future me task
                 runInteractive(llvmModule, m);
             } else if (emitLLVM || emitAsm || emitObject) {
                 std::error_code ec;
