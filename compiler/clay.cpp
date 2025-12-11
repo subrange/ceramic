@@ -1089,17 +1089,17 @@ namespace clay {
             compileTimer.stop();
 
             if (generateDeps) {
-                string errorInfo;
+                std::error_code ec;
 
                 if (verbose) {
                     llvm::errs() << "generating dependencies into " << dependenciesOutputFile << "\n";
                 }
 
                 llvm::raw_fd_ostream dependenciesOut(dependenciesOutputFile.c_str(),
-                                                     errorInfo,
-                                                     llvm::raw_fd_ostream::F_Binary);
-                if (!errorInfo.empty()) {
-                    llvm::errs() << "error: " << errorInfo << '\n';
+                                                     ec,
+                                                     llvm::sys::fs::OF_None);
+                if (ec) {
+                    llvm::errs() << "error creating dependencies file: " << ec.message() << '\n';
                     return 1;
                 }
                 dependenciesOut << outputFile << ": \\\n";
