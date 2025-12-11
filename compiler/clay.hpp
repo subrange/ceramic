@@ -549,14 +549,16 @@ namespace clay {
         Source(llvm::StringRef lineOfCode, int dummy);
 
         Source(llvm::StringRef fileName, llvm::MemoryBuffer *buffer)
-            : Object(SOURCE), fileName(fileName), buffer(buffer), debugInfo(nullptr) {
+                : Object(SOURCE), fileName(fileName), buffer(buffer) {
         }
 
-        const char *data() const { return buffer->getBufferStart(); }
-        const char *endData() const { return buffer->getBufferEnd(); }
-        size_t size() const { return buffer->getBufferSize(); }
+        [[nodiscard]] const char *data() const { return buffer->getBufferStart(); }
+        [[nodiscard]] const char *endData() const { return buffer->getBufferEnd(); }
+        [[nodiscard]] size_t size() const { return buffer->getBufferSize(); }
 
-        llvm::DIFile getDebugInfo() const { return llvm::DIFile(debugInfo); }
+        [[nodiscard]] llvm::DIFile *getDebugInfo() const {
+            // TODO: implement this...
+        }
     };
 
     struct Location {
@@ -670,7 +672,7 @@ namespace clay {
                     unsigned &column,
                     unsigned &tabColumn);
 
-    llvm::DIFile getDebugLineCol(Location const &location, unsigned &line, unsigned &column);
+    llvm::DIFile *getDebugLineCol(Location const &location, unsigned &line, unsigned &column);
 
     void printFileLineCol(llvm::raw_ostream &out, Location const &location);
 

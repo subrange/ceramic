@@ -4,6 +4,7 @@
 #include "matchinvoke.hpp"
 #include "invoketables.hpp"
 #include "error.hpp"
+#include "printer.hpp"
 
 namespace clay {
     bool shouldPrintFullMatchErrors;
@@ -17,28 +18,28 @@ namespace clay {
 
     static constexpr unsigned RECURSION_WARNING_LEVEL = 1000;
 
-    void pushCompileContext(ObjectPtr obj) {
+    void pushCompileContext(const ObjectPtr &obj) {
         if (contextStack.size() >= RECURSION_WARNING_LEVEL)
             warning("potential runaway recursion");
         if (!contextStack.empty())
             contextStack.back().location = topLocation();
-        contextStack.push_back(CompileContextEntry(obj));
+        contextStack.emplace_back(obj);
     }
 
-    void pushCompileContext(ObjectPtr obj, llvm::ArrayRef<ObjectPtr> params) {
+    void pushCompileContext(const ObjectPtr &obj, const llvm::ArrayRef<ObjectPtr> params) {
         if (contextStack.size() >= RECURSION_WARNING_LEVEL)
             warning("potential runaway recursion");
         if (!contextStack.empty())
             contextStack.back().location = topLocation();
-        contextStack.push_back(CompileContextEntry(obj, params));
+        contextStack.emplace_back(obj, params);
     }
 
-    void pushCompileContext(ObjectPtr obj, llvm::ArrayRef<ObjectPtr> params, llvm::ArrayRef<unsigned> dispatchIndices) {
+    void pushCompileContext(const ObjectPtr &obj, llvm::ArrayRef<ObjectPtr> params, llvm::ArrayRef<unsigned> dispatchIndices) {
         if (contextStack.size() >= RECURSION_WARNING_LEVEL)
             warning("potential runaway recursion");
         if (!contextStack.empty())
             contextStack.back().location = topLocation();
-        contextStack.push_back(CompileContextEntry(obj, params, dispatchIndices));
+        contextStack.emplace_back(obj, params, dispatchIndices);
     }
 
     void popCompileContext() {
@@ -53,11 +54,11 @@ namespace clay {
         contextStack = x;
     }
 
-    CompileContextPusher::CompileContextPusher(ObjectPtr obj, llvm::ArrayRef<PVData> params,
+    CompileContextPusher::CompileContextPusher(const ObjectPtr &obj, llvm::ArrayRef<PVData> params,
                                                llvm::ArrayRef<unsigned> dispatchIndices) {
         vector<ObjectPtr> params2;
-        for (unsigned i = 0; i < params.size(); ++i) {
-            params2.push_back(params[i].type.ptr());
+        for (const auto & param : params) {
+            params2.emplace_back(param.type.ptr());
         }
         pushCompileContext(obj, params2, dispatchIndices);
     }
@@ -77,14 +78,13 @@ namespace clay {
     }
 
     Location topLocation() {
-        vector<Location>::iterator i, begin;
-        i = errorLocations.end();
-        begin = errorLocations.begin();
+        auto i = errorLocations.end();
+        auto begin = errorLocations.begin();
         while (i != begin) {
             --i;
             if (i->ok()) return *i;
         }
-        return Location();
+        return {};
     }
 
     //
@@ -95,7 +95,7 @@ namespace clay {
 
     int DebugPrinter::indent = 0;
 
-    DebugPrinter::DebugPrinter(ObjectPtr obj)
+    DebugPrinter::DebugPrinter(const ObjectPtr &obj)
         : obj(obj) {
         for (int i = 0; i < indent; ++i)
             llvm::outs() << ' ';
@@ -133,11 +133,11 @@ namespace clay {
         }
     }
 
-    llvm::DIFile getDebugLineCol(Location const &location, unsigned &line, unsigned &column) {
+    llvm::DIFile *getDebugLineCol(Location const &location, unsigned &line, unsigned &column) {
         if (!location.ok()) {
             line = 0;
             column = 0;
-            return llvm::DIFile();
+            return nullptr;
         }
 
         unsigned tabColumn;
@@ -158,14 +158,18 @@ namespace clay {
         computeLineCol(location, line, column, tabColumn);
     }
 
-    static void splitLines(SourcePtr source, vector<string> &lines) {
-        lines.push_back(string());
-        const char *p = source->data();
-        const char *end = source->endData();
-        for (; p != end; ++p) {
-            lines.back().push_back(*p);
-            if (*p == '\n')
-                lines.push_back(string());
+    static void splitLines(const SourcePtr &source, vector<string> &lines) {
+        lines.clear();
+        if (!source || source->data() == source->endData()) {
+            return;
+        }
+        const std::string_view sourceView(source->data(), source->endData() - source->data());
+        lines.emplace_back();
+
+        for (const char c : sourceView) {
+            lines.back().push_back(c);
+            if (c == '\n')
+                lines.emplace_back();
         }
     }
 
@@ -242,7 +246,7 @@ namespace clay {
             return;
         llvm::errs() << "\ndebug stack:\n";
         for (size_t i = debugStack.size(); i > 0; --i) {
-            llvm::errs() << "  " << debugStack[i - 1] << "\n";
+            llvm::errs() << "  " << debugStack[i - 1]->toString() << "\n";
         }
     }
 
@@ -321,22 +325,22 @@ namespace clay {
         error(sout.str());
     }
 
-    void ensureArity(MultiStaticPtr args, size_t size) {
+    void ensureArity(const MultiStaticPtr &args, size_t size) {
         if (args->size() != size)
             arityError(size, args->size());
     }
 
-    void ensureArity(MultiEValuePtr args, size_t size) {
+    void ensureArity(const MultiEValuePtr &args, size_t size) {
         if (args->size() != size)
             arityError(size, args->size());
     }
 
-    void ensureArity(MultiPValuePtr args, size_t size) {
+    void ensureArity(const MultiPValuePtr &args, size_t size) {
         if (args->size() != size)
             arityError(size, args->size());
     }
 
-    void ensureArity(MultiCValuePtr args, size_t size) {
+    void ensureArity(const MultiCValuePtr &args, size_t size) {
         if (args->size() != size)
             arityError(size, args->size());
     }
@@ -354,45 +358,45 @@ namespace clay {
     }
 
     static string typeErrorMessage(llvm::StringRef expected,
-                                   TypePtr receivedType) {
+                                   const TypePtr &receivedType) {
         string buf;
         llvm::raw_string_ostream sout(buf);
         sout << "expected " << expected << ", "
-                << "but received " << receivedType << " type";
+                << "but received " << receivedType->toString() << " type";
         return sout.str();
     }
 
-    static string typeErrorMessage(TypePtr expectedType,
-                                   TypePtr receivedType) {
+    static string typeErrorMessage(const TypePtr &expectedType,
+                                   const TypePtr &receivedType) {
         string buf;
         llvm::raw_string_ostream sout(buf);
-        sout << expectedType << " type";
+        sout << expectedType->toString() << " type";
         return typeErrorMessage(sout.str(), receivedType);
     }
 
-    void typeError(llvm::StringRef expected, TypePtr receivedType) {
+    void typeError(const llvm::StringRef expected, const TypePtr &receivedType) {
         error(typeErrorMessage(expected, receivedType));
     }
 
-    void typeError(TypePtr expectedType, TypePtr receivedType) {
+    void typeError(const TypePtr &expectedType, const TypePtr &receivedType) {
         error(typeErrorMessage(expectedType, receivedType));
     }
 
-    void argumentTypeError(unsigned index,
-                           llvm::StringRef expected,
-                           TypePtr receivedType) {
+    void argumentTypeError(const unsigned index,
+                           const llvm::StringRef expected,
+                           const TypePtr &receivedType) {
         argumentError(index, typeErrorMessage(expected, receivedType));
     }
 
-    void argumentTypeError(unsigned index,
-                           TypePtr expectedType,
-                           TypePtr receivedType) {
+    void argumentTypeError(const unsigned index,
+                           const TypePtr &expectedType,
+                           const TypePtr &receivedType) {
         argumentError(index, typeErrorMessage(expectedType, receivedType));
     }
 
-    void indexRangeError(llvm::StringRef kind,
-                         size_t value,
-                         size_t maxValue) {
+    void indexRangeError(const llvm::StringRef kind,
+                         const size_t value,
+                         const size_t maxValue) {
         string buf;
         llvm::raw_string_ostream sout(buf);
         sout << kind << " " << value << " is out of range. ";
@@ -400,10 +404,10 @@ namespace clay {
         error(sout.str());
     }
 
-    void argumentIndexRangeError(unsigned index,
-                                 llvm::StringRef kind,
-                                 size_t value,
-                                 size_t maxValue) {
+    void argumentIndexRangeError(const unsigned index,
+                                 const llvm::StringRef kind,
+                                 const size_t value,
+                                 const size_t maxValue) {
         string buf;
         llvm::raw_string_ostream sout(buf);
         sout << kind << " " << value << " is out of range. ";
@@ -411,17 +415,17 @@ namespace clay {
         argumentError(index, sout.str());
     }
 
-    void invalidStaticObjectError(ObjectPtr obj) {
+    void invalidStaticObjectError(const ObjectPtr &obj) {
         string buf;
         llvm::raw_string_ostream sout(buf);
-        sout << "invalid static object: " << obj;
+        sout << "invalid static object: " << obj->toString();
         error(sout.str());
     }
 
-    void argumentInvalidStaticObjectError(unsigned index, ObjectPtr obj) {
+    void argumentInvalidStaticObjectError(const unsigned index, const ObjectPtr &obj) {
         string buf;
         llvm::raw_string_ostream sout(buf);
-        sout << "invalid static object: " << obj;
+        sout << "invalid static object: " << obj->toString();
         argumentError(index, sout.str());
     }
 
@@ -436,10 +440,8 @@ namespace clay {
         llvm::raw_string_ostream sout(outBuf);
         int hiddenPatternOverloads = 0;
 
-        for (MatchFailureVector::const_iterator i = err.failures.begin();
-             i != err.failures.end();
-             ++i) {
-            OverloadPtr overload = i->first;
+        for (const auto & failure : err.failures) {
+            OverloadPtr overload = failure.first;
             if (!shouldPrintFullMatchErrors && overload->nameIsPattern) {
                 ++hiddenPatternOverloads;
                 continue;
@@ -451,7 +453,7 @@ namespace clay {
             sout << location.source->fileName.c_str()
                     << "(" << line + 1 << "," << column << ")"
                     << "\n        ";
-            printMatchError(sout, i->second);
+            printMatchError(sout, failure.second);
         }
         if (hiddenPatternOverloads > 0)
             sout << "\n    " << hiddenPatternOverloads <<
