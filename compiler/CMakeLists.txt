@@ -44,9 +44,7 @@ set(UT_SOURCES
     ut_main.cpp
 )
 
-
-
-
+# Git Commit ID
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
     execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
@@ -56,6 +54,7 @@ if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
         COMPILE_DEFINITIONS "GIT_ID=\"${GIT_WC_ID}\"")
 endif()
 
+# Compiler flags
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     set(CLAY_CXXFLAGS "${LLVM_CXXFLAGS} -UNDEBUG")
 else()
@@ -69,39 +68,39 @@ set(ENABLE_PCH False CACHE BOOL
     "Use precompiled headers when building the compiler. (experimental)")
 
 if(ENABLE_PCH)
-precompile_header(clay.hpp SOURCES pch.cpp "${CLAY_CXXFLAGS}")
+    precompile_header(clay.hpp SOURCES pch.cpp "${CLAY_CXXFLAGS}")
 endif(ENABLE_PCH)
 
+# Targets
 add_library(compiler STATIC ${COMPILER_SOURCES})
 add_executable(clay ${CLAY_SOURCES})
 add_executable(claydoc ${CLAYDOC_SOURCES})
 add_executable(ut ${UT_SOURCES})
-set_target_properties(compiler PROPERTIES COMPILE_FLAGS "${CLAY_CXXFLAGS}")
-set_target_properties(clay PROPERTIES COMPILE_FLAGS "${CLAY_CXXFLAGS}")
-set_target_properties(claydoc PROPERTIES COMPILE_FLAGS "${CLAY_CXXFLAGS}")
-set_target_properties(ut PROPERTIES COMPILE_FLAGS "${CLAY_CXXFLAGS}")
+
+# compiler flags
+target_compile_options(compiler PRIVATE "${CLAY_CXXFLAGS}")
+target_compile_options(clay     PRIVATE "${CLAY_CXXFLAGS}")
+target_compile_options(claydoc  PRIVATE "${CLAY_CXXFLAGS}")
+target_compile_options(ut       PRIVATE "${CLAY_CXXFLAGS}")
 
 if (UNIX)
-    set_target_properties(compiler PROPERTIES LINK_FLAGS "${LLVM_LDFLAGS}")
-    set_target_properties(clay PROPERTIES LINK_FLAGS "${LLVM_LDFLAGS}")
-    set_target_properties(claydoc PROPERTIES LINK_FLAGS "${LLVM_LDFLAGS}")
-    set_target_properties(ut PROPERTIES LINK_FLAGS "${LLVM_LDFLAGS}")
+    target_link_options(compiler PRIVATE "${LLVM_LDFLAGS}")
+    target_link_options(clay     PRIVATE "${LLVM_LDFLAGS}")
+    target_link_options(claydoc  PRIVATE "${LLVM_LDFLAGS}")
+    target_link_options(ut       PRIVATE "${LLVM_LDFLAGS}")
 endif(UNIX)
 
-install(TARGETS clay RUNTIME DESTINATION bin)
-install(TARGETS claydoc RUNTIME DESTINATION bin)
-
-target_link_libraries(clay compiler ${LLVM_LIBS})
-target_link_libraries(claydoc compiler ${LLVM_LIBS})
-target_link_libraries(ut compiler ${LLVM_LIBS})
+# Libraries
+target_link_libraries(clay     PRIVATE compiler ${LLVM_LIBS})
+target_link_libraries(claydoc  PRIVATE compiler ${LLVM_LIBS})
+target_link_libraries(ut       PRIVATE compiler ${LLVM_LIBS})
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(clay "rt")
-    target_link_libraries(clay "dl")
-    target_link_libraries(clay "pthread")
-    target_link_libraries(ut "pthread")
-    target_link_libraries(claydoc "rt")
-    target_link_libraries(claydoc "dl")
-    target_link_libraries(claydoc "pthread")
-    target_link_libraries(ut "pthread")
+    target_link_libraries(clay     PRIVATE rt dl pthread)
+    target_link_libraries(claydoc  PRIVATE rt dl pthread)
+    target_link_libraries(ut       PRIVATE pthread)
 endif()
+
+# Install
+install(TARGETS clay RUNTIME DESTINATION bin)
+install(TARGETS claydoc RUNTIME DESTINATION bin)

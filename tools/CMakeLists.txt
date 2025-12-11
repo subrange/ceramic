@@ -24,7 +24,7 @@ if(BUILD_BINDGEN)
             ${LIBCLANG_LDFLAGS}
             ${clay_SOURCE_DIR}/tools/bindgen.clay)
 
-    add_custom_target(clay-bindgen ALL
+    add_custom_target(clay-bindgen-target ALL
         DEPENDS ${clay_BINARY_DIR}/tools/clay-bindgen${CMAKE_EXECUTABLE_SUFFIX})
     install(PROGRAMS ${clay_BINARY_DIR}/tools/clay-bindgen${CMAKE_EXECUTABLE_SUFFIX}
         DESTINATION bin)

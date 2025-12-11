@@ -8,7 +8,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 find_package(Git)
-
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 include(CheckSymbolExists)
@@ -18,10 +17,14 @@ if(UNIX)
     if(DEFINED LLVM_DIR)
         set(LLVM_CONFIG "${LLVM_DIR}/bin/llvm-config")
     else()
-        find_program(LLVM_CONFIG llvm-config /usr/local/bin
-            DOC "path to llvm-config")
+        find_program(LLVM_CONFIG llvm-config /usr/local/bin DOC "path to llvm-config")
     endif()
+
     message("-- Using llvm-config: ${LLVM_CONFIG}")
+
+    if(NOT LLVM_CONFIG)
+        message(FATAL_ERROR "llvm-config not found. Install LLVM.")
+    endif()
 
     execute_process(
         COMMAND ${LLVM_CONFIG} --version
@@ -29,7 +32,6 @@ if(UNIX)
         OUTPUT_STRIP_TRAILING_WHITESPACE
         RESULT_VARIABLE LLVM_CONFIG_VERSION_RESULT
     )
-
     if (NOT ${LLVM_CONFIG_VERSION_RESULT} EQUAL 0)
         message(FATAL_ERROR "${LLVM_CONFIG} failed")
     endif()
@@ -39,8 +41,6 @@ if(UNIX)
         OUTPUT_VARIABLE LLVM_CXXFLAGS
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    message("-- Using LLVM: ${LLVM_DIR}")
-    message("-- LLVM include dir: ${LLVM_INCLUDEDIR}")
     set(LLVM_CXXFLAGS "${LLVM_CXXFLAGS}")
     separate_arguments(LLVM_CXXFLAGS)
 
@@ -79,13 +79,17 @@ if(UNIX)
         OUTPUT_VARIABLE LLVM_INCLUDEDIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+    set(LLVM_INCLUDEDIR "${LLVM_INCLUDEDIR}")
 
     message("-- Using LLVM: ${LLVM_DIR}")
+    message("-- LLVM include dir: ${LLVM_INCLUDEDIR}")
+
     set(CMAKE_REQUIRED_INCLUDES ${LLVM_DIR}/include)
-    set(LLVM_INCLUDEDIR "${LLVM_INCLUDEDIR}")
     set(CMAKE_REQUIRED_LIBRARIES clang)
     set(CMAKE_REQUIRED_FLAGS "-L${LLVM_LIBDIR}")
+
 elseif(WIN32)
+
     set(LLVM_DIR "$ENV{ProgramFiles}/LLVM" CACHE PATH "llvm install path")
 
     if(IS_DIRECTORY ${LLVM_DIR})
@@ -105,18 +109,22 @@ elseif(WIN32)
     else()
         message(FATAL_ERROR "Could not find LLVM. Try setting LLVM_DIR")
     endif()
+
     set(CMAKE_REQUIRED_INCLUDES ${LLVM_DIR}/include)
     set(CMAKE_REQUIRED_LIBRARIES ${LLVM_DIR}/lib/libclang.lib)
+
 endif()
 
 set(BUILD_BINDGEN True CACHE BOOL
-    "Build the clay-bindgen tool for generating Clay bindings from C header files.")
+    "Build the clay-bindgen tool for generating Clay bindings from C header files."
+)
 
-install(DIRECTORY doc/ DESTINATION share/doc/clay)
-install(DIRECTORY examples/ DESTINATION share/doc/clay/examples)
-install(DIRECTORY lib-clay DESTINATION lib)
+install(DIRECTORY doc/        DESTINATION share/doc/clay)
+install(DIRECTORY examples/   DESTINATION share/doc/clay/examples)
+install(DIRECTORY lib-clay    DESTINATION lib)
 
 add_subdirectory(compiler)
+
 if(EXISTS "${PROJECT_SOURCE_DIR}/tools")
     add_subdirectory(tools)
 endif()
@@ -128,3 +136,4 @@ add_custom_target(test
 )
 
 add_dependencies(test clay)
+
