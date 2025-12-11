@@ -28,8 +28,8 @@ namespace clay {
 
     using namespace std;
 
-    static void addOptimizationPasses(llvm::legacy::PassManager &passes,
-                                      llvm::legacy::FunctionPassManager &fpasses,
+    static void addOptimizationPasses(llvm::PassManager &passes,
+                                      llvm::FunctionPassManager &fpasses,
                                       unsigned optLevel,
                                       bool internalize) {
         llvm::Pass *inliningPass = 0;
@@ -280,18 +280,14 @@ namespace clay {
         fpasses.doFinalization();
     }
 
-    static string joinCmdArgs(llvm::ArrayRef<const char *> args) {
+    static string joinCmdArgs(llvm::ArrayRef<llvm::StringRef> args) {
         string s;
         llvm::raw_string_ostream ss(s);
-        for (char const *const *arg = args.begin();
-             arg != args.end(); ++arg) {
-            if (arg != args.begin()) {
+        for (const llvm::StringRef &arg : args) {
+            if (&arg != args.begin()) {
                 ss << " ";
             }
-            if (*arg == 0 && arg + 1 == args.end()) {
-                continue;
-            }
-            ss << *arg;
+            ss << arg;
         }
         return s;
     }
@@ -299,7 +295,7 @@ namespace clay {
     static bool generateBinary(llvm::Module *module,
                                llvm::TargetMachine *targetMachine,
                                llvm::Twine const &outputFilePath,
-                               llvm::sys::Path const &clangPath,
+                               llvm::StringRef const &clangPath,
                                bool /*exceptions*/,
                                bool sharedLib,
                                bool debug,
@@ -307,7 +303,7 @@ namespace clay {
                                bool verbose) {
         int fd;
         PathString tempObj;
-        if (llvm::error_code ec = llvm::sys::fs::unique_file("clayobj-%%%%%%%%.obj", fd, tempObj)) {
+        if (std::error_code ec = llvm::sys::fs::createUniqueFile("clayobj-%%%%%%%%.obj", fd, tempObj)) {
             llvm::errs() << "error creating temporary object file: " << ec.message() << '\n';
             return false;
         }
@@ -321,8 +317,8 @@ namespace clay {
 
         string outputFilePathStr = outputFilePath.str();
 
-        vector<const char *> clangArgs;
-        clangArgs.push_back(clangPath.c_str());
+        std::vector<llvm::StringRef> clangArgs;
+        clangArgs.push_back(clangPath.data());
 
         switch (llvmDataLayout->getPointerSizeInBits()) {
             case 32:
@@ -340,8 +336,7 @@ namespace clay {
         if (sharedLib) {
             clangArgs.push_back("-shared");
 
-            if (triple.getOS() == llvm::Triple::MinGW32
-                || triple.getOS() == llvm::Triple::Cygwin) {
+            if (triple.isOSWindows()) {
                 PathString defPath;
                 outputFilePath.toVector(defPath);
                 llvm::sys::path::replace_extension(defPath, "def");
@@ -356,39 +351,44 @@ namespace clay {
                 clangArgs.push_back("-Wl,/debug");
         }
         clangArgs.push_back("-o");
-        clangArgs.push_back(outputFilePathStr.c_str());
-        clangArgs.push_back(tempObj.c_str());
+        clangArgs.push_back(outputFilePathStr);
+        clangArgs.push_back(tempObj);
         for (unsigned i = 0; i < arguments.size(); ++i)
             clangArgs.push_back(arguments[i].c_str());
-        clangArgs.push_back(nullptr);
 
         if (verbose) {
             llvm::errs() << "executing clang to generate binary:\n";
             llvm::errs() << "    " << joinCmdArgs(clangArgs) << "\n";
         }
 
-        int result = llvm::sys::Program::ExecuteAndWait(clangPath, &clangArgs[0]);
+        int result = llvm::sys::ExecuteAndWait(clangPath, clangArgs);
+
+        if (debug && triple.isOSDarwin()) {
+            llvm::ErrorOr<std::string> DsymutilPathOrErr = llvm::sys::findProgramByName("dsymutil");
+            if (std::error_code EC = DsymutilPathOrErr.getError())
+                llvm::errs() << "error creating dsymutil: " << EC.message() << '\n';
 
         if (debug && triple.getOS() == llvm::Triple::Darwin) {
             llvm::sys::Path dsymutilPath = llvm::sys::Program::FindProgramByName("dsymutil");
             if (dsymutilPath.isValid()) {
+            std::string dsymutilPath = DsymutilPathOrErr ? *DsymutilPathOrErr : "";
+
+            if (!dsymutilPath.empty()) {
                 string outputDSYMPath = outputFilePathStr;
                 outputDSYMPath.append(".dSYM");
 
-                vector<const char *> dsymutilArgs;
-                dsymutilArgs.push_back(dsymutilPath.c_str());
+                std::vector<llvm::StringRef> dsymutilArgs;
+                dsymutilArgs.push_back(dsymutilPath);
                 dsymutilArgs.push_back("-o");
-                dsymutilArgs.push_back(outputDSYMPath.c_str());
-                dsymutilArgs.push_back(outputFilePathStr.c_str());
-                dsymutilArgs.push_back(nullptr);
+                dsymutilArgs.push_back(outputDSYMPath);
+                dsymutilArgs.push_back(outputFilePathStr);
 
                 if (verbose) {
                     llvm::errs() << "executing dsymutil:";
                     llvm::errs() << "    " << joinCmdArgs(dsymutilArgs) << "\n";
                 }
 
-                int dsymResult = llvm::sys::Program::ExecuteAndWait(dsymutilPath,
-                                                                    &dsymutilArgs[0]);
+                int dsymResult = llvm::sys::ExecuteAndWait(dsymutilPath, dsymutilArgs);
 
                 if (dsymResult != 0)
                     llvm::errs() << "warning: dsymutil exited with error code " << dsymResult << "\n";
