@@ -10,6 +10,7 @@
 #include <llvm/TargetParser/Host.h>
 #include <llvm/TargetParser/Triple.h>
 #include <llvm/Linker/Linker.h>
+#include <llvm/Support/FileUtilities.h>
 
 #include <system_error>
 #include <string>
@@ -323,7 +324,7 @@ namespace clay {
             llvm::errs() << "error creating temporary object file: " << ec.message() << '\n';
             return false;
         }
-        llvm::sys::RemoveFileOnSignal(tempObj);
+        llvm::FileRemover removeTempObj(tempObj);
 
         {
             llvm::raw_fd_ostream objOut(fd, /*shouldClose=*/ true);
@@ -409,9 +410,6 @@ namespace clay {
                 llvm::errs() <<
                         "warning: unable to find dsymutil on the path; debug info for executable will not be generated\n";
         }
-
-        bool dontcare;
-        llvm::sys::fs::remove(llvm::StringRef(tempObj), dontcare);
 
         return (result == 0);
     }
