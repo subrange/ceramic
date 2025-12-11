@@ -479,33 +479,27 @@ namespace clay {
     }
 
     static string sharedExtensionForTarget(llvm::Triple const &triple) {
-        if (triple.getOS() == llvm::Triple::Win32
-            || triple.getOS() == llvm::Triple::MinGW32
-            || triple.getOS() == llvm::Triple::Cygwin) {
+        if (triple.isOSWindows()) {
             return ".dll";
-        } else if (triple.getOS() == llvm::Triple::Darwin) {
-            return ".dylib";
-        } else {
-            return ".so";
         }
+        if (triple.isOSDarwin()) {
+            return ".dylib";
+        }
+        return ".so";
     }
 
     static string objExtensionForTarget(llvm::Triple const &triple) {
-        if (triple.getOS() == llvm::Triple::Win32) {
+        if (triple.isOSWindows()) {
             return ".obj";
-        } else {
-            return ".o";
         }
+        return ".o";
     }
 
     static string exeExtensionForTarget(llvm::Triple const &triple) {
-        if (triple.getOS() == llvm::Triple::Win32
-            || triple.getOS() == llvm::Triple::MinGW32
-            || triple.getOS() == llvm::Triple::Cygwin) {
+        if (triple.isOSWindows()) {
             return ".exe";
-        } else {
-            return "";
         }
+        return "";
     }
 
     static void printVersion() {
