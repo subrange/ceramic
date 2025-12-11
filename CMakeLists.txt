@@ -35,6 +35,9 @@ if(UNIX)
     if (NOT ${LLVM_CONFIG_VERSION_RESULT} EQUAL 0)
         message(FATAL_ERROR "${LLVM_CONFIG} failed")
     endif()
+    if(LLVM_VERSION VERSION_LESS 18.0)
+        message(FATAL_ERROR "LLVM 18 or newer is required. Found ${LLVM_VERSION}")
+    endif()
 
     execute_process(
         COMMAND ${LLVM_CONFIG} --cxxflags
