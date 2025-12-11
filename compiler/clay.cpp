@@ -395,11 +395,11 @@ namespace clay {
         int result = llvm::sys::ExecuteAndWait(clangPath, clangArgs);
 
         if (debug && triple.isOSDarwin()) {
-            llvm::ErrorOr<std::string> DsymutilPathOrErr = llvm::sys::findProgramByName("dsymutil");
-            if (std::error_code EC = DsymutilPathOrErr.getError())
-                llvm::errs() << "error creating dsymutil: " << EC.message() << '\n';
+            llvm::ErrorOr<std::string> dsymutilPathOrErr = llvm::sys::findProgramByName("dsymutil");
+            if (std::error_code ec = dsymutilPathOrErr.getError())
+                llvm::errs() << "error creating dsymutil: " << ec.message() << '\n';
 
-            std::string dsymutilPath = DsymutilPathOrErr ? *DsymutilPathOrErr : "";
+            std::string dsymutilPath = dsymutilPathOrErr ? *dsymutilPathOrErr : "";
 
             if (!dsymutilPath.empty()) {
                 string outputDSYMPath = outputFilePathStr;
