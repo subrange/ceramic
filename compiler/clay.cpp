@@ -1,9 +1,7 @@
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
-#include <llvm/Support/Process.h>
 #include <llvm/Support/Program.h>
 #include <llvm/Support/ErrorOr.h>
-#include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Signals.h>
 #include <llvm/TargetParser/Host.h>
 #include <llvm/TargetParser/Triple.h>
@@ -114,7 +112,7 @@ namespace clay {
         using MainPtr = int (*)(int, char *[], char *[]);
 
         llvm::orc::ExecutorAddr mainAddr = mainAddr_expected.get();
-        MainPtr mainFunc = reinterpret_cast<MainPtr>(mainAddr.getValue());
+        auto mainFunc = reinterpret_cast<MainPtr>(mainAddr.getValue());
 
         std::vector<const char*> c_argv;
         for (const auto& arg : argv) {
@@ -122,7 +120,7 @@ namespace clay {
         }
         c_argv.push_back(nullptr);
 
-        mainFunc(c_argv.size() - 1, const_cast<char **>(c_argv.data()), const_cast<char **>(envp));
+        mainFunc(static_cast<int>(c_argv.size() - 1), const_cast<char **>(c_argv.data()), const_cast<char **>(envp));
 
         return true;
     }
@@ -242,7 +240,7 @@ namespace clay {
                 assert(false);
         }
 
-        llvm::Triple triple(llvmModule->getTargetTriple());
+        const llvm::Triple& triple(llvmModule->getTargetTriple());
         if (sharedLib) {
             clangArgs.emplace_back("-shared");
 
@@ -583,7 +581,7 @@ namespace clay {
                     llvm::errs() << "error: framework name missing after -framework\n";
                     return 1;
                 }
-                frameworks.push_back("-framework");
+                frameworks.emplace_back("-framework");
                 frameworks.push_back(framework);
             } else if (strcmp(argv[i], "-arch") == 0) {
                 if (i + 1 == argc) {
@@ -975,7 +973,7 @@ namespace clay {
                     llvm::errs() << "generating dependencies into " << dependenciesOutputFile << "\n";
                 }
 
-                llvm::raw_fd_ostream dependenciesOut(dependenciesOutputFile.c_str(),
+                llvm::raw_fd_ostream dependenciesOut(dependenciesOutputFile,
                                                      ec,
                                                      llvm::sys::fs::OF_None);
                 if (ec) {
@@ -1012,7 +1010,7 @@ namespace clay {
             } else if (emitLLVM || emitAsm || emitObject) {
                 std::error_code ec;
 
-                llvm::raw_fd_ostream out(outputFile.c_str(),
+                llvm::raw_fd_ostream out(outputFile,
                                          ec,
                                          llvm::sys::fs::OF_None);
                 if (ec) {
@@ -1032,12 +1030,12 @@ namespace clay {
                     llvm::errs() << "error: unable to find clang on the path: " << ec.message() << "\n";
                     return 1;
                 }
-                std::string clangPath = clangPathOrErr.get();
+                const std::string& clangPath = clangPathOrErr.get();
 
                 vector<string> arguments;
 #ifdef __APPLE__
                 if (!arch.empty()) {
-                    arguments.push_back("-arch");
+                    arguments.emplace_back("-arch");
                     arguments.push_back(arch);
                 }
 #endif
