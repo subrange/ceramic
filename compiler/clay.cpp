@@ -311,7 +311,7 @@ namespace clay {
             llvm::errs() << "error creating temporary object file: " << ec.message() << '\n';
             return false;
         }
-        llvm::sys::RemoveFileOnSignal(llvm::sys::Path(tempObj));
+        llvm::sys::RemoveFileOnSignal(tempObj);
 
         {
             llvm::raw_fd_ostream objOut(fd, /*shouldClose=*/ true);
@@ -1024,7 +1024,7 @@ namespace clay {
                 llvm::errs() << "error: output file '" << outputFile << "' is a directory\n";
                 return 1;
             }
-            llvm::sys::RemoveFileOnSignal(llvm::sys::Path(outputFile));
+            llvm::sys::RemoveFileOnSignal(outputFile);
         }
 
         if (generateDeps) {
@@ -1044,7 +1044,7 @@ namespace clay {
                 llvm::errs() << "error: dependencies output file '" << dependenciesOutputFile << "' is a directory\n";
                 return 1;
             }
-            llvm::sys::RemoveFileOnSignal(llvm::sys::Path(dependenciesOutputFile));
+            llvm::sys::RemoveFileOnSignal(dependenciesOutputFile);
         }
 
         HiResTimer loadTimer, compileTimer, optTimer, outputTimer;
