@@ -1113,12 +1113,13 @@ namespace clay {
                 linkLibraries(llvmModule, libSearchPath, libraries);
                 runInteractive(llvmModule, m);
             } else if (emitLLVM || emitAsm || emitObject) {
-                string errorInfo;
+                std::error_code ec;
+
                 llvm::raw_fd_ostream out(outputFile.c_str(),
-                                         errorInfo,
-                                         llvm::raw_fd_ostream::F_Binary);
-                if (!errorInfo.empty()) {
-                    llvm::errs() << "error: " << errorInfo << '\n';
+                                         ec,
+                                         llvm::sys::fs::OF_None);
+                if (ec) {
+                    llvm::errs() << "error creating output file: " << ec.message() << '\n';
                     return 1;
                 }
                 outputTimer.start();
@@ -1132,8 +1133,12 @@ namespace clay {
                 llvm::sys::Path clangPath = llvm::sys::Program::FindProgramByName("clang");
                 if (!clangPath.isValid()) {
                     llvm::errs() << "error: unable to find clang on the path\n";
+                llvm::ErrorOr<std::string> clangPathOrErr = llvm::sys::findProgramByName("clang");
+                if (std::error_code ec = clangPathOrErr.getError()) {
+                    llvm::errs() << "error: unable to find clang on the path: " << ec.message() << "\n";
                     return 1;
                 }
+                std::string clangPath = clangPathOrErr.get();
 
                 vector<string> arguments;
 #ifdef __APPLE__
