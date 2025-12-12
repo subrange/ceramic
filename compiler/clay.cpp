@@ -240,7 +240,7 @@ namespace clay {
                 assert(false);
         }
 
-        const llvm::Triple& triple(llvmModule->getTargetTriple());
+        llvm::Triple triple(llvmModule->getTargetTriple());
         if (sharedLib) {
             clangArgs.emplace_back("-shared");
 
