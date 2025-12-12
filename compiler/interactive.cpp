@@ -1,3 +1,6 @@
+#include <llvm/Support/Error.h>
+#include <llvm/ExecutionEngine/Orc/LLJIT.h>
+
 #include "clay.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
@@ -7,9 +10,9 @@
 #include "invoketables.hpp"
 #include "env.hpp"
 
-#include <setjmp.h>
-#include <signal.h>
-#include <stdio.h>
+#include <csetjmp>
+#include <csignal>
+#include <cstdio>
 
 namespace clay {
     typedef llvm::SmallString<16U> Str;
@@ -17,13 +20,13 @@ namespace clay {
     const char *replAnonymousFunctionName = "__replAnonymousFunction__";
 
     static ModulePtr module;
-    static llvm::ExecutionEngine *engine;
+    static std::unique_ptr<llvm::orc::LLJIT> jit;
 
     jmp_buf recovery;
 
     static bool printAST = false;
 
-    static void eval(llvm::StringRef code);
+    static void eval(llvm::StringRef line);
 
     string newFunctionName() {
         static int funNum = 0;
@@ -105,7 +108,7 @@ namespace clay {
                 for (size_t k = 0; k < sets.size(); ++k) {
                     llvm::errs() << "        ";
                     for (size_t l = 0; l < sets[k]->argsKey.size(); ++l) {
-                        llvm::errs() << sets[k]->argsKey[l] << " : ";
+                        llvm::errs() << sets[k]->argsKey[l]->toString() << " : ";
                     }
                     llvm::errs() << "\n";
                 }
@@ -122,7 +125,7 @@ namespace clay {
                     llvm::errs() << "Can't find identifier " << identifier.c_str();
                 } else {
                     for (size_t i = 0; i < iter->second.size(); ++i) {
-                        llvm::errs() << iter->second[i] << "\n";
+                        llvm::errs() << iter->second[i]->toString() << "\n";
                     }
                 }
             }
@@ -156,15 +159,15 @@ namespace clay {
         }
     }
 
-    static void loadImports(llvm::ArrayRef<ImportPtr> imports) {
-        for (size_t i = 0; i < imports.size(); ++i) {
-            module->imports.push_back(imports[i]);
+    static void loadImports(const llvm::ArrayRef<ImportPtr> imports) {
+        for (const auto & import : imports) {
+            module->imports.push_back(import);
         }
-        for (size_t i = 0; i < imports.size(); ++i) {
-            loadDependent(module, nullptr, imports[i], false);
+        for (const auto & import : imports) {
+            loadDependent(module, nullptr, import, false);
         }
-        for (size_t i = 0; i < imports.size(); ++i) {
-            initModule(imports[i]->module);
+        for (const auto & import : imports) {
+            initModule(import->module);
         }
     }
 
@@ -174,7 +177,7 @@ namespace clay {
         }
         if (printAST) {
             for (size_t i = 0; i < toplevels.size(); ++i) {
-                llvm::errs() << i << ": " << toplevels[i] << "\n";
+                llvm::errs() << i << ": " << toplevels[i]->toString() << "\n";
             }
         }
         addGlobals(module, toplevels);
@@ -186,8 +189,8 @@ namespace clay {
         }
 
         if (printAST) {
-            for (size_t i = 0; i < statements.size(); ++i) {
-                llvm::errs() << statements[i] << "\n";
+            for (const auto & statement : statements) {
+                llvm::errs() << statement->toString() << "\n";
             }
         }
 
@@ -217,12 +220,34 @@ namespace clay {
         llvm::Function *dtor;
         codegenAfterRepl(ctor, dtor);
 
-        engine->runFunction(ctor, std::vector<llvm::GenericValue>());
+        // hacky voodoo raw memory address returned by LLJIT symbol lookup
+        // https://llvm.org/docs/ORCv2.html
+        using CtorPtr = void (*)();
+        using PFN = void (*)();
 
-        void *dtorLlvmFun = engine->getPointerToFunction(dtor);
-        typedef void (*PFN)();
+        auto ctorAddExpected = jit->lookup(ctor->getName());
+        if (!ctorAddExpected) {
+            llvm::errs() << "error: cannot look up constructor: " << llvm::toString(ctorAddExpected.takeError()) << "\n";
+            return;
+        }
+        CtorPtr ctorFunc = reinterpret_cast<CtorPtr>(ctorAddExpected->getValue());
+        ctorFunc();
+
+        auto dtorAddExpected = jit->lookup(dtor->getName());
+        if (!dtorAddExpected) {
+            llvm::errs() << "error: cannot look up destructor: " << llvm::toString(dtorAddExpected.takeError()) << "\n";
+            return;
+        }
+        void *dtorLlvmFun = reinterpret_cast<void *>(dtorAddExpected->getValue());
         atexit((PFN) (uintptr_t) dtorLlvmFun);
-        engine->runFunction(entryProc->llvmFunc, std::vector<llvm::GenericValue>());
+
+        auto entryAddrExpected = jit->lookup(entryProc->llvmFunc->getName());
+        if (!entryAddrExpected) {
+            llvm::errs() << "error: cannot look up entry function: " << llvm::toString(entryAddrExpected.takeError()) << "\n";
+            return;
+        }
+        PFN entryFunc = reinterpret_cast<PFN>(entryAddrExpected->getValue());
+        entryFunc();
     }
 
     static void jitAndPrintExpr(ExprPtr expr) {
@@ -249,14 +274,13 @@ namespace clay {
         }
     }
 
-    static void interactiveLoop() {
+    [[noreturn]] static void interactiveLoop() {
         setjmp(recovery);
-        string line;
         while (true) {
             llvm::errs().flush();
             llvm::errs() << "clay>";
             char buf[255];
-            line = fgets(buf, 255, stdin);
+            string line = fgets(buf, 255, stdin);
             line = stripSpaces(line);
             if (line[0] == ':') {
                 replCommand(line.substr(1, line.size() - 1));
@@ -264,7 +288,6 @@ namespace clay {
                 eval(line);
             }
         }
-        engine->runStaticConstructorsDestructors(true);
     }
 
     static void exceptionHandler(int i) {
@@ -284,12 +307,37 @@ namespace clay {
         llvm::errs() << ":globals to list globals\n";
         llvm::errs() << "In multi-line mode empty line to exit\n";
 
-        llvm::EngineBuilder eb(llvmModule);
-        llvm::TargetOptions targetOptions;
-        targetOptions.JITExceptionHandling = true;
-        eb.setTargetOptions(targetOptions);
-        engine = eb.create();
-        engine->runStaticConstructorsDestructors(false);
+        auto expectedJIT = llvm::orc::LLJITBuilder().create();
+        if (!expectedJIT) {
+            llvm::errs() << "error: could not create JIT: " << llvm::toString(expectedJIT.takeError()) << "\n";
+            return;
+        }
+        jit = std::move(*expectedJIT);
+
+        llvm::orc::JITDylib& mainDylib = jit->getMainJITDylib();
+
+        auto generatorExpected = llvm::orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(
+            jit->getDataLayout().getGlobalPrefix()
+        );
+
+        if (!generatorExpected) {
+            llvm::errs() << "error: setting up symbol" << llvm::toString(generatorExpected.takeError()) << "\n";
+        } else {
+            std::unique_ptr<llvm::orc::DynamicLibrarySearchGenerator> generator =
+                std::move(*generatorExpected);
+            mainDylib.addGenerator(std::move(generator));
+        }
+
+        llvmModule->setDataLayout(jit->getDataLayout());
+
+        auto tsm = llvm::orc::ThreadSafeModule(
+            std::unique_ptr<llvm::Module>(llvmModule),
+            std::make_unique<llvm::LLVMContext>());
+
+        if (llvm::Error addIRErr = jit->addIRModule(std::move(tsm))) {
+            llvm::errs() << "error: " << addIRErr << "\n";
+            return;
+        }
 
         setAddTokens(&addTokens);
 
