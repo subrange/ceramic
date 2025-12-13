@@ -341,7 +341,7 @@ namespace clay {
             }
 
             case ASSIGNMENT: {
-                auto *y = dynamic_cast<Assignment *>(x.ptr());
+                auto y = dynamic_cast<Assignment *>(x.ptr());
                 convertFreeVars(y->left.ptr(), env, ctx);
                 convertFreeVars(y->right.ptr(), env, ctx);
                 break;
@@ -355,7 +355,7 @@ namespace clay {
             }
 
             case VARIADIC_ASSIGNMENT: {
-                auto *y = dynamic_cast<VariadicAssignment *>(x.ptr());
+                auto y = dynamic_cast<VariadicAssignment *>(x.ptr());
                 convertFreeVars(y->exprs.ptr(), env, ctx);
                 break;
             }
@@ -365,13 +365,13 @@ namespace clay {
             }
 
             case RETURN: {
-                auto *y = dynamic_cast<Return *>(x.ptr());
+                auto y = dynamic_cast<Return *>(x.ptr());
                 convertFreeVars(y->values.ptr(), env, ctx);
                 break;
             }
 
             case IF: {
-                If *y = dynamic_cast<If *>(x.ptr());
+                auto y = dynamic_cast<If *>(x.ptr());
                 env = convertFreeVarsFromStatementExpressionStatements(y->conditionStatements, env, ctx);
                 convertFreeVars(y->condition, env, ctx);
                 convertFreeVars(y->thenPart, env, ctx);
@@ -419,7 +419,7 @@ namespace clay {
             }
 
             case FOR: {
-                For *y = dynamic_cast<For *>(x.ptr());
+                auto y = dynamic_cast<For *>(x.ptr());
                 convertFreeVars(y->expr, env, ctx);
                 EnvPtr env2 = new Env(env);
                 for (const auto & variable : y->variables)
@@ -433,7 +433,7 @@ namespace clay {
             }
 
             case TRY: {
-                Try *y = dynamic_cast<Try *>(x.ptr());
+                auto y = dynamic_cast<Try *>(x.ptr());
                 convertFreeVars(y->tryBlock, env, ctx);
                 for (const auto & catchBlock : y->catchBlocks) {
                     EnvPtr env2 = new Env(env);
@@ -609,7 +609,7 @@ namespace clay {
             }
 
             case CALL: {
-                Call *y = dynamic_cast<Call *>(x.ptr());
+                auto y = dynamic_cast<Call *>(x.ptr());
                 convertFreeVars(y->expr, env, ctx);
                 convertFreeVars(y->parenArgs.ptr(), env, ctx);
                 break;
@@ -637,14 +637,14 @@ namespace clay {
             }
 
             case AND: {
-                And *y = dynamic_cast<And *>(x.ptr());
+                auto y = dynamic_cast<And *>(x.ptr());
                 convertFreeVars(y->expr1, env, ctx);
                 convertFreeVars(y->expr2, env, ctx);
                 break;
             }
 
             case OR: {
-                Or *y = dynamic_cast<Or *>(x.ptr());
+                auto y = dynamic_cast<Or *>(x.ptr());
                 convertFreeVars(y->expr1, env, ctx);
                 convertFreeVars(y->expr2, env, ctx);
                 break;
