@@ -56,8 +56,7 @@ namespace clay {
           params(params), varParam(varParam), expr(expr) {
     }
 
-    GlobalVariable::~GlobalVariable() {
-    }
+    GlobalVariable::~GlobalVariable() = default;
 
     static StatementAnalysis analyzeStatement(StatementPtr stmt, EnvPtr env, AnalysisContext *ctx);
 
@@ -220,8 +219,7 @@ namespace clay {
     static vector<CompileContextEntry> analysisErrorCompileContext;
 
     struct ClearAnalysisError {
-        ClearAnalysisError() {
-        }
+        ClearAnalysisError() = default;
 
         ~ClearAnalysisError() {
             analysisErrorLocation = Location();
