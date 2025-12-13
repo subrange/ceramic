@@ -7,6 +7,7 @@
 #include "clone.hpp"
 #include "objects.hpp"
 #include "error.hpp"
+#include "printer.hpp"
 
 namespace clay {
     ExprPtr desugarCharLiteral(char c) {
@@ -402,7 +403,7 @@ namespace clay {
         sourceNameOut << ">";
 
         return new Source(sourceNameOut.str(),
-                          llvm::MemoryBuffer::getMemBufferCopy(sourceTextBuf));
+                          llvm::MemoryBuffer::getMemBufferCopy(sourceTextBuf).get());
     }
 
     ExprListPtr desugarEvalExpr(EvalExprPtr eval, EnvPtr env) {
