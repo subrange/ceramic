@@ -17,19 +17,19 @@ namespace clay {
         vector<StatementPtr> stmts;
     };
 
-    ModulePtr parse(llvm::StringRef moduleName, SourcePtr source, ParserFlags flags = NoParserFlags);
+    ModulePtr parse(llvm::StringRef moduleName, const SourcePtr &source, ParserFlags flags = NoParserFlags);
 
-    ExprPtr parseExpr(SourcePtr source, unsigned offset, size_t length);
+    ExprPtr parseExpr(const SourcePtr &source, unsigned offset, size_t length);
 
-    ExprListPtr parseExprList(SourcePtr source, unsigned offset, size_t length);
+    ExprListPtr parseExprList(const SourcePtr &source, unsigned offset, size_t length);
 
-    void parseStatements(SourcePtr source, unsigned offset, size_t length,
+    void parseStatements(const SourcePtr &source, unsigned offset, size_t length,
                          vector<StatementPtr> &statements);
 
-    void parseTopLevelItems(SourcePtr source, unsigned offset, size_t length,
+    void parseTopLevelItems(const SourcePtr &source, unsigned offset, size_t length,
                             vector<TopLevelItemPtr> &topLevels, Module *);
 
-    ReplItem parseInteractive(SourcePtr source, unsigned offset, size_t length);
+    ReplItem parseInteractive(const SourcePtr &source, unsigned offset, size_t length);
 
     typedef vector<Token> (*AddTokensCallback)();
 
