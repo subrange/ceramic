@@ -1,37 +1,40 @@
+#include <llvm/Support/Path.h>
+#include <llvm/Support/FileSystem.h>
+
 #include "claydoc.hpp"
 #include "parser.hpp"
+
 #include <sstream>
 #include <string>
 
 using namespace std;
 using namespace clay;
 
-static void usage(char *argv0) {
+static void usage(const char *argv0) {
     llvm::errs() << "usage: " << argv0 << " <sourceDir> <htmlOutputDir>\n";
 }
 
-DocModule *docParseModule(string fileName, DocState *state, std::string fqn) {
+DocModule *docParseModule(const string &fileName, DocState *state, const std::string& fqn) {
     SourcePtr src = new Source(fileName);
     ModulePtr m = parse(fileName, src, ParserKeepDocumentation);
 
-    DocModule *docMod = new DocModule;
+    auto *docMod = new DocModule;
     docMod->fileName = fileName;
     docMod->fqn = fqn;
 
-    DocSection *section = new DocSection;
+    auto *section = new DocSection;
     docMod->sections.push_back(section);
 
     DocumentationPtr lastAttachment;
 
-    for (vector<TopLevelItemPtr>::iterator i = m->topLevelItems.begin(); i != m->topLevelItems.end(); i++) {
-        TopLevelItemPtr item = *i;
+    for (const auto& item : m->topLevelItems) {
         if (!item)
             continue;
         std::string name = identifierString(item->name);
 
         switch (item->objKind) {
             case DOCUMENTATION: {
-                DocumentationPtr doc = ((Documentation *) item.ptr());
+                DocumentationPtr doc = dynamic_cast<Documentation *>(item.ptr());
                 if (doc->annotation.count(ModuleAnnotation)) {
                     docMod->name = doc->annotation.find(ModuleAnnotation)->second;
                     docMod->description = doc->text;
@@ -46,16 +49,16 @@ DocModule *docParseModule(string fileName, DocState *state, std::string fqn) {
                 break;
             }
             case OVERLOAD:
-                if (!!((clay::Overload *) item.ptr())->target)
-                    name = ((clay::Overload *) item.ptr())->target->asString();
+                if (!!dynamic_cast<Overload *>(item.ptr())->target)
+                    name = dynamic_cast<Overload *>(item.ptr())->target->asString();
             case RECORD_DECL:
             case PROCEDURE: {
-                DocObject *obj = new DocObject;
+                auto *obj = new DocObject;
                 obj->item = item;
                 obj->name = name;
                 if (!!lastAttachment) {
                     obj->description = lastAttachment->text;
-                    lastAttachment = 0;
+                    lastAttachment = nullptr;
                 }
                 section->objects.push_back(obj);
 
@@ -109,28 +112,37 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    bool whatever;
-    if (llvm::sys::fs::create_directories(outputDir, whatever) != 0) {
+    bool whatever = false;
+    std::error_code ec;
+
+    ec = llvm::sys::fs::create_directories(outputDir, whatever);
+    if (ec) {
         llvm::errs() << "cannot create output directory " << outputDir << "\n";
         return 4;
     }
 
-    DocState *state = new DocState;
+    std::error_code ec2;
+    auto *state = new DocState;
     state->name = llvm::sys::path::filename(inputDir).str();
 
-    llvm::error_code ec;
-    for (llvm::sys::fs::recursive_directory_iterator it(inputDir, ec), ite; it != ite; it.increment(ec)) {
+    for (llvm::sys::fs::recursive_directory_iterator it(inputDir, ec2), ite; it != ite; it.increment(ec)) {
         llvm::sys::fs::file_status status;
-        if (!it->status(status) && is_regular_file(status) && endsWith(it->path(), ".clay")) {
+        if (!it->status() && is_regular_file(status) && endsWith(it->path(), ".clay")) {
             std::string fqn;
 
             llvm::sys::path::const_iterator word = llvm::sys::path::begin(it->path());
-            ++word;
+            llvm::sys::path::const_iterator path_end = llvm::sys::path::end(it->path());
 
-            llvm::sys::path::const_iterator worde = llvm::sys::path::end(it->path());
-            --worde;
+            if (word != path_end)
+                ++word;
 
-            for (; word != worde; ++word) {
+            for (; word != path_end; ++word) {
+                llvm::sys::path::const_iterator next_word = word;
+                ++next_word;
+
+                if (next_word == path_end)
+                    break;
+
                 fqn.append(*word);
                 fqn.append(".");
             }
@@ -148,7 +160,7 @@ int main(int argc, char **argv) {
     emitHtmlIndex(outputDir, state);
 }
 
-std::string identifierString(clay::IdentifierPtr id) {
+std::string identifierString(const IdentifierPtr& id) {
     if (!id)
         return {"<anonymous>"};
     return {id->str.str().begin(), id->str.str().end()};
