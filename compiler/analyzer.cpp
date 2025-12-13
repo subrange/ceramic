@@ -1480,11 +1480,11 @@ namespace clay {
                     return;
                 case IITDescriptor::Vector: {
                     llvm::VectorType *VT = dyn_cast<llvm::VectorType>(Ty);
-                    if (VT == 0) {
+                    if (VT == nullptr) {
                         errors << "intrinsic argument " << (ai + 1)
                                 << " must be of an LLVM vector type, but got ";
                         Ty->print(errors);
-                    } else if (VT->getNumElements() != D.Vector_Width) {
+                    } else if (VT->getElementCount() != D.Vector_Width) {
                         errors << "intrinsic argument " << (ai + 1)
                                 << " must be of an LLVM vector type with "
                                 << D.Vector_Width
