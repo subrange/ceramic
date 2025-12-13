@@ -73,7 +73,7 @@ namespace clay {
             }
         }
 
-        int getRefCount() const { return refCount; }
+        [[nodiscard]] int getRefCount() const { return refCount; }
 
         virtual ~RefCounted() = default;
     };
