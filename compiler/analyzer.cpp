@@ -1443,7 +1443,7 @@ namespace clay {
                     }
                     return;
                 case IITDescriptor::MMX:
-                    if (!Ty->isX86_MMXTy()) {
+                    if (!Ty->isX86_AMXTy()) {
                         errors << "intrinsic argument " << (ai + 1)
                                 << " must match LLVM MMX type, but got ";
                         Ty->print(errors);
