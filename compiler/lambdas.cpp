@@ -7,6 +7,7 @@
 #include "loader.hpp"
 #include "env.hpp"
 #include "error.hpp"
+#include "printer.hpp"
 
 namespace clay {
     struct LambdaContext {
@@ -16,7 +17,7 @@ namespace clay {
         vector<string> &freeVars;
 
         LambdaContext(LambdaCapture captureBy,
-                      EnvPtr nonLocalEnv,
+                      const EnvPtr& nonLocalEnv,
                       llvm::StringRef closureDataName,
                       vector<string> &freeVars)
             : captureBy(captureBy), nonLocalEnv(nonLocalEnv),
@@ -24,40 +25,39 @@ namespace clay {
         }
     };
 
-    void convertFreeVars(LambdaPtr x, EnvPtr env,
+    void convertFreeVars(const LambdaPtr &x, const EnvPtr &env,
                          llvm::StringRef closureDataName,
                          vector<string> &freeVars);
 
-    void convertFreeVars(StatementPtr x, EnvPtr env, LambdaContext &ctx);
+    void convertFreeVars(const StatementPtr &x, EnvPtr env, LambdaContext &ctx);
 
-    void convertFreeVars(ExprPtr &x, EnvPtr env, LambdaContext &ctx);
+    void convertFreeVars(ExprPtr &x, const EnvPtr &env, LambdaContext &ctx);
 
-    void convertFreeVars(ExprList *x, EnvPtr env, LambdaContext &ctx);
+    void convertFreeVars(ExprList *x, const EnvPtr &env, LambdaContext &ctx);
     
     //
     // initializeLambda
     //
 
-    static TypePtr typeOfValue(ObjectPtr obj) {
+    static TypePtr typeOfValue(const ObjectPtr& obj) {
         switch (obj->objKind) {
-            case PVALUE: return ((PValue *) obj.ptr())->data.type;
-            case CVALUE: return ((CValue *) obj.ptr())->type;
+            case PVALUE: return dynamic_cast<PValue *>(obj.ptr())->data.type;
+            case CVALUE: return dynamic_cast<CValue *>(obj.ptr())->type;
             default: assert(false);
-                return nullptr;
         }
     }
 
-    static vector<TypePtr> typesOfValues(ObjectPtr obj) {
+    static vector<TypePtr> typesOfValues(const ObjectPtr &obj) {
         vector<TypePtr> types;
         switch (obj->objKind) {
             case MULTI_PVALUE: {
-                MultiPValue *mpv = (MultiPValue *) obj.ptr();
+                auto mpv = dynamic_cast<MultiPValue *>(obj.ptr());
                 for (unsigned i = 0; i < mpv->size(); ++i)
                     types.push_back(mpv->values[i].type);
                 break;
             }
             case MULTI_CVALUE: {
-                MultiCValue *mcv = (MultiCValue *) obj.ptr();
+                auto mcv = dynamic_cast<MultiCValue *>(obj.ptr());
                 for (unsigned i = 0; i < mcv->size(); ++i)
                     types.push_back(mcv->values[i]->type);
                 break;
@@ -68,13 +68,13 @@ namespace clay {
         return types;
     }
 
-    static void initializeLambdaWithFreeVars(LambdaPtr x, EnvPtr env,
+    static void initializeLambdaWithFreeVars(const LambdaPtr &x, const EnvPtr &env,
                                              llvm::StringRef closureDataName, llvm::StringRef lname);
 
-    static void initializeLambdaWithoutFreeVars(LambdaPtr x, EnvPtr env,
+    static void initializeLambdaWithoutFreeVars(const LambdaPtr &x, const EnvPtr &env,
                                                 llvm::StringRef lname);
 
-    static string lambdaName(LambdaPtr x) {
+    static string lambdaName(const LambdaPtr &x) {
         string fullName = shortString(x->asString());
 
         if (fullName.size() <= 80)
@@ -86,11 +86,11 @@ namespace clay {
             printFileLineCol(shortName, x->location);
             shortName << ">";
 
-            return shortName.str();
+            return shortName.str().str(); // what is this abomination
         }
     }
 
-    void initializeLambda(LambdaPtr x, EnvPtr env) {
+    void initializeLambda(const LambdaPtr& x, const EnvPtr &env) {
         assert(!x->initialized);
         x->initialized = true;
 
@@ -99,7 +99,7 @@ namespace clay {
         llvm::SmallString<128> buf;
         llvm::raw_svector_ostream ostr(buf);
         ostr << "%closureData:" << lname;
-        string closureDataName = ostr.str();
+        string closureDataName = ostr.str().str(); // again
 
         convertFreeVars(x, env, closureDataName, x->freeVars);
         getProcedureMonoTypes(x->mono, env, x->formalArgs, x->hasVarArg);
@@ -124,15 +124,15 @@ namespace clay {
         }
     }
 
-    static void checkForeignExpr(ObjectPtr &obj, EnvPtr env) {
+    static void checkForeignExpr(ObjectPtr &obj, const EnvPtr &env) {
         if (obj->objKind == EXPRESSION) {
-            ExprPtr expr = (Expr *) obj.ptr();
+            ExprPtr expr = dynamic_cast<Expr *>(obj.ptr());
             if (expr->exprKind == FOREIGN_EXPR) {
                 MultiPValuePtr mpv = safeAnalyzeMulti(new ExprList(expr), env, 0);
                 obj = mpv.ptr();
             }
         } else if (obj->objKind == EXPR_LIST) {
-            ExprListPtr expr = (ExprList *) obj.ptr();
+            ExprListPtr expr = dynamic_cast<ExprList *>(obj.ptr());
             switch (expr->exprs[0]->exprKind) {
                 case FOREIGN_EXPR:
                 case UNPACK: {
@@ -146,7 +146,7 @@ namespace clay {
         }
     }
 
-    static void initializeLambdaWithFreeVars(LambdaPtr x, EnvPtr env,
+    static void initializeLambdaWithFreeVars(const LambdaPtr &x, const EnvPtr &env,
                                              llvm::StringRef closureDataName, llvm::StringRef lname) {
         RecordDeclPtr r = new RecordDecl(nullptr, PRIVATE);
         r->location = x->location;
@@ -181,8 +181,7 @@ namespace clay {
                 case MULTI_CVALUE: {
                     vector<TypePtr> types = typesOfValues(obj);
                     vector<TypePtr> elementTypes;
-                    for (size_t j = 0; j < types.size(); ++j) {
-                        TypePtr t = types[j];
+                    for (auto t : types) {
                         if (x->captureBy == REF_CAPTURE)
                             t = pointerType(t);
                         elementTypes.push_back(t);
@@ -221,9 +220,9 @@ namespace clay {
         code->location = x->location;
         IdentifierPtr closureDataIdent = Identifier::get(closureDataName);
         FormalArgPtr closureDataArg = new FormalArg(closureDataIdent, typeExpr);
-        code->formalArgs.push_back(closureDataArg.ptr());
-        for (size_t i = 0; i < x->formalArgs.size(); ++i) {
-            code->formalArgs.push_back(x->formalArgs[i]);
+        code->formalArgs.emplace_back(closureDataArg.ptr());
+        for (const auto & formalArg : x->formalArgs) {
+            code->formalArgs.push_back(formalArg);
         }
         code->hasVarArg = x->hasVarArg;
         code->body = x->body;
@@ -236,11 +235,11 @@ namespace clay {
         ObjectPtr obj = operator_call();
         if (obj->objKind != PROCEDURE)
             error("'call' operator not found!");
-        Procedure *callObj = (Procedure *) obj.ptr();
+        auto *callObj = dynamic_cast<Procedure *>(obj.ptr());
         addOverload(callObj->overloads, overload);
     }
 
-    static void initializeLambdaWithoutFreeVars(LambdaPtr x, EnvPtr env,
+    static void initializeLambdaWithoutFreeVars(const LambdaPtr &x, const EnvPtr &env,
                                                 llvm::StringRef lname) {
         IdentifierPtr name = Identifier::get(lname, x->location);
         x->lambdaProc = new Procedure(nullptr, name, PRIVATE, false);
@@ -248,8 +247,8 @@ namespace clay {
 
         CodePtr code = new Code();
         code->location = x->location;
-        for (size_t i = 0; i < x->formalArgs.size(); ++i) {
-            code->formalArgs.push_back(x->formalArgs[i]);
+        for (const auto & formalArg : x->formalArgs) {
+            code->formalArgs.push_back(formalArg);
         }
         code->hasVarArg = x->hasVarArg;
         code->body = x->body;
@@ -268,11 +267,10 @@ namespace clay {
     // addFreeVar, typeOfValue, typesOfValues
     //
 
-    static void addFreeVar(LambdaContext &ctx, llvm::StringRef str) {
-        vector<string>::iterator i;
-        i = std::find(ctx.freeVars.begin(), ctx.freeVars.end(), str);
+    static void addFreeVar(const LambdaContext &ctx, llvm::StringRef str) {
+        auto i = std::find(ctx.freeVars.begin(), ctx.freeVars.end(), str);
         if (i == ctx.freeVars.end()) {
-            ctx.freeVars.push_back(str);
+            ctx.freeVars.push_back(str.str());
         }
     }
 
@@ -280,62 +278,57 @@ namespace clay {
     // convertFreeVars
     //
 
-    void convertFreeVars(LambdaPtr x, EnvPtr env,
+    void convertFreeVars(const LambdaPtr &x, const EnvPtr &env,
                          llvm::StringRef closureDataName,
                          vector<string> &freeVars) {
         EnvPtr env2 = new Env(env);
-        for (size_t i = 0; i < x->formalArgs.size(); ++i) {
-            FormalArgPtr arg = x->formalArgs[i];
+        for (const auto& arg : x->formalArgs) {
             addLocal(env2, arg->name, arg->name.ptr());
         }
         LambdaContext ctx(x->captureBy, env, closureDataName, freeVars);
         convertFreeVars(x->body, env2, ctx);
     }
 
-    static EnvPtr convertFreeVarsFromBinding(BindingPtr binding, EnvPtr env, LambdaContext &ctx) {
+    static EnvPtr convertFreeVarsFromBinding(const BindingPtr &binding, const EnvPtr &env, LambdaContext &ctx) {
         convertFreeVars(binding->values.ptr(), env, ctx);
         EnvPtr env2 = new Env(env);
-        for (size_t j = 0; j < binding->args.size(); ++j)
-            addLocal(env2, binding->args[j]->name, binding->args[j]->name.ptr());
+        for (const auto & arg : binding->args)
+            addLocal(env2, arg->name, arg->name.ptr());
         return env2;
     }
 
     static EnvPtr convertFreeVarsFromStatementExpressionStatements(
         llvm::ArrayRef<StatementPtr> stmts,
-        EnvPtr env,
+        const EnvPtr &env,
         LambdaContext &ctx) {
         EnvPtr env2 = env;
-        for (StatementPtr const *i = stmts.begin(), *end = stmts.end();
-             i != end;
-             ++i) {
-            switch ((*i)->stmtKind) {
+        for (const auto & stmt : stmts) {
+            switch (stmt->stmtKind) {
                 case BINDING:
-                    env2 = convertFreeVarsFromBinding((Binding *) i->ptr(), env2, ctx);
+                    env2 = convertFreeVarsFromBinding(dynamic_cast<Binding *>(stmt.ptr()), env2, ctx);
                     break;
 
                 case ASSIGNMENT:
                 case VARIADIC_ASSIGNMENT:
                 case INIT_ASSIGNMENT:
                 case EXPR_STATEMENT:
-                    convertFreeVars(*i, env2, ctx);
+                    convertFreeVars(stmt, env2, ctx);
                     break;
 
                 default:
                     assert(false);
-                    return nullptr;
             }
         }
         return env2;
     }
 
-    void convertFreeVars(StatementPtr x, EnvPtr env, LambdaContext &ctx) {
+    void convertFreeVars(const StatementPtr &x, EnvPtr env, LambdaContext &ctx) {
         switch (x->stmtKind) {
             case BLOCK: {
-                Block *y = (Block *) x.ptr();
-                for (size_t i = 0; i < y->statements.size(); ++i) {
-                    StatementPtr z = y->statements[i];
+                auto y = dynamic_cast<Block *>(x.ptr());
+                for (const auto& z : y->statements) {
                     if (z->stmtKind == BINDING)
-                        env = convertFreeVarsFromBinding((Binding *) z.ptr(), env, ctx);
+                        env = convertFreeVarsFromBinding(dynamic_cast<Binding *>(z.ptr()), env, ctx);
                     else
                         convertFreeVars(z, env, ctx);
                 }
@@ -348,21 +341,21 @@ namespace clay {
             }
 
             case ASSIGNMENT: {
-                Assignment *y = (Assignment *) x.ptr();
+                auto y = dynamic_cast<Assignment *>(x.ptr());
                 convertFreeVars(y->left.ptr(), env, ctx);
                 convertFreeVars(y->right.ptr(), env, ctx);
                 break;
             }
 
             case INIT_ASSIGNMENT: {
-                InitAssignment *y = (InitAssignment *) x.ptr();
+                auto y = dynamic_cast<InitAssignment *>(x.ptr());
                 convertFreeVars(y->left.ptr(), env, ctx);
                 convertFreeVars(y->right.ptr(), env, ctx);
                 break;
             }
 
             case VARIADIC_ASSIGNMENT: {
-                VariadicAssignment *y = (VariadicAssignment *) x.ptr();
+                auto y = dynamic_cast<VariadicAssignment *>(x.ptr());
                 convertFreeVars(y->exprs.ptr(), env, ctx);
                 break;
             }
@@ -372,13 +365,13 @@ namespace clay {
             }
 
             case RETURN: {
-                Return *y = (Return *) x.ptr();
+                auto y = dynamic_cast<Return *>(x.ptr());
                 convertFreeVars(y->values.ptr(), env, ctx);
                 break;
             }
 
             case IF: {
-                If *y = (If *) x.ptr();
+                auto y = dynamic_cast<If *>(x.ptr());
                 env = convertFreeVarsFromStatementExpressionStatements(y->conditionStatements, env, ctx);
                 convertFreeVars(y->condition, env, ctx);
                 convertFreeVars(y->thenPart, env, ctx);
@@ -388,11 +381,10 @@ namespace clay {
             }
 
             case SWITCH: {
-                Switch *y = (Switch *) x.ptr();
+                auto y = dynamic_cast<Switch *>(x.ptr());
                 env = convertFreeVarsFromStatementExpressionStatements(y->exprStatements, env, ctx);
                 convertFreeVars(y->expr, env, ctx);
-                for (size_t i = 0; i < y->caseBlocks.size(); ++i) {
-                    CaseBlockPtr z = y->caseBlocks[i];
+                for (const auto& z : y->caseBlocks) {
                     convertFreeVars(z->caseLabels.ptr(), env, ctx);
                     convertFreeVars(z->body, env, ctx);
                 }
@@ -402,19 +394,19 @@ namespace clay {
             }
 
             case EVAL_STATEMENT: {
-                EvalStatement *eval = (EvalStatement *) x.ptr();
+                auto eval = dynamic_cast<EvalStatement *>(x.ptr());
                 convertFreeVars(eval->args.ptr(), env, ctx);
                 break;
             }
 
             case EXPR_STATEMENT: {
-                ExprStatement *y = (ExprStatement *) x.ptr();
+                auto y = dynamic_cast<ExprStatement *>(x.ptr());
                 convertFreeVars(y->expr, env, ctx);
                 break;
             }
 
             case WHILE: {
-                While *y = (While *) x.ptr();
+                auto y = dynamic_cast<While *>(x.ptr());
                 env = convertFreeVarsFromStatementExpressionStatements(y->conditionStatements, env, ctx);
                 convertFreeVars(y->condition, env, ctx);
                 convertFreeVars(y->body, env, ctx);
@@ -427,11 +419,11 @@ namespace clay {
             }
 
             case FOR: {
-                For *y = (For *) x.ptr();
+                auto y = dynamic_cast<For *>(x.ptr());
                 convertFreeVars(y->expr, env, ctx);
                 EnvPtr env2 = new Env(env);
-                for (size_t j = 0; j < y->variables.size(); ++j)
-                    addLocal(env2, y->variables[j], y->variables[j].ptr());
+                for (const auto & variable : y->variables)
+                    addLocal(env2, variable, variable.ptr());
                 convertFreeVars(y->body, env2, ctx);
                 break;
             }
@@ -441,24 +433,24 @@ namespace clay {
             }
 
             case TRY: {
-                Try *y = (Try *) x.ptr();
+                auto y = dynamic_cast<Try *>(x.ptr());
                 convertFreeVars(y->tryBlock, env, ctx);
-                for (size_t i = 0; i < y->catchBlocks.size(); ++i) {
+                for (const auto & catchBlock : y->catchBlocks) {
                     EnvPtr env2 = new Env(env);
                     addLocal(env2,
-                             y->catchBlocks[i]->exceptionVar,
-                             y->catchBlocks[i]->exceptionVar.ptr()
+                             catchBlock->exceptionVar,
+                             catchBlock->exceptionVar.ptr()
                     );
-                    if (y->catchBlocks[i]->exceptionType.ptr())
-                        convertFreeVars(y->catchBlocks[i]->exceptionType, env, ctx);
-                    convertFreeVars(y->catchBlocks[i]->body, env2, ctx);
+                    if (catchBlock->exceptionType.ptr())
+                        convertFreeVars(catchBlock->exceptionType, env, ctx);
+                    convertFreeVars(catchBlock->body, env2, ctx);
                 }
 
                 break;
             }
 
             case THROW: {
-                Throw *y = (Throw *) x.ptr();
+                auto y = dynamic_cast<Throw *>(x.ptr());
                 desugarThrow(y);
                 convertFreeVars(y->desugaredExpr, env, ctx);
                 if (y->desugaredContext != nullptr)
@@ -467,7 +459,7 @@ namespace clay {
             }
 
             case STATIC_FOR: {
-                StaticFor *y = (StaticFor *) x.ptr();
+                auto y = dynamic_cast<StaticFor *>(x.ptr());
                 convertFreeVars(y->values.ptr(), env, ctx);
                 EnvPtr env2 = new Env(env);
                 addLocal(env2, y->variable, y->variable.ptr());
@@ -476,20 +468,18 @@ namespace clay {
             }
 
             case FINALLY: {
-                Finally *y = (Finally *) x.ptr();
+                auto y = dynamic_cast<Finally *>(x.ptr());
                 convertFreeVars(y->body, env, ctx);
                 break;
             }
 
             case ONERROR: {
-                OnError *y = (OnError *) x.ptr();
+                auto y = dynamic_cast<OnError *>(x.ptr());
                 convertFreeVars(y->body, env, ctx);
                 break;
             }
 
             case UNREACHABLE:
-                break;
-
             case STATIC_ASSERT_STATEMENT:
                 break;
 
@@ -498,7 +488,7 @@ namespace clay {
         }
     }
 
-    void convertFreeVars(ExprPtr &x, EnvPtr env, LambdaContext &ctx) {
+    void convertFreeVars(ExprPtr &x, const EnvPtr &env, LambdaContext &ctx) {
         switch (x->exprKind) {
             case BOOL_LITERAL:
             case INT_LITERAL:
@@ -508,7 +498,7 @@ namespace clay {
                 break;
 
             case NAME_REF: {
-                NameRef *y = (NameRef *) x.ptr();
+                auto y = dynamic_cast<NameRef *>(x.ptr());
                 bool isNonLocal = false;
                 bool isGlobal = false;
                 ObjectPtr z = lookupEnvEx(env, y->name, ctx.nonLocalEnv,
@@ -551,16 +541,16 @@ namespace clay {
                     } else if ((z->objKind == MULTI_PVALUE) || (z->objKind == MULTI_CVALUE)) {
                         vector<TypePtr> types = typesOfValues(z);
                         bool allStatic = true;
-                        for (size_t i = 0; i < types.size(); ++i) {
-                            if (!isStaticOrTupleOfStatics(types[i])) {
+                        for (const auto & type : types) {
+                            if (!isStaticOrTupleOfStatics(type)) {
                                 allStatic = false;
                                 break;
                             }
                         }
                         if (allStatic) {
                             ExprListPtr args = new ExprList();
-                            for (size_t i = 0; i < types.size(); ++i)
-                                args->add(new ObjectExpr(types[i].ptr()));
+                            for (const auto & type : types)
+                                args->add(new ObjectExpr(type.ptr()));
                             CallPtr call = new Call(operator_expr_typesToRValues(), args);
                             call->location = y->location;
                             x = call.ptr();
@@ -600,33 +590,33 @@ namespace clay {
             }
 
             case TUPLE: {
-                Tuple *y = (Tuple *) x.ptr();
+                auto y = dynamic_cast<Tuple *>(x.ptr());
                 convertFreeVars(y->args.ptr(), env, ctx);
                 break;
             }
 
             case PAREN: {
-                Paren *y = (Paren *) x.ptr();
+                auto y = dynamic_cast<Paren *>(x.ptr());
                 convertFreeVars(y->args.ptr(), env, ctx);
                 break;
             }
 
             case INDEXING: {
-                Indexing *y = (Indexing *) x.ptr();
+                auto y = dynamic_cast<Indexing *>(x.ptr());
                 convertFreeVars(y->expr, env, ctx);
                 convertFreeVars(y->args.ptr(), env, ctx);
                 break;
             }
 
             case CALL: {
-                Call *y = (Call *) x.ptr();
+                auto y = dynamic_cast<Call *>(x.ptr());
                 convertFreeVars(y->expr, env, ctx);
                 convertFreeVars(y->parenArgs.ptr(), env, ctx);
                 break;
             }
 
             case FIELD_REF: {
-                FieldRef *y = (FieldRef *) x.ptr();
+                auto y = dynamic_cast<FieldRef *>(x.ptr());
                 if (y->desugared == nullptr)
                     desugarFieldRef(y, safeLookupModule(env));
                 if (!y->isDottedModuleName)
@@ -635,60 +625,60 @@ namespace clay {
             }
 
             case STATIC_INDEXING: {
-                StaticIndexing *y = (StaticIndexing *) x.ptr();
+                auto y = dynamic_cast<StaticIndexing *>(x.ptr());
                 convertFreeVars(y->expr, env, ctx);
                 break;
             }
 
             case VARIADIC_OP: {
-                VariadicOp *y = (VariadicOp *) x.ptr();
+                auto y = dynamic_cast<VariadicOp *>(x.ptr());
                 convertFreeVars(y->exprs.ptr(), env, ctx);
                 break;
             }
 
             case AND: {
-                And *y = (And *) x.ptr();
+                auto y = dynamic_cast<And *>(x.ptr());
                 convertFreeVars(y->expr1, env, ctx);
                 convertFreeVars(y->expr2, env, ctx);
                 break;
             }
 
             case OR: {
-                Or *y = (Or *) x.ptr();
+                auto y = dynamic_cast<Or *>(x.ptr());
                 convertFreeVars(y->expr1, env, ctx);
                 convertFreeVars(y->expr2, env, ctx);
                 break;
             }
 
             case LAMBDA: {
-                Lambda *y = (Lambda *) x.ptr();
+                auto y = dynamic_cast<Lambda *>(x.ptr());
                 EnvPtr env2 = new Env(env);
-                for (size_t i = 0; i < y->formalArgs.size(); ++i)
-                    addLocal(env2, y->formalArgs[i]->name, y->formalArgs[i]->name.ptr());
+                for (const auto & formalArg : y->formalArgs)
+                    addLocal(env2, formalArg->name, formalArg->name.ptr());
                 convertFreeVars(y->body, env2, ctx);
                 break;
             }
 
             case UNPACK: {
-                Unpack *y = (Unpack *) x.ptr();
+                auto y = dynamic_cast<Unpack *>(x.ptr());
                 convertFreeVars(y->expr, env, ctx);
                 break;
             }
 
             case STATIC_EXPR: {
-                StaticExpr *y = (StaticExpr *) x.ptr();
+                auto y = dynamic_cast<StaticExpr *>(x.ptr());
                 convertFreeVars(y->expr, env, ctx);
                 break;
             }
 
             case DISPATCH_EXPR: {
-                DispatchExpr *y = (DispatchExpr *) x.ptr();
+                auto y = dynamic_cast<DispatchExpr *>(x.ptr());
                 convertFreeVars(y->expr, env, ctx);
                 break;
             }
 
             case EVAL_EXPR: {
-                EvalExpr *eval = (EvalExpr *) x.ptr();
+                auto eval = dynamic_cast<EvalExpr *>(x.ptr());
                 convertFreeVars(eval->args, env, ctx);
                 break;
             }
@@ -703,7 +693,7 @@ namespace clay {
         }
     }
 
-    void convertFreeVars(ExprList *x, EnvPtr env, LambdaContext &ctx) {
+    void convertFreeVars(ExprList *x, const EnvPtr &env, LambdaContext &ctx) {
         for (unsigned i = 0; i < x->size(); ++i)
             convertFreeVars(x->exprs[i], env, ctx);
     }

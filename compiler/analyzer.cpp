@@ -17,6 +17,7 @@
 #include "clone.hpp"
 #include "objects.hpp"
 #include "analyzer_op.hpp"
+#include "printer.hpp"
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
@@ -55,8 +56,7 @@ namespace clay {
           params(params), varParam(varParam), expr(expr) {
     }
 
-    GlobalVariable::~GlobalVariable() {
-    }
+    GlobalVariable::~GlobalVariable() = default;
 
     static StatementAnalysis analyzeStatement(StatementPtr stmt, EnvPtr env, AnalysisContext *ctx);
 
@@ -219,8 +219,7 @@ namespace clay {
     static vector<CompileContextEntry> analysisErrorCompileContext;
 
     struct ClearAnalysisError {
-        ClearAnalysisError() {
-        }
+        ClearAnalysisError() = default;
 
         ~ClearAnalysisError() {
             analysisErrorLocation = Location();
@@ -1442,7 +1441,7 @@ namespace clay {
                     }
                     return;
                 case IITDescriptor::MMX:
-                    if (!Ty->isX86_MMXTy()) {
+                    if (!Ty->isX86_AMXTy()) {
                         errors << "intrinsic argument " << (ai + 1)
                                 << " must match LLVM MMX type, but got ";
                         Ty->print(errors);
@@ -1479,11 +1478,11 @@ namespace clay {
                     return;
                 case IITDescriptor::Vector: {
                     llvm::VectorType *VT = dyn_cast<llvm::VectorType>(Ty);
-                    if (VT == 0) {
+                    if (VT == nullptr) {
                         errors << "intrinsic argument " << (ai + 1)
                                 << " must be of an LLVM vector type, but got ";
                         Ty->print(errors);
-                    } else if (VT->getNumElements() != D.Vector_Width) {
+                    } else if (VT->getElementCount() != D.Vector_Width) {
                         errors << "intrinsic argument " << (ai + 1)
                                 << " must be of an LLVM vector type with "
                                 << D.Vector_Width

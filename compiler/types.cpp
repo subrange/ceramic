@@ -250,7 +250,7 @@ namespace clay {
     TypePtr cCodePointerType(CallingConv callingConv,
                              llvm::ArrayRef<TypePtr> argTypes,
                              bool hasVarArgs,
-                             TypePtr returnType) {
+                             const TypePtr& returnType) {
         unsigned h = unsigned(callingConv) * 100;
         for (unsigned i = 0; i < argTypes.size(); ++i) {
             h += pointerHash(argTypes[i].ptr());
@@ -277,7 +277,7 @@ namespace clay {
         return t.ptr();
     }
 
-    TypePtr arrayType(TypePtr elementType, unsigned size) {
+    TypePtr arrayType(const TypePtr& elementType, const unsigned size) {
         unsigned h = pointerHash(elementType.ptr()) + size;
         h &= unsigned(arrayTypes.size() - 1);
         vector<ArrayTypePtr>::iterator i, end;
@@ -292,7 +292,7 @@ namespace clay {
         return t.ptr();
     }
 
-    TypePtr vecType(TypePtr elementType, unsigned size) {
+    TypePtr vecType(const TypePtr& elementType, const unsigned size) {
         if (elementType->typeKind != INTEGER_TYPE && elementType->typeKind != FLOAT_TYPE)
             error("Vec element type must be an integer or float type");
         unsigned h = pointerHash(elementType.ptr()) + size;
@@ -329,7 +329,7 @@ namespace clay {
         return t.ptr();
     }
 
-    TypePtr unionType(llvm::ArrayRef<TypePtr> memberTypes) {
+    TypePtr unionType(const llvm::ArrayRef<TypePtr> memberTypes) {
         unsigned h = 0;
         TypePtr const *mi, *mend;
         for (mi = memberTypes.begin(), mend = memberTypes.end();
@@ -349,7 +349,7 @@ namespace clay {
         return t.ptr();
     }
 
-    TypePtr recordType(RecordDeclPtr record, llvm::ArrayRef<ObjectPtr> params) {
+    TypePtr recordType(const RecordDeclPtr& record, llvm::ArrayRef<ObjectPtr> params) {
         unsigned h = pointerHash(record.ptr());
         ObjectPtr const *pi, *pend;
         for (pi = params.begin(), pend = params.end(); pi != pend; ++pi)
@@ -370,7 +370,7 @@ namespace clay {
         return t.ptr();
     }
 
-    TypePtr variantType(VariantDeclPtr variant, llvm::ArrayRef<ObjectPtr> params) {
+    TypePtr variantType(const VariantDeclPtr& variant, llvm::ArrayRef<ObjectPtr> params) {
         unsigned h = pointerHash(variant.ptr());
         for (unsigned i = 0; i < params.size(); ++i)
             h += objectHash(params[i]);
@@ -388,7 +388,7 @@ namespace clay {
         return t.ptr();
     }
 
-    TypePtr staticType(ObjectPtr obj) {
+    TypePtr staticType(const ObjectPtr& obj) {
         unsigned h = objectHash(obj);
         h &= unsigned(staticTypes.size() - 1);
         vector<StaticTypePtr> &bucket = staticTypes[h];
@@ -412,13 +412,13 @@ namespace clay {
         t->initialized = true;
     }
 
-    TypePtr enumType(EnumDeclPtr enumeration) {
+    TypePtr enumType(const EnumDeclPtr& enumeration) {
         if (!enumeration->type)
             enumeration->type = new EnumType(enumeration);
         return enumeration->type;
     }
 
-    void initializeNewType(NewTypePtr t) {
+    void initializeNewType(const NewTypePtr& t) {
         if (t->newtype->initialized)
             return;
         CompileContextPusher pusher(t.ptr());
@@ -426,13 +426,13 @@ namespace clay {
         t->newtype->initialized = true;
     }
 
-    TypePtr newType(NewTypeDeclPtr newtype) {
+    TypePtr newType(const NewTypeDeclPtr& newtype) {
         if (!newtype->type)
             newtype->type = new NewType(newtype);
         return newtype->type.ptr();
     }
 
-    TypePtr newtypeReprType(NewTypePtr t) {
+    TypePtr newtypeReprType(const NewTypePtr& t) {
         if (!t->newtype->initialized)
             initializeNewType(t);
         return t->newtype->baseType;
@@ -640,7 +640,7 @@ namespace clay {
             setProperty(type, props[i]);
     }
 
-    void initializeRecordFields(RecordTypePtr t) {
+    void initializeRecordFields(const RecordTypePtr& t) {
         CompileContextPusher pusher(t.ptr());
 
         assert(!t->fieldsInitialized);
@@ -727,7 +727,7 @@ namespace clay {
         return t->fieldNames;
     }
 
-    llvm::ArrayRef<TypePtr> recordFieldTypes(RecordTypePtr t) {
+    llvm::ArrayRef<TypePtr> recordFieldTypes(const RecordTypePtr& t) {
         if (!t->fieldsInitialized)
             initializeRecordFields(t);
         return t->fieldTypes;
@@ -743,14 +743,14 @@ namespace clay {
     // variantMemberTypes, variantReprType, dispatchTagCount
     //
 
-    static TypePtr getVariantReprType(VariantTypePtr t) {
+    static TypePtr getVariantReprType(const VariantTypePtr& t) {
         ExprPtr variantReprType = operator_expr_variantReprType();
         ExprPtr reprExpr = new Call(variantReprType, new ExprList(new ObjectExpr(t.ptr())));
 
         return evaluateType(reprExpr, new Env());
     }
 
-    static void initializeVariantType(VariantTypePtr t) {
+    static void initializeVariantType(const VariantTypePtr& t) {
         assert(!t->initialized);
 
         CompileContextPusher pusher(t.ptr());
@@ -987,7 +987,7 @@ namespace clay {
 
     static void defineLLVMType(TypePtr t);
 
-    static void makeLLVMType(TypePtr t);
+    static void makeLLVMType(const TypePtr& t);
 
     llvm::PointerType *llvmPointerType(TypePtr t) {
         if (!t->llType)
@@ -1024,7 +1024,7 @@ namespace clay {
     // llvmType
     //
 
-    static void makeLLVMType(TypePtr t) {
+    static void makeLLVMType(const TypePtr& t) {
         if (t->llType == nullptr) {
             verifyRecursionCorrectness(t);
             declareLLVMType(t);
@@ -1034,7 +1034,7 @@ namespace clay {
         }
     }
 
-    llvm::Type *llvmType(TypePtr t) {
+    llvm::Type *llvmType(const TypePtr& t) {
         makeLLVMType(t);
 
         return t->llType;
@@ -1050,7 +1050,7 @@ namespace clay {
         return theType;
     }
 
-    llvm::DIType llvmTypeDebugInfo(TypePtr t) {
+    llvm::DIType llvmTypeDebugInfo(const TypePtr& t) {
         if (t->llType == nullptr)
             declareLLVMType(t);
 

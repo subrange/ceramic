@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept>
+
 namespace clay {
     typedef void (*TestFunc)();
 
@@ -15,7 +17,8 @@ namespace clay {
     static TestRegistrator_ ## NAME testRegistrator_ ## NAME; \
     void NAME ## _testImpl()
 
-    struct AssertionError {
+    struct AssertionError  : std::runtime_error {
+        AssertionError() : std::runtime_error("AssertionError") {}
     };
 
 #define UT_FAIL() do { \

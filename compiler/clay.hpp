@@ -23,38 +23,17 @@
 #include <llvm/ADT/StringMap.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/AsmParser/Parser.h>
-#include <llvm/Analysis/Passes.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
-#include <llvm/CodeGen/LinkAllAsmWriterComponents.h>
-#include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/CodeGen/ValueTypes.h>
-#include <llvm/IR/Attributes.h>
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/DIBuilder.h>
 #include <llvm/IR/DebugInfoMetadata.h>
 #include <llvm/IR/Function.h>
-#include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Type.h>
-#include <llvm/ExecutionEngine/ExecutionEngine.h>
-#include <llvm/ExecutionEngine/GenericValue.h>
-#include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/Allocator.h>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/MemoryBuffer.h>
-#include <llvm/Support/Path.h>
-#include <llvm/Support/SourceMgr.h>
-#include <llvm/Support/TargetSelect.h>
-#include <llvm/Support/raw_ostream.h>
-#include <llvm/Support/Error.h>
-#include <llvm/Target/TargetOptions.h>
-#include <llvm/Transforms/IPO.h>
-#include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
-#include <llvm/IR/LegacyPassManager.h>
-#include <llvm/Support/Program.h>
-#include <llvm/TargetParser/Host.h>
-#include <llvm/Linker/Linker.h>
+#include <llvm/IR/GlobalVariable.h>
 
 #include <complex>
 
@@ -570,14 +549,16 @@ namespace clay {
         Source(llvm::StringRef lineOfCode, int dummy);
 
         Source(llvm::StringRef fileName, llvm::MemoryBuffer *buffer)
-            : Object(SOURCE), fileName(fileName), buffer(buffer), debugInfo(nullptr) {
+                : Object(SOURCE), fileName(fileName), buffer(buffer) {
         }
 
-        const char *data() const { return buffer->getBufferStart(); }
-        const char *endData() const { return buffer->getBufferEnd(); }
-        size_t size() const { return buffer->getBufferSize(); }
+        [[nodiscard]] const char *data() const { return buffer->getBufferStart(); }
+        [[nodiscard]] const char *endData() const { return buffer->getBufferEnd(); }
+        [[nodiscard]] size_t size() const { return buffer->getBufferSize(); }
 
-        llvm::DIFile getDebugInfo() const { return llvm::DIFile(debugInfo); }
+        [[nodiscard]] llvm::DIFile *getDebugInfo() const {
+            // TODO: implement this...
+        }
     };
 
     struct Location {
@@ -691,7 +672,7 @@ namespace clay {
                     unsigned &column,
                     unsigned &tabColumn);
 
-    llvm::DIFile getDebugLineCol(Location const &location, unsigned &line, unsigned &column);
+    llvm::DIFile *getDebugLineCol(Location const &location, unsigned &line, unsigned &column);
 
     void printFileLineCol(llvm::raw_ostream &out, Location const &location);
 

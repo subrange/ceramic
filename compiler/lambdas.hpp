@@ -3,7 +3,5 @@
 #include "clay.hpp"
 
 namespace clay {
-
-void initializeLambda(LambdaPtr x, EnvPtr env);
-
+    void initializeLambda(const LambdaPtr& x, EnvPtr env);
 }

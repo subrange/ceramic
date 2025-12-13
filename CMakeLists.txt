@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 find_package(Git)
@@ -35,17 +36,20 @@ if(UNIX)
     if (NOT ${LLVM_CONFIG_VERSION_RESULT} EQUAL 0)
         message(FATAL_ERROR "${LLVM_CONFIG} failed")
     endif()
+    if(LLVM_VERSION VERSION_LESS 18.0)
+        message(FATAL_ERROR "LLVM 18 or newer is required. Found ${LLVM_VERSION}")
+    endif()
 
     execute_process(
         COMMAND ${LLVM_CONFIG} --cxxflags
         OUTPUT_VARIABLE LLVM_CXXFLAGS
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    set(LLVM_CXXFLAGS "${LLVM_CXXFLAGS}")
+    set(LLVM_CXXFLAGS ${LLVM_CXXFLAGS})
     separate_arguments(LLVM_CXXFLAGS)
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(LLVM_CXXFLAGS "${LLVM_CXXFLAGS} -O0")
+        list(APPEND LLVM_CXXFLAGS -O0)
     endif()
 
     execute_process(
@@ -79,7 +83,7 @@ if(UNIX)
         OUTPUT_VARIABLE LLVM_INCLUDEDIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    set(LLVM_INCLUDEDIR "${LLVM_INCLUDEDIR}")
+    set(LLVM_INCLUDEDIR ${LLVM_INCLUDEDIR})
 
     message("-- Using LLVM: ${LLVM_DIR}")
     message("-- LLVM include dir: ${LLVM_INCLUDEDIR}")

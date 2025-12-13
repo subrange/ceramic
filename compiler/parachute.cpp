@@ -55,13 +55,13 @@ namespace clay {
 
 // Signal parachute
 
-#include <signal.h>
+#include <csignal>
 
 namespace clay {
     static volatile int threatLevel = 0;
 
-    static void emergencyCompileContext(int sig) {
-        int oldThreatLevel = __sync_fetch_and_add(&threatLevel, 1);
+    static void emergencyCompileContext(const int sig) {
+        const int oldThreatLevel = __sync_fetch_and_add(&threatLevel, 1);
         if (oldThreatLevel == 0) {
             fprintf(stderr, "signal %d!\n", sig);
             displayCompileContext();

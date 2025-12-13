@@ -1,3 +1,38 @@
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Path.h>
+#include <llvm/Support/Program.h>
+#include <llvm/Support/ErrorOr.h>
+#include <llvm/Support/Signals.h>
+#include <llvm/TargetParser/Host.h>
+#include <llvm/TargetParser/Triple.h>
+#include <llvm/Support/FileUtilities.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/IR/Verifier.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/PassManager.h>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Passes/OptimizationLevel.h>
+#include <llvm/Support/FormattedStream.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/Error.h>
+#include <llvm/ExecutionEngine/Orc/LLJIT.h>
+#include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
+#include <llvm/Transforms/IPO/Internalize.h>
+#include <llvm/Bitcode/BitcodeWriterPass.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
+#include <llvm/ADT/ArrayRef.h>
+#include <llvm/ExecutionEngine/Orc/Core.h>
+#include <llvm/IR/Function.h>
+#include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/IRPrinter/IRPrintingPasses.h>
+
+#include <system_error>
+#include <vector>
+#include <string>
+#include <memory>
+#include <utility>
+
 #include "clay.hpp"
 #include "hirestimer.hpp"
 #include "error.hpp"
@@ -5,6 +40,9 @@
 #include "loader.hpp"
 #include "invoketables.hpp"
 #include "parachute.hpp"
+
+using std::string;
+using std::vector;
 
 // for _exit
 #ifdef _WIN32
@@ -26,272 +64,139 @@ namespace clay {
 #define ENV_SEPARATOR ':'
 #endif
 
-    using namespace std;
-
-    static void addOptimizationPasses(llvm::legacy::PassManager &passes,
-                                      llvm::legacy::FunctionPassManager &fpasses,
-                                      unsigned optLevel,
-                                      bool internalize) {
-        llvm::Pass *inliningPass = 0;
-        if (optLevel > 1) {
-            int threshold = 225;
-            if (optLevel > 2)
-                threshold = 275;
-            inliningPass = llvm::createFunctionInliningPass(threshold);
-        } else {
-            inliningPass = llvm::createAlwaysInlinerPass();
-        }
-
-        llvm::PassManagerBuilder builder;
-        builder.OptLevel = optLevel;
-        builder.Inliner = inliningPass;
-
-        builder.populateFunctionPassManager(fpasses);
-
-        // If all optimizations are disabled, just run the always-inline pass.
-        if (optLevel == 0) {
-            if (builder.Inliner) {
-                passes.add(builder.Inliner);
-                builder.Inliner = 0;
-            }
-        } else {
-            passes.add(llvm::createTypeBasedAliasAnalysisPass());
-            passes.add(llvm::createBasicAliasAnalysisPass());
-
-            passes.add(llvm::createGlobalOptimizerPass()); // Optimize out global vars
-
-            passes.add(llvm::createIPSCCPPass()); // IP SCCP
-            passes.add(llvm::createDeadArgEliminationPass()); // Dead argument elimination
-
-            passes.add(llvm::createInstructionCombiningPass()); // Clean up after IPCP & DAE
-            passes.add(llvm::createCFGSimplificationPass()); // Clean up after IPCP & DAE
-
-            // Start of CallGraph SCC passes.
-            if (builder.Inliner) {
-                passes.add(builder.Inliner);
-                builder.Inliner = 0;
-            }
-            if (optLevel > 2)
-                passes.add(llvm::createArgumentPromotionPass()); // Scalarize uninlined fn args
-
-            // Start of function pass.
-            // Break up aggregate allocas, using SSAUpdater.
-            passes.add(llvm::createScalarReplAggregatesPass(-1, false));
-            passes.add(llvm::createEarlyCSEPass()); // Catch trivial redundancies
-
-            passes.add(llvm::createJumpThreadingPass()); // Thread jumps.
-            // Disable Value Propagation pass until fixed LLVM bug #12503
-            // passes.add(llvm::createCorrelatedValuePropagationPass()); // Propagate conditionals
-            passes.add(llvm::createCFGSimplificationPass()); // Merge & remove BBs
-            passes.add(llvm::createInstructionCombiningPass()); // Combine silly seq's
-
-            passes.add(llvm::createTailCallEliminationPass()); // Eliminate tail calls
-            passes.add(llvm::createCFGSimplificationPass()); // Merge & remove BBs
-            passes.add(llvm::createReassociatePass()); // Reassociate expressions
-            passes.add(llvm::createLoopRotatePass()); // Rotate Loop
-            passes.add(llvm::createLICMPass()); // Hoist loop invariants
-            passes.add(llvm::createLoopUnswitchPass(builder.SizeLevel || optLevel < 3));
-            passes.add(llvm::createInstructionCombiningPass());
-            passes.add(llvm::createIndVarSimplifyPass()); // Canonicalize indvars
-            passes.add(llvm::createLoopIdiomPass()); // Recognize idioms like memset.
-            passes.add(llvm::createLoopDeletionPass()); // Delete dead loops
-
-            if (optLevel > 1)
-                passes.add(llvm::createGVNPass()); // Remove redundancies
-            passes.add(llvm::createMemCpyOptPass()); // Remove memcpy / form memset
-            passes.add(llvm::createSCCPPass()); // Constant prop with SCCP
-
-            // Run instcombine after redundancy elimination to exploit opportunities
-            // opened up by them.
-            passes.add(llvm::createInstructionCombiningPass());
-            passes.add(llvm::createJumpThreadingPass()); // Thread jumps
-            // Disable Value Propagation pass until fixed LLVM bug #12503
-            // passes.add(llvm::createCorrelatedValuePropagationPass());
-            passes.add(llvm::createDeadStoreEliminationPass()); // Delete dead stores
-
-            if (builder.Vectorize) {
-                passes.add(llvm::createBBVectorizePass());
-                passes.add(llvm::createInstructionCombiningPass());
-                if (optLevel > 1)
-                    passes.add(llvm::createGVNPass()); // Remove redundancies
-            }
-
-            passes.add(llvm::createAggressiveDCEPass()); // Delete dead instructions
-            passes.add(llvm::createCFGSimplificationPass()); // Merge & remove BBs
-            passes.add(llvm::createInstructionCombiningPass()); // Clean up after everything.
-
-            // GlobalOpt already deletes dead functions and globals, at -O3 try a
-            // late pass of GlobalDCE.  It is capable of deleting dead cycles.
-            if (optLevel > 2)
-                passes.add(llvm::createGlobalDCEPass()); // Remove dead fns and globals.
-
-            if (optLevel > 1)
-                passes.add(llvm::createConstantMergePass()); // Merge dup global constants
-        }
-
-        if (optLevel > 2) {
-            if (internalize) {
-                vector<const char *> do_not_internalize;
-                do_not_internalize.push_back("main");
-                passes.add(llvm::createInternalizePass(do_not_internalize));
-            }
-            builder.populateLTOPassManager(passes, false, true);
-        }
-    }
-
-    static bool linkLibraries(llvm::Module *module, llvm::ArrayRef<string> libSearchPaths,
-                              llvm::ArrayRef<string> libs) {
-        if (libs.empty())
-            return true;
-        llvm::Linker linker("clay", llvmModule, llvm::Linker::Verbose);
-        linker.addSystemPaths();
-        linker.addPaths(libSearchPaths);
-        for (size_t i = 0; i < libs.size(); ++i) {
-            string lib = libs[i];
-            llvmModule->addLibrary(lib);
-            //as in cling/lib/Interpreter/Interpreter.cpp
-            bool isNative = true;
-            if (linker.LinkInLibrary(lib, isNative)) {
-                // that didn't work, try bitcode:
-                llvm::sys::Path FilePath(lib);
-                std::string Magic;
-                if (!FilePath.getMagicNumber(Magic, 64)) {
-                    // filename doesn't exist...
-                    linker.releaseModule();
-                    return false;
-                }
-                if (llvm::sys::IdentifyFileType(Magic.c_str(), 64)
-                    == llvm::sys::Bitcode_FileType) {
-                    // We are promised a bitcode file, complain if it fails
-                    linker.setFlags(0);
-                    if (linker.LinkInFile(llvm::sys::Path(lib), isNative)) {
-                        linker.releaseModule();
-                        return false;
-                    }
-                } else {
-                    // Nothing the linker can handle
-                    linker.releaseModule();
-                    return false;
-                }
-            } else if (isNative) {
-                // native shared library, load it!
-                llvm::sys::Path SoFile = linker.FindLib(lib);
-                if (SoFile.isEmpty()) {
-                    llvm::errs() << "Couldn't find shared library " << lib << "\n";
-                    linker.releaseModule();
-                    return false;
-                }
-                std::string errMsg;
-                bool hasError = llvm::sys::DynamicLibrary
-                        ::LoadLibraryPermanently(SoFile.str().c_str(), &errMsg);
-                if (hasError) {
-                    if (hasError) {
-                        llvm::errs() << "Couldn't load shared library " << lib << "\n" << errMsg.c_str();
-                        linker.releaseModule();
-                        return false;
-                    }
-                }
-            }
-        }
-        linker.releaseModule();
-        return true;
-    }
-
     static bool runModule(llvm::Module *module,
-                          vector<string> &argv,
-                          char const *const*envp,
-                          llvm::ArrayRef<string> libSearchPaths,
-                          llvm::ArrayRef<string> libs) {
-        if (!linkLibraries(module, libSearchPaths, libs)) {
+                      const std::vector<std::string> &argv,
+                      char const *const*envp,
+                      llvm::ArrayRef<std::string> libSearchPaths,
+                      llvm::ArrayRef<std::string> libs) {
+        auto JIT_expected = llvm::orc::LLJITBuilder().create();
+        if (!JIT_expected) {
+            llvm::errs() << "error creating JIT: " << llvm::toString(JIT_expected.takeError()) << "\n";
             return false;
         }
-        llvm::EngineBuilder eb(llvmModule);
-        llvm::ExecutionEngine *engine = eb.create();
-        llvm::Function *mainFunc = module->getFunction("main");
-        if (!mainFunc) {
-            llvm::errs() << "no main function to -run\n";
-            delete engine;
-            return false;
-        }
-        engine->runStaticConstructorsDestructors(false);
-        engine->runFunctionAsMain(mainFunc, argv, envp);
-        engine->runStaticConstructorsDestructors(true);
+        auto JIT = std::move(JIT_expected.get());
+        llvm::orc::LLJIT &jit = *JIT;
 
-        delete engine;
+        llvm::orc::JITDylib& mainDylib = jit.getMainJITDylib();
+
+        auto Generator_expected = llvm::orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(
+            jit.getDataLayout().getGlobalPrefix()
+        );
+
+        if (!Generator_expected) {
+            llvm::errs() << "error creating generator: " << llvm::toString(Generator_expected.takeError()) << "\n";
+            return false;
+        }
+
+        std::unique_ptr<llvm::orc::DynamicLibrarySearchGenerator> Generator =
+            std::move(*Generator_expected);
+
+        mainDylib.addGenerator(std::move(Generator));
+
+        module->setDataLayout(jit.getDataLayout());
+
+        auto TSM = llvm::orc::ThreadSafeModule(std::unique_ptr<llvm::Module>(module),
+                                               std::make_unique<llvm::LLVMContext>());
+
+        if (llvm::Error AddIRErr = jit.addIRModule(std::move(TSM))) {
+            llvm::errs() << "error adding module to JIT: " << llvm::toString(std::move(AddIRErr)) << "\n";
+            return false;
+        }
+
+        auto mainAddr_expected = jit.lookup("main");
+        if (!mainAddr_expected) {
+            llvm::errs() << "error resolving main: " << llvm::toString(mainAddr_expected.takeError()) << "\n";
+            return false;
+        }
+
+        using MainPtr = int (*)(int, char *[], char *[]);
+
+        llvm::orc::ExecutorAddr mainAddr = mainAddr_expected.get();
+        auto mainFunc = reinterpret_cast<MainPtr>(mainAddr.getValue());
+
+        std::vector<const char*> c_argv;
+        for (const auto& arg : argv) {
+            c_argv.push_back(arg.c_str());
+        }
+        c_argv.push_back(nullptr);
+
+        mainFunc(static_cast<int>(c_argv.size() - 1), const_cast<char **>(c_argv.data()), const_cast<char **>(envp));
+
         return true;
     }
 
     static void optimizeLLVM(llvm::Module *module, unsigned optLevel, bool internalize) {
-        llvm::PassManager passes;
+        llvm::LoopAnalysisManager LAM;
+        llvm::FunctionAnalysisManager FAM;
+        llvm::CGSCCAnalysisManager CGAM;
+        llvm::ModuleAnalysisManager MAM;
+        llvm::PassBuilder PB;
 
-        string moduleDataLayout = module->getDataLayout();
-        llvm::DataLayout *dl = new llvm::DataLayout(moduleDataLayout);
-        passes.add(dl);
+        PB.registerModuleAnalyses(MAM);
+        PB.registerCGSCCAnalyses(CGAM);
+        PB.registerFunctionAnalyses(FAM);
+        PB.registerLoopAnalyses(LAM);
+        PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
 
-        llvm::FunctionPassManager fpasses(module);
+        llvm::OptimizationLevel O = llvm::OptimizationLevel::O0;
+        if (optLevel == 1) O = llvm::OptimizationLevel::O1;
+        else if (optLevel == 2) O = llvm::OptimizationLevel::O2;
+        else if (optLevel >= 3) O = llvm::OptimizationLevel::O3;
 
-        fpasses.add(new llvm::DataLayout(*dl));
+        llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(O);
 
-        addOptimizationPasses(passes, fpasses, optLevel, internalize);
-
-        fpasses.doInitialization();
-        for (llvm::Module::iterator i = module->begin(), e = module->end();
-             i != e; ++i) {
-            fpasses.run(*i);
+        if (optLevel > 2 && internalize) {
+            MPM.addPass(llvm::InternalizePass([=](const llvm::GlobalValue &GV) {
+                return GV.getName() == "main";
+            }));
         }
 
-        passes.add(llvm::createVerifierPass());
-        passes.run(*module);
+        MPM.addPass(llvm::VerifierPass());
+
+        MPM.run(*module, MAM);
     }
 
     static void generateLLVM(llvm::Module *module, bool emitAsm, llvm::raw_ostream *out) {
-        llvm::PassManager passes;
+        llvm::ModuleAnalysisManager MAM;
+        llvm::ModulePassManager passes;
+
         if (emitAsm)
-            passes.add(llvm::createPrintModulePass(out));
+            passes.addPass(llvm::PrintModulePass(*out));
         else
-            passes.add(llvm::createBitcodeWriterPass(*out));
-        passes.run(*module);
+            passes.addPass(llvm::BitcodeWriterPass(*out));
+
+        passes.run(*module, MAM);
     }
 
     static void generateAssembly(llvm::Module *module,
                                  llvm::TargetMachine *targetMachine,
-                                 llvm::raw_ostream *out,
+                                 llvm::raw_pwrite_stream *out,
                                  bool emitObject) {
-        llvm::FunctionPassManager fpasses(module);
+        llvm::legacy::PassManager passes;
 
-        fpasses.add(new llvm::DataLayout(module));
-        fpasses.add(llvm::createVerifierPass());
+        passes.add(llvm::createVerifierPass());
 
-        targetMachine->setAsmVerbosityDefault(true);
+        llvm::CodeGenFileType fileType = emitObject
+                                            ? llvm::CodeGenFileType::ObjectFile
+                                            : llvm::CodeGenFileType::AssemblyFile;
 
-        llvm::formatted_raw_ostream fout(*out);
-        llvm::TargetMachine::CodeGenFileType fileType = emitObject
-                                                            ? llvm::TargetMachine::CGFT_ObjectFile
-                                                            : llvm::TargetMachine::CGFT_AssemblyFile;
-
-        bool result = targetMachine->addPassesToEmitFile(fpasses, fout, fileType);
-        assert(!result);
-
-        fpasses.doInitialization();
-        for (llvm::Module::iterator i = module->begin(), e = module->end();
-             i != e; ++i) {
-            fpasses.run(*i);
+        if (targetMachine->addPassesToEmitFile(passes, *out, nullptr, fileType)) {
+            llvm::errs() << "error: adding codegen passes failed\n";
+            return;
         }
-        fpasses.doFinalization();
+
+        passes.run(*module);
     }
 
-    static string joinCmdArgs(llvm::ArrayRef<const char *> args) {
-        string s;
+    [[maybe_unused]] static std::string joinCmdArgs(llvm::ArrayRef<llvm::StringRef> args)
+    {
+        std::string s;
         llvm::raw_string_ostream ss(s);
-        for (char const *const *arg = args.begin();
-             arg != args.end(); ++arg) {
-            if (arg != args.begin()) {
+        for (const llvm::StringRef &arg : args) {
+            if (&arg != args.begin()) {
                 ss << " ";
             }
-            if (*arg == 0 && arg + 1 == args.end()) {
-                continue;
-            }
-            ss << *arg;
+            ss << arg;
         }
         return s;
     }
@@ -299,7 +204,7 @@ namespace clay {
     static bool generateBinary(llvm::Module *module,
                                llvm::TargetMachine *targetMachine,
                                llvm::Twine const &outputFilePath,
-                               llvm::sys::Path const &clangPath,
+                               llvm::StringRef const &clangPath,
                                bool /*exceptions*/,
                                bool sharedLib,
                                bool debug,
@@ -307,11 +212,11 @@ namespace clay {
                                bool verbose) {
         int fd;
         PathString tempObj;
-        if (llvm::error_code ec = llvm::sys::fs::unique_file("clayobj-%%%%%%%%.obj", fd, tempObj)) {
+        if (std::error_code ec = llvm::sys::fs::createUniqueFile("clayobj-%%%%%%%%.obj", fd, tempObj)) {
             llvm::errs() << "error creating temporary object file: " << ec.message() << '\n';
             return false;
         }
-        llvm::sys::RemoveFileOnSignal(llvm::sys::Path(tempObj));
+        llvm::FileRemover removeTempObj(tempObj);
 
         {
             llvm::raw_fd_ostream objOut(fd, /*shouldClose=*/ true);
@@ -321,74 +226,75 @@ namespace clay {
 
         string outputFilePathStr = outputFilePath.str();
 
-        vector<const char *> clangArgs;
-        clangArgs.push_back(clangPath.c_str());
+        std::vector<llvm::StringRef> clangArgs;
+        clangArgs.emplace_back(clangPath.data());
 
         switch (llvmDataLayout->getPointerSizeInBits()) {
             case 32:
-                clangArgs.push_back("-m32");
+                clangArgs.emplace_back("-m32");
                 break;
             case 64:
-                clangArgs.push_back("-m64");
+                clangArgs.emplace_back("-m64");
                 break;
             default:
                 assert(false);
         }
 
         llvm::Triple triple(llvmModule->getTargetTriple());
-        string linkerFlags;
         if (sharedLib) {
-            clangArgs.push_back("-shared");
+            clangArgs.emplace_back("-shared");
 
-            if (triple.getOS() == llvm::Triple::MinGW32
-                || triple.getOS() == llvm::Triple::Cygwin) {
+            if (triple.isOSWindows()) {
+                string linkerFlags;
                 PathString defPath;
                 outputFilePath.toVector(defPath);
                 llvm::sys::path::replace_extension(defPath, "def");
 
                 linkerFlags = "-Wl,--output-def," + string(defPath.begin(), defPath.end());
 
-                clangArgs.push_back(linkerFlags.c_str());
+                clangArgs.emplace_back(linkerFlags);
             }
         }
         if (debug) {
             if (triple.getOS() == llvm::Triple::Win32)
-                clangArgs.push_back("-Wl,/debug");
+                clangArgs.emplace_back("-Wl,/debug");
         }
-        clangArgs.push_back("-o");
-        clangArgs.push_back(outputFilePathStr.c_str());
-        clangArgs.push_back(tempObj.c_str());
-        for (unsigned i = 0; i < arguments.size(); ++i)
-            clangArgs.push_back(arguments[i].c_str());
-        clangArgs.push_back(nullptr);
+        clangArgs.emplace_back("-o");
+        clangArgs.emplace_back(outputFilePathStr);
+        clangArgs.push_back(tempObj);
+        for (const auto & argument : arguments)
+            clangArgs.emplace_back(argument);
 
         if (verbose) {
             llvm::errs() << "executing clang to generate binary:\n";
             llvm::errs() << "    " << joinCmdArgs(clangArgs) << "\n";
         }
 
-        int result = llvm::sys::Program::ExecuteAndWait(clangPath, &clangArgs[0]);
+        int result = llvm::sys::ExecuteAndWait(clangPath, clangArgs);
 
-        if (debug && triple.getOS() == llvm::Triple::Darwin) {
-            llvm::sys::Path dsymutilPath = llvm::sys::Program::FindProgramByName("dsymutil");
-            if (dsymutilPath.isValid()) {
+        if (debug && triple.isOSDarwin()) {
+            llvm::ErrorOr<std::string> dsymutilPathOrErr = llvm::sys::findProgramByName("dsymutil");
+            if (std::error_code ec = dsymutilPathOrErr.getError())
+                llvm::errs() << "error creating dsymutil: " << ec.message() << '\n';
+
+            std::string dsymutilPath = dsymutilPathOrErr ? *dsymutilPathOrErr : "";
+
+            if (!dsymutilPath.empty()) {
                 string outputDSYMPath = outputFilePathStr;
                 outputDSYMPath.append(".dSYM");
 
-                vector<const char *> dsymutilArgs;
-                dsymutilArgs.push_back(dsymutilPath.c_str());
-                dsymutilArgs.push_back("-o");
-                dsymutilArgs.push_back(outputDSYMPath.c_str());
-                dsymutilArgs.push_back(outputFilePathStr.c_str());
-                dsymutilArgs.push_back(nullptr);
+                std::vector<llvm::StringRef> dsymutilArgs;
+                dsymutilArgs.emplace_back(dsymutilPath);
+                dsymutilArgs.emplace_back("-o");
+                dsymutilArgs.emplace_back(outputDSYMPath);
+                dsymutilArgs.emplace_back(outputFilePathStr);
 
                 if (verbose) {
                     llvm::errs() << "executing dsymutil:";
                     llvm::errs() << "    " << joinCmdArgs(dsymutilArgs) << "\n";
                 }
 
-                int dsymResult = llvm::sys::Program::ExecuteAndWait(dsymutilPath,
-                                                                    &dsymutilArgs[0]);
+                int dsymResult = llvm::sys::ExecuteAndWait(dsymutilPath, dsymutilArgs);
 
                 if (dsymResult != 0)
                     llvm::errs() << "warning: dsymutil exited with error code " << dsymResult << "\n";
@@ -397,13 +303,10 @@ namespace clay {
                         "warning: unable to find dsymutil on the path; debug info for executable will not be generated\n";
         }
 
-        bool dontcare;
-        llvm::sys::fs::remove(llvm::StringRef(tempObj), dontcare);
-
         return (result == 0);
     }
 
-    static void usage(char *argv0) {
+    static void usage(const char *argv0) {
         llvm::errs() << "usage: " << argv0 << " <options> <clay file>\n";
         llvm::errs() << "       " << argv0 << " <options> -e <clay code>\n";
         llvm::errs() << "options:\n";
@@ -466,33 +369,27 @@ namespace clay {
     }
 
     static string sharedExtensionForTarget(llvm::Triple const &triple) {
-        if (triple.getOS() == llvm::Triple::Win32
-            || triple.getOS() == llvm::Triple::MinGW32
-            || triple.getOS() == llvm::Triple::Cygwin) {
+        if (triple.isOSWindows()) {
             return ".dll";
-        } else if (triple.getOS() == llvm::Triple::Darwin) {
-            return ".dylib";
-        } else {
-            return ".so";
         }
+        if (triple.isOSDarwin()) {
+            return ".dylib";
+        }
+        return ".so";
     }
 
     static string objExtensionForTarget(llvm::Triple const &triple) {
-        if (triple.getOS() == llvm::Triple::Win32) {
+        if (triple.isOSWindows()) {
             return ".obj";
-        } else {
-            return ".o";
         }
+        return ".o";
     }
 
     static string exeExtensionForTarget(llvm::Triple const &triple) {
-        if (triple.getOS() == llvm::Triple::Win32
-            || triple.getOS() == llvm::Triple::MinGW32
-            || triple.getOS() == llvm::Triple::Cygwin) {
+        if (triple.isOSWindows()) {
             return ".exe";
-        } else {
-            return "";
         }
+        return "";
     }
 
     static void printVersion() {
@@ -625,7 +522,7 @@ namespace clay {
                 if (dot == nullptr) {
                     logMatchSymbols.insert(make_pair(string("*"), argv[i]));
                 } else {
-                    logMatchSymbols.insert(make_pair(string((char const *) argv[i], dot), string(dot + 1)));
+                    logMatchSymbols.insert(make_pair(string(static_cast<char const *>(argv[i]), dot), string(dot + 1)));
                 }
             } else if (strcmp(argv[i], "-e") == 0) {
                 if (i + 1 == argc) {
@@ -684,7 +581,7 @@ namespace clay {
                     llvm::errs() << "error: framework name missing after -framework\n";
                     return 1;
                 }
-                frameworks.push_back("-framework");
+                frameworks.emplace_back("-framework");
                 frameworks.push_back(framework);
             } else if (strcmp(argv[i], "-arch") == 0) {
                 if (i + 1 == argc) {
@@ -827,7 +724,7 @@ namespace clay {
                         return 1;
                     }
                 }
-                searchPath.push_back(PathString(path));
+                searchPath.emplace_back(path);
             } else if (strstr(argv[i], "-version") == argv[i]
                        || strcmp(argv[i], "--version") == 0) {
                 printVersion();
@@ -959,24 +856,23 @@ namespace clay {
         initExternalTarget(targetTriple);
 
         // Try environment variables first
-        char *libclayPath = getenv("CLAY_PATH");
-        if (libclayPath) {
+        if (char *libclayPath = getenv("CLAY_PATH")) {
             // Parse the environment variable
-            // Format expected is standard PATH form, i.e
-            // CLAY_PATH=path1:path2:path3  (on unix)
-            // CLAY_PATH=path1;path2;path3  (on windows)
+            // Format expected is standard PATH form, i.e.
+            // CLAY_PATH=path1:path2:path3  (on Unix)
+            // CLAY_PATH=path1;path2;path3  (on Windows)
             char *begin = libclayPath;
             char *end;
             do {
                 end = begin;
                 while (*end && (*end != ENV_SEPARATOR))
                     ++end;
-                searchPath.push_back(llvm::StringRef(begin, (size_t) (end - begin)));
+                searchPath.emplace_back(llvm::StringRef(begin, static_cast<size_t>(end - begin)));
                 begin = end + 1;
             } while (*end);
         }
         // Add the relative path from the executable
-        PathString clayExe(llvm::sys::Path::GetMainExecutable(argv[0], (void *) (uintptr_t) &usage).c_str());
+        PathString clayExe(llvm::sys::fs::getMainExecutable(argv[0], reinterpret_cast<void *>(&usage)));
         llvm::StringRef clayDir = llvm::sys::path::parent_path(clayExe);
 
         PathString libDirDevelopment(clayDir);
@@ -990,14 +886,13 @@ namespace clay {
         searchPath.push_back(libDirDevelopment);
         searchPath.push_back(libDirProduction1);
         searchPath.push_back(libDirProduction2);
-        searchPath.push_back(PathString("."));
+        searchPath.emplace_back(".");
 
         if (verbose) {
             llvm::errs() << "using search path:\n";
 
-            for (std::vector<PathString>::const_iterator it = searchPath.begin();
-                 it != searchPath.end(); ++it) {
-                llvm::errs() << "    " << *it << "\n";
+            for (const auto & it : searchPath) {
+                llvm::errs() << "    " << it << "\n";
             }
         }
 
@@ -1024,7 +919,7 @@ namespace clay {
                 llvm::errs() << "error: output file '" << outputFile << "' is a directory\n";
                 return 1;
             }
-            llvm::sys::RemoveFileOnSignal(llvm::sys::Path(outputFile));
+            llvm::sys::RemoveFileOnSignal(outputFile);
         }
 
         if (generateDeps) {
@@ -1044,7 +939,7 @@ namespace clay {
                 llvm::errs() << "error: dependencies output file '" << dependenciesOutputFile << "' is a directory\n";
                 return 1;
             }
-            llvm::sys::RemoveFileOnSignal(llvm::sys::Path(dependenciesOutputFile));
+            llvm::sys::RemoveFileOnSignal(dependenciesOutputFile);
         }
 
         HiResTimer loadTimer, compileTimer, optTimer, outputTimer;
@@ -1056,9 +951,9 @@ namespace clay {
             initLoader();
 
             ModulePtr m;
-            string clayScriptSource;
             vector<string> sourceFiles;
             if (!clayScript.empty()) {
+                string clayScriptSource;
                 clayScriptSource = clayScriptImports + "main() {\n" + clayScript + "}";
                 m = loadProgramSource("-e", clayScriptSource, verbose, repl);
             } else if (generateDeps)
@@ -1072,17 +967,17 @@ namespace clay {
             compileTimer.stop();
 
             if (generateDeps) {
-                string errorInfo;
+                std::error_code ec;
 
                 if (verbose) {
                     llvm::errs() << "generating dependencies into " << dependenciesOutputFile << "\n";
                 }
 
-                llvm::raw_fd_ostream dependenciesOut(dependenciesOutputFile.c_str(),
-                                                     errorInfo,
-                                                     llvm::raw_fd_ostream::F_Binary);
-                if (!errorInfo.empty()) {
-                    llvm::errs() << "error: " << errorInfo << '\n';
+                llvm::raw_fd_ostream dependenciesOut(dependenciesOutputFile,
+                                                     ec,
+                                                     llvm::sys::fs::OF_None);
+                if (ec) {
+                    llvm::errs() << "error creating dependencies file: " << ec.message() << '\n';
                     return 1;
                 }
                 dependenciesOut << outputFile << ": \\\n";
@@ -1106,19 +1001,20 @@ namespace clay {
             optTimer.stop();
 
             if (run) {
-                vector<string> argv;
-                argv.push_back(clayFile);
-                runModule(llvmModule, argv, envp, libSearchPath, libraries);
+                vector<string> runArgs;
+                runArgs.push_back(clayFile);
+                runModule(llvmModule, runArgs, envp, libSearchPath, libraries);
             } else if (repl) {
-                linkLibraries(llvmModule, libSearchPath, libraries);
+                // TODO: future me task
                 runInteractive(llvmModule, m);
             } else if (emitLLVM || emitAsm || emitObject) {
-                string errorInfo;
-                llvm::raw_fd_ostream out(outputFile.c_str(),
-                                         errorInfo,
-                                         llvm::raw_fd_ostream::F_Binary);
-                if (!errorInfo.empty()) {
-                    llvm::errs() << "error: " << errorInfo << '\n';
+                std::error_code ec;
+
+                llvm::raw_fd_ostream out(outputFile,
+                                         ec,
+                                         llvm::sys::fs::OF_None);
+                if (ec) {
+                    llvm::errs() << "error creating output file: " << ec.message() << '\n';
                     return 1;
                 }
                 outputTimer.start();
@@ -1129,16 +1025,17 @@ namespace clay {
                 outputTimer.stop();
             } else {
                 bool result;
-                llvm::sys::Path clangPath = llvm::sys::Program::FindProgramByName("clang");
-                if (!clangPath.isValid()) {
-                    llvm::errs() << "error: unable to find clang on the path\n";
+                llvm::ErrorOr<std::string> clangPathOrErr = llvm::sys::findProgramByName("clang");
+                if (std::error_code ec = clangPathOrErr.getError()) {
+                    llvm::errs() << "error: unable to find clang on the path: " << ec.message() << "\n";
                     return 1;
                 }
+                const std::string& clangPath = clangPathOrErr.get();
 
                 vector<string> arguments;
 #ifdef __APPLE__
                 if (!arch.empty()) {
-                    arguments.push_back("-arch");
+                    arguments.emplace_back("-arch");
                     arguments.push_back(arch);
                 }
 #endif
@@ -1170,10 +1067,10 @@ namespace clay {
             return 1;
         }
         if (showTiming) {
-            llvm::errs() << "load time = " << (size_t) loadTimer.elapsedMillis() << " ms\n";
-            llvm::errs() << "compile time = " << (size_t) compileTimer.elapsedMillis() << " ms\n";
-            llvm::errs() << "optimization time = " << (size_t) optTimer.elapsedMillis() << " ms\n";
-            llvm::errs() << "codegen time = " << (size_t) outputTimer.elapsedMillis() << " ms\n";
+            llvm::errs() << "load time = " << static_cast<size_t>(loadTimer.elapsedMillis()) << " ms\n";
+            llvm::errs() << "compile time = " << static_cast<size_t>(compileTimer.elapsedMillis()) << " ms\n";
+            llvm::errs() << "optimization time = " << static_cast<size_t>(optTimer.elapsedMillis()) << " ms\n";
+            llvm::errs() << "codegen time = " << static_cast<size_t>(outputTimer.elapsedMillis()) << " ms\n";
             llvm::errs().flush();
         }
 

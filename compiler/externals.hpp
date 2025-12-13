@@ -1,5 +1,7 @@
 #pragma once
 
+#include <llvm/ADT/FoldingSet.h>
+
 #include "clay.hpp"
 #include "codegen.hpp"
 
@@ -41,7 +43,7 @@ namespace clay {
         llvm::CallingConv::ID llConv;
         ArgInfo retInfo;
         vector<ArgInfo> argInfos;
-        vector<pair<unsigned, llvm::Attributes>> attrs;
+        llvm::AttributeList attrs;
 
         ExternalFunction(CallingConv conv, TypePtr ret,
                          vector<TypePtr> &args, size_t numReqArg,

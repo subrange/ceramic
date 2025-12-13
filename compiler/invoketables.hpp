@@ -7,12 +7,14 @@ namespace clay {
     struct InvokeSet;
     struct InvokeEntry;
 
-    static llvm::SpecificBumpPtrAllocator<InvokeEntry> *invokeEntryAllocator
+    static auto invokeEntryAllocator
             = new llvm::SpecificBumpPtrAllocator<InvokeEntry>();
-    static llvm::SpecificBumpPtrAllocator<InvokeSet> *invokeSetAllocator
+    static auto invokeSetAllocator
             = new llvm::SpecificBumpPtrAllocator<InvokeSet>();
 
     struct InvokeEntry {
+        virtual ~InvokeEntry() = default;
+
         InvokeSet *parent;
         ObjectPtr callable;
         vector<TypePtr> argsKey;
@@ -36,9 +38,9 @@ namespace clay {
         vector<TypePtr> returnTypes;
 
         llvm::Function *llvmFunc;
-        llvm::Function *llvmCWrappers[CC_Count];
+        llvm::Function *llvmCWrappers[CC_Count]{};
 
-        llvm::TrackingVH<llvm::MDNode> debugInfo;
+        llvm::TrackingMDNodeRef debugInfo;
 
         bool analyzed: 1;
         bool analyzing: 1;
@@ -46,7 +48,7 @@ namespace clay {
         bool runtimeNop: 1;
 
         InvokeEntry(InvokeSet *parent,
-                    ObjectPtr callable,
+                    const ObjectPtr &callable,
                     llvm::ArrayRef<TypePtr> argsKey)
             : parent(parent), callable(callable),
               argsKey(argsKey),
@@ -58,8 +60,8 @@ namespace clay {
               analyzing(false),
               callByName(false),
               runtimeNop(false) {
-            for (size_t i = 0; i < CC_Count; ++i)
-                llvmCWrappers[i] = nullptr;
+            for (auto & llvmCWrapper : llvmCWrappers)
+                llvmCWrapper = nullptr;
         }
 
         void *operator new(size_t num_bytes) {
@@ -67,12 +69,16 @@ namespace clay {
         }
 
         virtual void dealloc() { ANodeAllocator->Deallocate(this); }
-        llvm::DISubprogram getDebugInfo() { return llvm::DISubprogram(debugInfo); }
+        llvm::DISubprogram *getDebugInfo() const {
+            return llvm::dyn_cast_or_null<llvm::DISubprogram>(debugInfo.get());
+        }
     };
 
     extern vector<OverloadPtr> patternOverloads;
 
     struct InvokeSet {
+        virtual ~InvokeSet() = default;
+
         ObjectPtr callable;
         vector<TypePtr> argsKey;
         OverloadPtr interface;
@@ -87,9 +93,9 @@ namespace clay {
         bool shouldLog: 1;
         bool evaluatingPredicate: 1;
 
-        InvokeSet(ObjectPtr callable,
+        InvokeSet(const ObjectPtr &callable,
                   llvm::ArrayRef<TypePtr> argsKey,
-                  OverloadPtr symbolInterface,
+                  const OverloadPtr &symbolInterface,
                   llvm::ArrayRef<OverloadPtr> symbolOverloads)
             : callable(callable), argsKey(argsKey),
               interface(symbolInterface),
