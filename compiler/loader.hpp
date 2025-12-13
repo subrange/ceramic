@@ -14,7 +14,7 @@ namespace clay {
                                llvm::ArrayRef<FormalArgPtr> formalArgs, bool hasVarArg);
 
     void initLoader();
-    void setSearchPath(const llvm::ArrayRef<PathString> path);
+    void setSearchPath(llvm::ArrayRef<PathString> path);
     ModulePtr loadProgram(llvm::StringRef fileName, vector<string> *sourceFiles, bool verbose, bool repl);
     ModulePtr loadProgramSource(llvm::StringRef name, llvm::StringRef source, bool verbose, bool repl);
     ModulePtr loadedModule(llvm::StringRef module);
