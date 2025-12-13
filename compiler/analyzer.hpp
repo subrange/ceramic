@@ -2,7 +2,6 @@
 
 #include "clay.hpp"
 
-// #include "invoketables.hpp"
 #include "types.hpp"
 
 namespace clay {
@@ -24,9 +23,9 @@ namespace clay {
     bool staticToCallingConv(ObjectPtr x, CallingConv &out);
     CallingConv staticToCallingConv(MultiStaticPtr x, unsigned index);
 
-    static inline PVData staticPValue(ObjectPtr x) {
+    static PVData staticPValue(const ObjectPtr& x) {
         const TypePtr t = staticType(x);
-        return PVData(t, true);
+        return {t, true};
     }
 
     enum BoolKind {
