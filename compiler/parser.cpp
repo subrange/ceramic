@@ -24,7 +24,7 @@ namespace clay {
             if (inRepl) {
                 assert(addTokens != nullptr);
                 vector<Token> toks = addTokens();
-                if (toks.size() == 0) {
+                if (toks.empty()) {
                     inRepl = false;
                     return false;
                 }
@@ -50,7 +50,7 @@ namespace clay {
 
     static Location currentLocation() {
         if (position == tokens->size())
-            return Location();
+            return {};
         return (*tokens)[position].location;
     }
 
@@ -278,10 +278,9 @@ namespace clay {
     }
 
     static bool expressionList(ExprListPtr &x, bool = false) {
-        ExprListPtr a;
         ExprPtr b;
         if (!expression(b)) return false;
-        a = new ExprList(b);
+        ExprListPtr a = new ExprList(b);
         while (true) {
             unsigned p = save();
             if (!symbol(",")) {
@@ -481,30 +480,30 @@ namespace clay {
         return false;
     }
 
-    static void setSuffixBase(Expr *a, ExprPtr base) {
+    static void setSuffixBase(Expr *a, const ExprPtr &base) {
         switch (a->exprKind) {
             case INDEXING: {
-                Indexing *b = (Indexing *) a;
+                auto b = dynamic_cast<Indexing *>(a);
                 b->expr = base;
                 break;
             }
             case CALL: {
-                Call *b = (Call *) a;
+                Call *b = dynamic_cast<Call *>(a);
                 b->expr = base;
                 break;
             }
             case FIELD_REF: {
-                FieldRef *b = (FieldRef *) a;
+                auto b = dynamic_cast<FieldRef *>(a);
                 b->expr = base;
                 break;
             }
             case STATIC_INDEXING: {
-                StaticIndexing *b = (StaticIndexing *) a;
+                auto b = dynamic_cast<StaticIndexing *>(a);
                 b->expr = base;
                 break;
             }
             case VARIADIC_OP: {
-                VariadicOp *b = (VariadicOp *) a;
+                auto *b = dynamic_cast<VariadicOp *>(a);
                 assert(b->op == DEREFERENCE);
                 b->exprs->add(base);
                 break;
@@ -1033,7 +1032,7 @@ namespace clay {
 
     static bool optPatternVarsWithCond(vector<PatternVar> &x, ExprPtr &y);
 
-    static bool bindingsBody(vector<FormalArgPtr> &args, bool &hasVarArg);
+    static bool bindingsBody(vector<FormalArgPtr> &x, bool &hasVarArg);
 
     static bool localBinding(StatementPtr &x) {
         Location location = currentLocation();
@@ -1146,7 +1145,7 @@ namespace clay {
         if (!symbol(";")) return false;
         ExprListPtr exprs = new ExprList(new NameRef(Identifier::get(op, true)));
         if (z->exprKind == VARIADIC_OP) {
-            VariadicOp *y = (VariadicOp *) z.ptr();
+            auto y = dynamic_cast<VariadicOp *>(z.ptr());
             exprs->add(y->exprs);
         } else {
             exprs->add(z);
@@ -1167,8 +1166,8 @@ namespace clay {
         ExprListPtr exprs = new ExprList(new NameRef(Identifier::get(op, true)));
         exprs->add(y);
         if (z->exprKind == VARIADIC_OP) {
-            VariadicOp *y = (VariadicOp *) z.ptr();
-            exprs->add(y->exprs);
+            auto variadic_op = dynamic_cast<VariadicOp *>(z.ptr());
+            exprs->add(variadic_op->exprs);
         } else {
             exprs->add(z);
         }
@@ -1694,7 +1693,7 @@ namespace clay {
         return true;
     }
 
-    static FormalArgPtr makeStaticFormalArg(size_t index, ExprPtr expr, Location const &location) {
+    static FormalArgPtr makeStaticFormalArg(size_t index, const ExprPtr &expr, Location const &location) {
         // desugar static args
         llvm::SmallString<128> buf;
         llvm::raw_svector_ostream sout(buf);
@@ -1889,12 +1888,12 @@ namespace clay {
         } else {
             int bracket = 1;
             while (bracket) {
-                unsigned p = save();
+                unsigned i = save();
                 if (symbol("[")) {
                     ++bracket;
                     continue;
                 }
-                restore(p);
+                restore(i);
                 if (symbol("]"))
                     --bracket;
             }
@@ -2285,7 +2284,7 @@ namespace clay {
         if (symbol(":")) {
             if (!optReturnTypeList(returnSpecs)) return false;
             if (!optVarReturnType(varReturnSpec)) return false;
-            if (returnSpecs.size() > 0 || varReturnSpec != nullptr)
+            if (!returnSpecs.empty() || varReturnSpec != nullptr)
                 exprRetSpecs = true;
             return true;
         } else {
@@ -2312,7 +2311,7 @@ namespace clay {
     //
 
     static bool isOverload(bool &isDefault) {
-        int p = save();
+        int p = static_cast<int>(save());
         if (keyword("overload"))
             isDefault = false;
         else if (restore(p), keyword("default"))
@@ -2394,7 +2393,7 @@ namespace clay {
 
         ProcedurePtr u = new Procedure(module, z, vis, true);
         u->location = location;
-        x.push_back(u.ptr());
+        x.emplace_back(u.ptr());
 
         ExprPtr target = new NameRef(z);
         target->location = location;
@@ -2402,7 +2401,7 @@ namespace clay {
         target->endLocation = targetEndLocation;
         OverloadPtr v = new Overload(module, target, y, false, isInline, hasAsConversion);
         v->location = location;
-        x.push_back(v.ptr());
+        x.emplace_back(v.ptr());
 
         u->singleOverload = v;
 
@@ -2444,7 +2443,7 @@ namespace clay {
 
         ProcedurePtr proc = new Procedure(module, name, vis, privateOverload, interface);
         proc->location = location;
-        x.push_back(proc.ptr());
+        x.emplace_back(proc.ptr());
 
         return true;
     }
@@ -2475,14 +2474,14 @@ namespace clay {
         if (!body(code->body)) return false;
         code->location = location;
         if (exprRetSpecs && code->body->stmtKind == RETURN) {
-            Return *x = (Return *) code->body.ptr();
-            if (x->isExprReturn)
-                x->isReturnSpecs = true;
+            auto return_ = dynamic_cast<Return *>(code->body.ptr());
+            if (return_->isExprReturn)
+                return_->isReturnSpecs = true;
         }
 
         ProcedurePtr proc = new Procedure(module, name, vis, true);
         proc->location = location;
-        x.push_back(proc.ptr());
+        x.emplace_back(proc.ptr());
 
         ExprPtr target = new NameRef(name);
         target->location = location;
@@ -2490,7 +2489,7 @@ namespace clay {
         target->endLocation = targetEndLocation;
         OverloadPtr oload = new Overload(module, target, code, callByName, isInline, hasAsConversion);
         oload->location = location;
-        x.push_back(oload.ptr());
+        x.emplace_back(oload.ptr());
 
         proc->singleOverload = oload;
 
@@ -2542,9 +2541,9 @@ namespace clay {
             if (!llvmCode(code->llvmBody)) return false;
         }
         if (exprRetSpecs && code->body->stmtKind == RETURN) {
-            Return *x = (Return *) code->body.ptr();
-            if (x->isExprReturn)
-                x->isReturnSpecs = true;
+            auto return_ = dynamic_cast<Return *>(code->body.ptr());
+            if (return_->isExprReturn)
+                return_->isReturnSpecs = true;
         }
         target->location = location;
         target->startLocation = targetStartLocation;
@@ -2975,7 +2974,7 @@ namespace clay {
         Location location = currentLocation();
         Token *t;
         if (!next(t) || t->tokenKind != T_DOC_PROPERTY) return false;
-        llvm::StringRef key = llvm::StringRef(t->str);
+        auto key = llvm::StringRef(t->str);
 
         DocumentationAnnotation ano;
         if (key == "section") {
@@ -2993,7 +2992,7 @@ namespace clay {
         }
 
         if (!next(t) || t->tokenKind != T_DOC_TEXT) return false;
-        llvm::StringRef value = llvm::StringRef(t->str);
+        auto value = llvm::StringRef(t->str);
 
         an.insert(std::pair<DocumentationAnnotation, string>(ano, value.str()));
         return true;
@@ -3173,22 +3172,22 @@ namespace clay {
                 break;
             }
 
-            unsigned p = save();
+            unsigned i = save();
 
             if (!topLevelItem(x.toplevels, nullptr)) {
-                restore(p);
+                restore(i);
             } else {
                 continue;
             }
 
             if (!import(x.imports)) {
-                restore(p);
+                restore(i);
             } else {
                 continue;
             }
 
             if (!blockItem(stmtItem)) {
-                restore(p);
+                restore(i);
                 break;
             } else {
                 x.stmts.push_back(stmtItem);
@@ -3205,7 +3204,7 @@ namespace clay {
     //
 
     template<typename Parser, typename ParserParam, typename Node>
-    void applyParser(SourcePtr source, unsigned offset, size_t length, Parser parser, ParserParam parserParam,
+    void applyParser(const SourcePtr& source, unsigned offset, size_t length, Parser parser, ParserParam parserParam,
                      Node &node) {
         vector<Token> t;
         tokenize(source, offset, length, t);
@@ -3216,7 +3215,7 @@ namespace clay {
         if (!parser(node, parserParam) || (position < t.size())) {
             Location location;
             if (maxPosition == t.size())
-                location = Location(source.ptr(), unsigned(source->size()));
+                location = Location(source.ptr(), static_cast<unsigned>(source->size()));
             else
                 location = t[maxPosition].location;
             pushLocation(location);
@@ -3229,11 +3228,11 @@ namespace clay {
 
     struct ModuleParser {
         llvm::StringRef moduleName;
-        bool operator()(ModulePtr &m, Module *) { return module(moduleName, m); }
+        bool operator()(ModulePtr &m, Module *) const { return module(moduleName, m); }
     };
 
-    ModulePtr parse(llvm::StringRef moduleName, SourcePtr source, ParserFlags flags) {
-        if (flags && ParserKeepDocumentation)
+    ModulePtr parse(llvm::StringRef moduleName, const SourcePtr &source, ParserFlags flags) {
+        if (flags)
             parserOptionKeepDocumentation = true;
         ModulePtr m;
         ModuleParser p = {moduleName};
@@ -3246,7 +3245,7 @@ namespace clay {
     // parseExpr
     //
 
-    ExprPtr parseExpr(SourcePtr source, unsigned offset, size_t length) {
+    ExprPtr parseExpr(const SourcePtr &source, unsigned offset, size_t length) {
         ExprPtr expr;
         applyParser(source, offset, length, expression, false, expr);
         return expr;
@@ -3256,7 +3255,7 @@ namespace clay {
     // parseExprList
     //
 
-    ExprListPtr parseExprList(SourcePtr source, unsigned offset, size_t length) {
+    ExprListPtr parseExprList(const SourcePtr &source, unsigned offset, size_t length) {
         ExprListPtr exprList;
         applyParser(source, offset, length, expressionList, false, exprList);
         return exprList;
@@ -3266,7 +3265,7 @@ namespace clay {
     // parseStatements
     //
 
-    void parseStatements(SourcePtr source, unsigned offset, size_t length,
+    void parseStatements(const SourcePtr &source, unsigned offset, size_t length,
                          vector<StatementPtr> &stmts) {
         applyParser(source, offset, length, blockItems, false, stmts);
     }
@@ -3275,7 +3274,7 @@ namespace clay {
     // parseTopLevelItems
     //
 
-    void parseTopLevelItems(SourcePtr source, unsigned offset, size_t length,
+    void parseTopLevelItems(const SourcePtr &source, unsigned offset, size_t length,
                             vector<TopLevelItemPtr> &topLevels, Module *module) {
         applyParser(source, offset, length, topLevelItems, module, topLevels);
     }
@@ -3284,7 +3283,7 @@ namespace clay {
     // parseInteractive
     //
 
-    ReplItem parseInteractive(SourcePtr source, unsigned offset, size_t length) {
+    ReplItem parseInteractive(const SourcePtr &source, unsigned offset, size_t length) {
         ReplItem x;
         applyParser(source, offset, length, replItems, false, x);
         return x;
