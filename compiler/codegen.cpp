@@ -42,7 +42,7 @@ namespace clay {
     }
 
     llvm::Value *noExceptionReturnValue() {
-        return llvm::ConstantPointernullptr::get(exceptionReturnType());
+        return llvm::ConstantPointerNull::get(exceptionReturnType());
     }
 
     void codegenValueInit(CValuePtr dest, CodegenContext *ctx);
@@ -1360,7 +1360,7 @@ namespace clay {
         assert(mpv->size() == 1);
         PVData const &y = mpv->values[0];
         llvm::Constant *initializer =
-                llvm::Constant::getnullptrValue(llvmType(y.type));
+                llvm::Constant::getNullValue(llvmType(y.type));
 
         llvm::SmallString<128> nameBuf;
         llvm::raw_svector_ostream nameStr(nameBuf);

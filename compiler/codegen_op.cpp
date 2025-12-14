@@ -1335,7 +1335,7 @@ namespace clay {
                 break;
             }
 
-            case PRIM_nullptrPointer: {
+            case PRIM_nullPointer: {
                 ensureArity(args, 1);
                 TypePtr dest = valueToPointerLikeType(args, 0);
                 assert(out->size() == 1);
@@ -1343,7 +1343,7 @@ namespace clay {
                 assert(out0->type == dest);
                 llvm::PointerType *llType = llvm::dyn_cast<llvm::PointerType>(llvmType(dest));
                 assert(llType != nullptr);
-                llvm::Value *result = llvm::ConstantPointernullptr::get(llType);
+                llvm::Value *result = llvm::ConstantPointerNull::get(llType);
                 ctx->builder->CreateStore(result, out0->llValue);
                 break;
             }
