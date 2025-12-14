@@ -2725,7 +2725,7 @@ namespace clay {
         bool fieldsInitialized: 1;
         bool hasVarField: 1;
 
-        RecordType(const RecordDeclPtr &record, llvm::ArrayRef<ObjectPtr> params);
+        RecordType(RecordDeclPtr record, llvm::ArrayRef<ObjectPtr> params);
 
         size_t varFieldSize() const {
             return fieldTypes.size() - fieldNames.size() + 1;

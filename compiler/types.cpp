@@ -349,7 +349,7 @@ namespace clay {
         return t.ptr();
     }
 
-    TypePtr recordType(const RecordDeclPtr& record, llvm::ArrayRef<ObjectPtr> params) {
+    TypePtr recordType(RecordDeclPtr record, llvm::ArrayRef<ObjectPtr> params) {
         unsigned h = pointerHash(record.ptr());
         ObjectPtr const *pi, *pend;
         for (pi = params.begin(), pend = params.end(); pi != pend; ++pi)
