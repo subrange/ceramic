@@ -1,13 +1,12 @@
 #include "clay.hpp"
 #include "operators.hpp"
 #include "evaluator.hpp"
-// #include "analyzer.hpp"
+#include "analyzer.hpp"
 #include "desugar.hpp"
 #include "parser.hpp"
 #include "clone.hpp"
 #include "objects.hpp"
 #include "error.hpp"
-#include "printer.hpp"
 
 namespace clay {
     ExprPtr desugarCharLiteral(char c) {

@@ -1,6 +1,3 @@
-#include <llvm/Support/Error.h>
-#include <llvm/ExecutionEngine/Orc/LLJIT.h>
-
 #include "clay.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"

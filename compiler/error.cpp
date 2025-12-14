@@ -6,6 +6,8 @@
 #include "error.hpp"
 #include "printer.hpp"
 
+#include <cstdarg>
+
 namespace clay {
     bool shouldPrintFullMatchErrors;
     set<pair<string, string> > logMatchSymbols;

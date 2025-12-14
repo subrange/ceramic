@@ -4,11 +4,9 @@
 #include "constructors.hpp"
 #include "loader.hpp"
 #include "env.hpp"
-
 #include "analyzer.hpp"
 #include "analyzer_op.hpp"
 #include "invoketables.hpp"
-#include "printer.hpp"
 
 namespace clay {
     static size_t staticToSizeTOrIntValue(MultiPValue *args, size_t index) {

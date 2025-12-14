@@ -9,8 +9,8 @@
 #include "constructors.hpp"
 #include "externals.hpp"
 #include "env.hpp"
-
 #include "codegen_op.hpp"
+#include "invoketables.hpp"
 
 namespace clay {
     static llvm::StringMap<llvm::Constant *> stringTableConstants;

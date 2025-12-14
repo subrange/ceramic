@@ -1,11 +1,11 @@
 #include <llvm/Support/Path.h>
 #include <llvm/Support/FileSystem.h>
 
-#include "claydoc.hpp"
-#include "parser.hpp"
-
 #include <sstream>
 #include <string>
+
+#include "claydoc.hpp"
+#include "parser.hpp"
 
 using namespace std;
 using namespace clay;

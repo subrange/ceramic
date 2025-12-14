@@ -1,3 +1,5 @@
+#include <system_error>
+
 #include "clay.hpp"
 #include "loader.hpp"
 #include "patterns.hpp"

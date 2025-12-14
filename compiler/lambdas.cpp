@@ -7,7 +7,6 @@
 #include "loader.hpp"
 #include "env.hpp"
 #include "error.hpp"
-#include "printer.hpp"
 
 namespace clay {
     struct LambdaContext {

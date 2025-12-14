@@ -1,6 +1,5 @@
 #include "clay.hpp"
 #include "profiler.hpp"
-#include "printer.hpp"
 
 namespace clay {
     static llvm::StringMap<int> countsMap;

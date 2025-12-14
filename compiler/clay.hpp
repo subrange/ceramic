@@ -17,7 +17,6 @@
 #pragma warning(disable: 4146 4244 4267 4355 4146 4800 4996)
 #endif
 
-#include <llvm/ADT/FoldingSet.h>
 #include <llvm/ADT/SmallString.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringMap.h>
@@ -34,6 +33,40 @@
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Transforms/Scalar/GVN.h>
 #include <llvm/IR/GlobalVariable.h>
+#include <llvm/IR/Metadata.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Path.h>
+#include <llvm/Support/Program.h>
+#include <llvm/Support/ErrorOr.h>
+#include <llvm/Support/Signals.h>
+#include <llvm/TargetParser/Host.h>
+#include <llvm/TargetParser/Triple.h>
+#include <llvm/Support/FileUtilities.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/IR/Verifier.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/PassManager.h>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Passes/OptimizationLevel.h>
+#include <llvm/Support/FormattedStream.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/Error.h>
+#include <llvm/ExecutionEngine/Orc/LLJIT.h>
+#include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
+#include <llvm/Transforms/IPO/Internalize.h>
+#include <llvm/Bitcode/BitcodeWriterPass.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
+#include <llvm/ADT/ArrayRef.h>
+#include <llvm/ExecutionEngine/Orc/Core.h>
+#include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/IRPrinter/IRPrintingPasses.h>
+#include <llvm/Support/AtomicOrdering.h>
+#include <llvm/MC/TargetRegistry.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/Support/AtomicOrdering.h>
+#include <llvm/IR/Attributes.h>
 
 #include <complex>
 

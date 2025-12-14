@@ -1,4 +1,3 @@
-
 #include "clay.hpp"
 #include "evaluator.hpp"
 #include "codegen.hpp"
@@ -17,7 +16,6 @@
 #include "clone.hpp"
 #include "objects.hpp"
 #include "analyzer_op.hpp"
-#include "printer.hpp"
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
