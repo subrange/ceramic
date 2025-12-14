@@ -36,7 +36,7 @@ namespace clay {
         contextStack.emplace_back(obj, params);
     }
 
-    void pushCompileContext(const ObjectPtr &obj, llvm::ArrayRef<ObjectPtr> params, llvm::ArrayRef<unsigned> dispatchIndices) {
+    void pushCompileContext(ObjectPtr obj, llvm::ArrayRef<ObjectPtr> params, llvm::ArrayRef<unsigned> dispatchIndices) {
         if (contextStack.size() >= RECURSION_WARNING_LEVEL)
             warning("potential runaway recursion");
         if (!contextStack.empty())
@@ -56,7 +56,7 @@ namespace clay {
         contextStack = x;
     }
 
-    CompileContextPusher::CompileContextPusher(const ObjectPtr &obj, llvm::ArrayRef<PVData> params,
+    CompileContextPusher::CompileContextPusher(ObjectPtr obj, llvm::ArrayRef<PVData> params,
                                                llvm::ArrayRef<unsigned> dispatchIndices) {
         vector<ObjectPtr> params2;
         for (const auto & param : params) {
@@ -97,7 +97,7 @@ namespace clay {
 
     int DebugPrinter::indent = 0;
 
-    DebugPrinter::DebugPrinter(const ObjectPtr &obj)
+    DebugPrinter::DebugPrinter(ObjectPtr obj)
         : obj(obj) {
         for (int i = 0; i < indent; ++i)
             llvm::outs() << ' ';
