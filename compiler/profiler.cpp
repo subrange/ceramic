@@ -7,7 +7,7 @@ namespace clay {
     void incrementCount(const ObjectPtr &obj) {
         string buf;
         llvm::raw_string_ostream sout(buf);
-        sout << obj;
+        sout << obj->toString();
         string s = sout.str();
         llvm::StringMap<int>::iterator i = countsMap.find(s);
         if (i == countsMap.end()) {
