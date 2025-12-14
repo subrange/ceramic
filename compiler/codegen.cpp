@@ -1603,7 +1603,7 @@ namespace clay {
                 Location argLocation = arg->location;
                 llvm::DIFile file = getDebugLineCol(argLocation, line, column);
                 llvm::DIVariable debugVar = llvmDIBuilder->createLocalVariable(
-                    llvm::dwarf::DW_TAG_arg_variable, // tag
+                    llvm::dwarf::DW_TAG_variable, // tag
                     x->getDebugInfo(), // scope
                     arg->name->str, // name
                     file, // file
@@ -2893,7 +2893,7 @@ namespace clay {
                 llvm::DIFile file = getDebugLineCol(argLocation, line, column);
                 llvm::DebugLoc debugLoc = llvm::DebugLoc::get(line, column, entry->getDebugInfo());
                 llvm::DIVariable debugVar = llvmDIBuilder->createLocalVariable(
-                    llvm::dwarf::DW_TAG_arg_variable, // tag
+                    llvm::dwarf::DW_TAG_variable, // tag
                     entry->getDebugInfo(), // scope
                     entry->fixedArgNames[i]->str, // name
                     file, // file
@@ -2935,7 +2935,7 @@ namespace clay {
                 if (llvmDIBuilder != nullptr) {
                     llvm::DebugLoc debugLoc = llvm::DebugLoc::get(line, column, entry->getDebugInfo());
                     llvm::DIVariable debugVar = llvmDIBuilder->createLocalVariable(
-                        llvm::dwarf::DW_TAG_arg_variable, // tag
+                        llvm::dwarf::DW_TAG_variable, // tag
                         entry->getDebugInfo(), // scope
                         sout.str(), // name
                         file, // file
@@ -2969,7 +2969,7 @@ namespace clay {
                     llvm::DIFile file = getDebugLineCol(argLocation, line, column);
                     llvm::DebugLoc debugLoc = llvm::DebugLoc::get(line, column, entry->getDebugInfo());
                     llvm::DIVariable debugVar = llvmDIBuilder->createLocalVariable(
-                        llvm::dwarf::DW_TAG_arg_variable, // tag
+                        llvm::dwarf::DW_TAG_variable, // tag
                         entry->getDebugInfo(), // scope
                         entry->fixedArgNames[i]->str, // name
                         file, // file
@@ -3995,7 +3995,7 @@ namespace clay {
                     if (llvmDIBuilder != nullptr) {
                         llvm::DILexicalBlock debugBlock = ctx->getDebugScope();
                         llvm::DIVariable debugVar = llvmDIBuilder->createLocalVariable(
-                            llvm::dwarf::DW_TAG_auto_variable, // tag
+                            llvm::dwarf::DW_TAG_variable, // tag
                             debugBlock, // scope
                             getBindingVariableName(x, i), // name
                             file, // file
@@ -4062,7 +4062,7 @@ namespace clay {
                     if (llvmDIBuilder != nullptr) {
                         llvm::DILexicalBlock debugBlock = ctx->getDebugScope();
                         llvm::DIVariable debugVar = llvmDIBuilder->createLocalVariable(
-                            llvm::dwarf::DW_TAG_auto_variable, // tag
+                            llvm::dwarf::DW_TAG_variable, // tag
                             debugBlock, // scope
                             getBindingVariableName(x, i), // name
                             file, // file
@@ -4133,7 +4133,7 @@ namespace clay {
                         llvm::DILexicalBlock debugBlock = ctx->getDebugScope();
                         llvm::DIType debugType = llvmTypeDebugInfo(pv.type);
                         llvm::DIVariable debugVar = llvmDIBuilder->createLocalVariable(
-                            llvm::dwarf::DW_TAG_auto_variable, // tag
+                            llvm::dwarf::DW_TAG_variable, // tag
                             debugBlock, // scope
                             getBindingVariableName(x, i), // name
                             file, // file
