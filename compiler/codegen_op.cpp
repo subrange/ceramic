@@ -350,21 +350,21 @@ namespace clay {
             PrimOp *prim = (PrimOp *) obj.ptr();
             switch (prim->primOpCode) {
                 case PRIM_OrderUnordered:
-                    return llvm::Unordered;
+                    return llvm::AtomicOrdering::Unordered;
                 case PRIM_OrderMonotonic:
-                    return llvm::Monotonic;
+                    return llvm::AtomicOrdering::Monotonic;
                 case PRIM_OrderAcquire:
-                    return llvm::Acquire;
+                    return llvm::AtomicOrdering::Acquire;
                 case PRIM_OrderRelease:
-                    return llvm::Release;
+                    return llvm::AtomicOrdering::Release;
                 case PRIM_OrderAcqRel:
-                    return llvm::AcquireRelease;
+                    return llvm::AtomicOrdering::AcquireRelease;
                 case PRIM_OrderSeqCst:
-                    return llvm::SequentiallyConsistent;
+                    return llvm::AtomicOrdering::SequentiallyConsistent;
             }
         }
         argumentTypeError(index, "atomic ordering", cv->type);
-        return llvm::Unordered;
+        return llvm::AtomicOrdering::Unordered;
     }
 
     llvm::AtomicRMWInst::BinOp atomicRMWOpValue(MultiCValuePtr args, unsigned index) {
