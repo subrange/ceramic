@@ -155,7 +155,8 @@ namespace clay {
             }
             type = cv->type;
         }
-        return ctx->builder->CreateLoad(cv->llValue);
+        llvm::Type *llTy = llvmType(cv->type);
+        return ctx->builder->CreateLoad(llTy, cv->llValue);
     }
 
     static llvm::Value *floatValue(MultiCValuePtr args,
@@ -175,7 +176,8 @@ namespace clay {
             }
             type = (FloatType *) cv->type.ptr();
         }
-        return ctx->builder->CreateLoad(cv->llValue);
+        llvm::Type *llTy = llvmType(cv->type);
+        return ctx->builder->CreateLoad(llTy, cv->llValue);
     }
 
     static llvm::Value *integerOrPointerLikeValue(MultiCValuePtr args,
@@ -198,7 +200,8 @@ namespace clay {
             }
             type = cv->type;
         }
-        return ctx->builder->CreateLoad(cv->llValue);
+        llvm::Type *llTy = llvmType(cv->type);
+        return ctx->builder->CreateLoad(llTy, cv->llValue);
     }
 
     static void checkIntegerValue(MultiCValuePtr args,
@@ -222,7 +225,8 @@ namespace clay {
                                      CodegenContext *ctx) {
         checkIntegerValue(args, index, type, ctx);
         CValuePtr cv = args->values[index];
-        return ctx->builder->CreateLoad(cv->llValue);
+        llvm::Type *llTy = llvmType(cv->type);
+        return ctx->builder->CreateLoad(llTy, cv->llValue);
     }
 
     static llvm::Value *pointerValue(MultiCValuePtr args,
@@ -239,7 +243,8 @@ namespace clay {
             type = (PointerType *) cv->type.ptr();
             llvmType(type->pointeeType); // force the pointee type to be refined
         }
-        return ctx->builder->CreateLoad(cv->llValue);
+        llvm::Type *llTy = llvmType(cv->type);
+        return ctx->builder->CreateLoad(llTy, cv->llValue);
     }
 
     static llvm::Value *pointerLikeValue(MultiCValuePtr args,
@@ -257,7 +262,8 @@ namespace clay {
                                   cv->type);
             type = cv->type;
         }
-        return ctx->builder->CreateLoad(cv->llValue);
+        llvm::Type *llTy = llvmType(cv->type);
+        return ctx->builder->CreateLoad(llTy, cv->llValue);
     }
 
     static llvm::Value *cCodePointerValue(MultiCValuePtr args,
@@ -333,7 +339,8 @@ namespace clay {
                 argumentTypeError(index, "enum type", cv->type);
             type = (EnumType *) cv->type.ptr();
         }
-        return ctx->builder->CreateLoad(cv->llValue);
+        llvm::Type *llTy = llvmType(cv->type);
+        return ctx->builder->CreateLoad(llTy, cv->llValue);
     }
 
     llvm::AtomicOrdering atomicOrderValue(MultiCValuePtr args, unsigned index) {
