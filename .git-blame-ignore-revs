@@ -1,0 +1,8 @@
+# Reformat codebase with clang-format
+2a5e2277c65f078add48389da8a9bce741693dc7
+
+# Rename clay to ceramic
+86d94c055f40e84d72e926bd250bbf2cb73bc8d9
+
+# Rename .ceramic extension to .crm
+e0be252323f1231daa1154ef902e5483c1fa52e1
