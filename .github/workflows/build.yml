@@ -33,6 +33,32 @@ jobs:
       - name: Test
         run: cmake --build build --target test
 
+  tidy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y llvm-19 llvm-19-dev clang-19 clang-tidy-19 python3 ninja-build cmake
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_DIR=/usr/lib/llvm-19 \
+            -DCMAKE_C_COMPILER=clang-19 \
+            -DCMAKE_CXX_COMPILER=clang++-19 \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Run clang-tidy
+        run: |
+          find compiler tools -name '*.cpp' \
+            | xargs clang-tidy-19 -p build
+
   format:
     runs-on: ubuntu-latest
 
