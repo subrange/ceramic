@@ -11,6 +11,7 @@
 #include "objects.hpp"
 #include "operators.hpp"
 #include "types.hpp"
+#include <llvm-19/llvm/IR/Type.h>
 
 namespace ceramic {
 static llvm::StringMap<llvm::Constant *> stringTableConstants;
@@ -559,7 +560,7 @@ static void codegenCallCCode(CCodePointerTypePtr t, llvm::Value *llCallable,
         ctx->builder->CreateCall(llCastCallable, llvm::ArrayRef(llArgs));
     llvm::CallingConv::ID callingConv = extFunc->llConv;
     callInst->setCallingConv(callingConv);
-    for (vector<pair<unsigned, llvm::Attributes>>::iterator attr =
+    for (vector<pair<unsigned, llvm::Attribute>>::iterator attr =
              extFunc->attrs.begin();
          attr != extFunc->attrs.end(); ++attr)
         callInst->addAttribute(attr->first, attr->second);
@@ -570,7 +571,9 @@ static void codegenCallCCode(CCodePointerTypePtr t, llvm::Value *llCallable,
 
 static void codegenCallCCodePointer(CValuePtr x, MultiCValuePtr args,
                                     CodegenContext *ctx, MultiCValuePtr out) {
-    llvm::Value *llCallable = ctx->builder->CreateLoad(x->llValue);
+    llvm::Type *expectedLlType = llvmType(x->type);
+    llvm::Value *llCallable =
+        ctx->builder->CreateLoad(expectedLlType, x->llValue);
     assert(x->type->typeKind == CCODE_POINTER_TYPE);
     CCodePointerType *t = (CCodePointerType *)x->type.ptr();
     codegenCallCCode(t, llCallable, args, ctx, out);
@@ -702,7 +705,8 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
             argumentTypeError(0, "primitive type", cv0->type);
         if (cv0->type != cv1->type)
             argumentTypeError(1, cv0->type, cv1->type);
-        llvm::Value *v = ctx->builder->CreateLoad(cv1->llValue);
+        llvm::Type *llTy = llvmType(cv0->type);
+        llvm::Value *v = ctx->builder->CreateLoad(llTy, cv1->llValue);
         ctx->builder->CreateStore(v, cv0->llValue);
         assert(out->size() == 0);
         break;
@@ -714,7 +718,8 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         if (cv->type != boolType)
             argumentTypeError(0, boolType, cv->type);
         assert(out->size() == 1);
-        llvm::Value *v = ctx->builder->CreateLoad(cv->llValue);
+        llvm::Type *llvmBoolType = llvmType(boolType);
+        llvm::Value *v = ctx->builder->CreateLoad(llvmBoolType, cv->llValue);
         llvm::Value *zero = llvm::ConstantInt::get(llvmType(boolType), 0);
         llvm::Value *flag = ctx->builder->CreateICmpEQ(v, zero);
         CValuePtr out0 = out->values[0];
@@ -1500,7 +1505,8 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         vector<llvm::Value *> indices;
         indices.push_back(llvm::ConstantInt::get(llvmIntType(32), 0));
         indices.push_back(iv);
-        llvm::Value *ptr = ctx->builder->CreateGEP(av, llvm::ArrayRef(indices));
+        llvm::Value *ptr =
+            ctx->builder->CreateGEP(av->getType(), av, llvm::ArrayRef(indices));
         assert(out->size() == 1);
         CValuePtr out0 = out->values[0];
         assert(out0->type == pointerType(at->elementType));
@@ -1516,7 +1522,8 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         for (unsigned i = 0; i < at->size; ++i) {
             CValuePtr outi = out->values[i];
             assert(outi->type == pointerType(at->elementType));
-            llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(varray, 0, i);
+            llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(
+                varray->getType(), varray, 0, i);
             ctx->builder->CreateStore(ptr, outi->llValue);
         }
         break;
@@ -1544,8 +1551,8 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         if (i >= tt->elementTypes.size())
             argumentIndexRangeError(1, "tuple element index", i,
                                     tt->elementTypes.size());
-        llvm::Value *ptr =
-            ctx->builder->CreateConstGEP2_32(vtuple, 0, unsigned(i));
+        llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(
+            vtuple->getType(), vtuple, 0, unsigned(i));
         assert(out->size() == 1);
         CValuePtr out0 = out->values[0];
         assert(out0->type == pointerType(tt->elementTypes[i]));
@@ -1561,7 +1568,8 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         for (unsigned i = 0; i < tt->elementTypes.size(); ++i) {
             CValuePtr outi = out->values[i];
             assert(outi->type == pointerType(tt->elementTypes[i]));
-            llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(vtuple, 0, i);
+            llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(
+                vtuple->getType(), vtuple, 0, i);
             ctx->builder->CreateStore(ptr, outi->llValue);
         }
         break;
@@ -1648,20 +1656,21 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
                     CValuePtr outi = out->values[j];
                     assert(outi->type == pointerType(fieldTypes[i + j]));
                     llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(
-                        vrec, 0, unsigned(i) + j);
+                        vrec->getType(), vrec, 0, unsigned(i) + j);
                     ctx->builder->CreateStore(ptr, outi->llValue);
                 }
             } else {
                 unsigned k = unsigned(i + rt->varFieldSize() - 1);
-                llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(vrec, 0, k);
+                llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(
+                    vrec->getType(), vrec, 0, k);
                 assert(out->size() == 1);
                 CValuePtr out0 = out->values[0];
                 assert(out0->type == pointerType(fieldTypes[k]));
                 ctx->builder->CreateStore(ptr, out0->llValue);
             }
         } else {
-            llvm::Value *ptr =
-                ctx->builder->CreateConstGEP2_32(vrec, 0, unsigned(i));
+            llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(
+                vrec->getType(), vrec, 0, unsigned(i));
             assert(out->size() == 1);
             CValuePtr out0 = out->values[0];
             assert(out0->type == pointerType(fieldTypes[i]));
@@ -1692,20 +1701,22 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
                 for (unsigned j = 0; j < rt->varFieldSize(); ++j) {
                     CValuePtr outi = out->values[j];
                     assert(outi->type == pointerType(fieldTypes[i + j]));
-                    llvm::Value *ptr =
-                        ctx->builder->CreateConstGEP2_32(vrec, 0, i + j);
+                    llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(
+                        vrec->getType(), vrec, 0, i + j);
                     ctx->builder->CreateStore(ptr, outi->llValue);
                 }
             } else {
                 unsigned k = i + unsigned(rt->varFieldSize()) - 1;
-                llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(vrec, 0, k);
+                llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(
+                    vrec->getType(), vrec, 0, k);
                 assert(out->size() == 1);
                 CValuePtr out0 = out->values[0];
                 assert(out0->type == pointerType(fieldTypes[k]));
                 ctx->builder->CreateStore(ptr, out0->llValue);
             }
         } else {
-            llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(vrec, 0, i);
+            llvm::Value *ptr =
+                ctx->builder->CreateConstGEP2_32(vrec->getType(), vrec, 0, i);
             assert(out->size() == 1);
             CValuePtr out0 = out->values[0];
             assert(out0->type == pointerType(fieldTypes[i]));
@@ -1723,7 +1734,8 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         for (unsigned i = 0; i < fieldTypes.size(); ++i) {
             CValuePtr outi = out->values[i];
             assert(outi->type == pointerType(fieldTypes[i]));
-            llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(vrec, 0, i);
+            llvm::Value *ptr =
+                ctx->builder->CreateConstGEP2_32(vrec->getType(), vrec, 0, i);
             ctx->builder->CreateStore(ptr, outi->llValue);
         }
         break;
@@ -1741,7 +1753,8 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
             unsigned k = rt->varFieldPosition + i;
             CValuePtr outi = out->values[i];
             assert(outi->type == pointerType(fieldTypes[k]));
-            llvm::Value *ptr = ctx->builder->CreateConstGEP2_32(vrec, 0, k);
+            llvm::Value *ptr =
+                ctx->builder->CreateConstGEP2_32(vrec->getType(), vrec, 0, k);
             ctx->builder->CreateStore(ptr, outi->llValue);
         }
         break;
@@ -2002,7 +2015,9 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         PointerTypePtr ptrT;
         llvm::Value *ptr = pointerValue(args, 2, ptrT, ctx);
         TypePtr argT = args->values[3]->type;
-        llvm::Value *arg = ctx->builder->CreateLoad(args->values[3]->llValue);
+        llvm::Type *argLlType = llvmType(argT);
+        llvm::Value *arg =
+            ctx->builder->CreateLoad(argLlType, args->values[3]->llValue);
 
         if (ptrT->pointeeType != argT)
             argumentTypeError(3, ptrT->pointeeType, argT);
@@ -2045,7 +2060,9 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         PointerTypePtr ptrT;
         llvm::Value *ptr = pointerValue(args, 1, ptrT, ctx);
         TypePtr argT = args->values[2]->type;
-        llvm::Value *arg = ctx->builder->CreateLoad(args->values[2]->llValue);
+        llvm::Type *argLlType = llvmType(argT);
+        llvm::Value *arg =
+            ctx->builder->CreateLoad(argLlType, args->values[2]->llValue);
 
         if (ptrT->pointeeType != argT)
             argumentTypeError(2, ptrT->pointeeType, argT);
@@ -2064,9 +2081,13 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         PointerTypePtr ptrT;
         llvm::Value *ptr = pointerValue(args, 1, ptrT, ctx);
         TypePtr oldvT = args->values[2]->type;
-        llvm::Value *oldv = ctx->builder->CreateLoad(args->values[2]->llValue);
+        llvm::Type *oldvLlType = llvmType(oldvT);
+        llvm::Value *oldv =
+            ctx->builder->CreateLoad(oldvLlType, args->values[2]->llValue);
         TypePtr newvT = args->values[3]->type;
-        llvm::Value *newv = ctx->builder->CreateLoad(args->values[3]->llValue);
+        llvm::Type *newvLlType = llvmType(newvT);
+        llvm::Value *newv =
+            ctx->builder->CreateLoad(newvLlType, args->values[3]->llValue);
 
         if (ptrT->pointeeType != oldvT)
             argumentTypeError(2, ptrT->pointeeType, oldvT);
@@ -2091,7 +2112,9 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
 
         assert(ctx->exceptionValue != nullptr);
 
-        llvm::Value *expv = ctx->builder->CreateLoad(ctx->exceptionValue);
+        llvm::Type *expvLlType = llvmType(out0->type);
+        llvm::Value *expv =
+            ctx->builder->CreateLoad(expvLlType, ctx->exceptionValue);
         ctx->builder->CreateStore(expv, out0->llValue);
         break;
     }
@@ -2275,8 +2298,9 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         ensureArity(args, 2);
         if (!isPrimitiveType(args->values[0]->type))
             argumentTypeError(0, "primitive type", args->values[0]->type);
+        llvm::Type *expecteeLlTy = llvmType(args->values[0]->type);
         llvm::Value *expectee =
-            ctx->builder->CreateLoad(args->values[0]->llValue);
+            ctx->builder->CreateLoad(expecteeLlTy, args->values[0]->llValue);
         ObjectPtr expectedValue = unwrapStaticType(args->values[1]->type);
         if (expectedValue == nullptr ||
             expectedValue->objKind != VALUE_HOLDER ||
