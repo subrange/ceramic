@@ -1,9 +1,9 @@
-#include "claydoc.hpp"
+#include "ceramicdoc.hpp"
 #include <errno.h>
 #include <fstream>
 #include <sstream>
 
-using namespace clay;
+using namespace ceramic;
 using namespace std;
 
 static void htmlEncode(std::string &data) {
@@ -48,11 +48,11 @@ static void emitInlineDoc(std::ostream &o, const std::string &str) {
 
 static void emitHtmlOverload(std::ostream &o, DocState *state,
                              DocObject *item) {
-    clay::OverloadPtr overload = (clay::Overload *)item->item.ptr();
+    ceramic::OverloadPtr overload = (ceramic::Overload *)item->item.ptr();
     std::string htmlName(item->name);
     htmlEncode(htmlName);
     o << "<div class='overload'> <h3> ";
-    clay::CodePtr code = overload->code;
+    ceramic::CodePtr code = overload->code;
 
     if (!!code->predicate) {
         std::string pred = code->predicate->asString();
@@ -170,13 +170,13 @@ void emitHtmlModule(std::string outpath, DocState *state, DocModule *mod) {
         for (std::vector<DocObject *>::iterator i2 = (*it)->objects.begin();
              i2 != (*it)->objects.end(); i2++) {
             switch ((*i2)->item->objKind) {
-            case clay::PROCEDURE:
+            case ceramic::PROCEDURE:
                 emitHtmlProcedure(o, state, *i2);
                 break;
-            case clay::RECORD_DECL:
+            case ceramic::RECORD_DECL:
                 emitHtmlRecord(o, state, *i2);
                 break;
-            case clay::OVERLOAD:
+            case ceramic::OVERLOAD:
                 emitHtmlOverload(o, state, *i2);
                 break;
             default: {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
 //
 // int128 type
@@ -8,18 +8,18 @@
 
 #if defined(__GNUC__) && defined(_INT128_DEFINED)
 
-namespace clay {
-typedef __int128 clay_int128;
-typedef unsigned __int128 clay_uint128;
-} // namespace clay
+namespace ceramic {
+typedef __int128 ceramic_int128;
+typedef unsigned __int128 ceramic_uint128;
+} // namespace ceramic
 
 // #elif (defined(__clang__))
-// typedef __int128_t clay_int128;
-// typedef __uint128_t clay_uint128;
+// typedef __int128_t ceramic_int128;
+// typedef __uint128_t ceramic_uint128;
 
 #else
 
-namespace clay {
+namespace ceramic {
 // fake it by doing 64-bit math in a 128-bit padded container
 struct uint128_holder;
 
@@ -80,7 +80,7 @@ struct int128_holder {
     }
 
     operator ptrdiff64_t() const { return lowValue; }
-} CLAY_ALIGN(16);
+} CERAMIC_ALIGN(16);
 
 struct uint128_holder {
     size64_t lowValue;
@@ -141,49 +141,49 @@ struct uint128_holder {
     }
 
     operator size64_t() const { return lowValue; }
-} CLAY_ALIGN(16);
-} // namespace clay
+} CERAMIC_ALIGN(16);
+} // namespace ceramic
 
 namespace std {
-template <> struct numeric_limits<clay::int128_holder> {
-    static clay::int128_holder min() noexcept {
-        return {0, std::numeric_limits<clay::ptrdiff64_t>::min()};
+template <> struct numeric_limits<ceramic::int128_holder> {
+    static ceramic::int128_holder min() noexcept {
+        return {0, std::numeric_limits<ceramic::ptrdiff64_t>::min()};
     }
 
-    static clay::int128_holder max() noexcept {
-        return {-1, std::numeric_limits<clay::ptrdiff64_t>::max()};
+    static ceramic::int128_holder max() noexcept {
+        return {-1, std::numeric_limits<ceramic::ptrdiff64_t>::max()};
     }
 };
 
-template <> struct numeric_limits<clay::uint128_holder> {
-    static clay::uint128_holder min() noexcept { return {0, 0}; }
+template <> struct numeric_limits<ceramic::uint128_holder> {
+    static ceramic::uint128_holder min() noexcept { return {0, 0}; }
 
-    static clay::uint128_holder max() noexcept {
-        return {std::numeric_limits<clay::size64_t>::max(),
-                std::numeric_limits<clay::size64_t>::max()};
+    static ceramic::uint128_holder max() noexcept {
+        return {std::numeric_limits<ceramic::size64_t>::max(),
+                std::numeric_limits<ceramic::size64_t>::max()};
     }
 };
 } // namespace std
 
-namespace clay {
+namespace ceramic {
 inline int128_holder::int128_holder(uint128_holder y)
     : lowValue(static_cast<ptrdiff64_t>(y.lowValue)),
       highPad(static_cast<ptrdiff64_t>(y.highPad)) {}
 
-typedef int128_holder clay_int128;
-typedef uint128_holder clay_uint128;
-} // namespace clay
+typedef int128_holder ceramic_int128;
+typedef uint128_holder ceramic_uint128;
+} // namespace ceramic
 
 #endif
 
-namespace clay {
+namespace ceramic {
 inline llvm::raw_ostream &operator<<(llvm::raw_ostream &os,
-                                     const clay_int128 &x) {
+                                     const ceramic_int128 &x) {
     return os << static_cast<ptrdiff64_t>(x);
 }
 
 inline llvm::raw_ostream &operator<<(llvm::raw_ostream &os,
-                                     const clay_uint128 &x) {
+                                     const ceramic_uint128 &x) {
     return os << static_cast<size64_t>(x);
 }
-} // namespace clay
+} // namespace ceramic

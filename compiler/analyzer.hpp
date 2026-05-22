@@ -1,11 +1,11 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
 #include "invoketables.hpp"
 #include "types.hpp"
 
-namespace clay {
+namespace ceramic {
 void disableAnalysisCaching();
 void enableAnalysisCaching();
 
@@ -107,4 +107,4 @@ struct AnalysisContext {
 enum StatementAnalysis { SA_FALLTHROUGH, SA_RECURSIVE, SA_TERMINATED };
 
 ExprPtr implicitUnpackExpr(size_t wantCount, const ExprListPtr &exprs);
-} // namespace clay
+} // namespace ceramic

@@ -1,11 +1,11 @@
 #include "matchinvoke.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "env.hpp"
 #include "error.hpp"
 #include "evaluator.hpp"
 #include "patterns.hpp"
 
-namespace clay {
+namespace ceramic {
 void initializePatternEnv(EnvPtr patternEnv, llvm::ArrayRef<PatternVar> pvars,
                           vector<PatternCellPtr> &cells,
                           vector<MultiPatternCellPtr> &multiCells) {
@@ -239,4 +239,4 @@ void printMatchError(llvm::raw_ostream &os, const MatchResultPtr &result) {
         break;
     }
 }
-} // namespace clay
+} // namespace ceramic

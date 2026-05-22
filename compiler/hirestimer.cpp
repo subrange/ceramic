@@ -6,7 +6,7 @@
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 
-namespace clay {
+namespace ceramic {
 HiResTimer::HiResTimer() : elapsedTicks(0), startTicks(0), running(0) {}
 
 void HiResTimer::start() {
@@ -28,14 +28,14 @@ unsigned long long HiResTimer::elapsedNanos() {
     }
     return elapsedTicks * timeBaseInfo.numer / timeBaseInfo.denom;
 }
-} // namespace clay
+} // namespace ceramic
 
 #elif defined(_WIN32) || defined(_WIN64)
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-namespace clay {
+namespace ceramic {
 HiResTimer::HiResTimer() : elapsedTicks(0), running(0), startTicks(0) {}
 
 static unsigned long long _get_counter() {
@@ -67,7 +67,7 @@ unsigned long long HiResTimer::elapsedNanos() {
 
     return (unsigned long long)((double)elapsedTicks * performanceCounterRate);
 }
-} // namespace clay
+} // namespace ceramic
 
 #else // Unixes
 
@@ -81,7 +81,7 @@ unsigned long long HiResTimer::elapsedNanos() {
 
 #include <time.h>
 
-namespace clay {
+namespace ceramic {
 HiResTimer::HiResTimer() : elapsedTicks(0), startTicks(0), running(0) {}
 
 void HiResTimer::start() {
@@ -102,6 +102,6 @@ void HiResTimer::stop() {
 }
 
 unsigned long long HiResTimer::elapsedNanos() { return elapsedTicks; }
-} // namespace clay
+} // namespace ceramic
 
 #endif // __APPLE__

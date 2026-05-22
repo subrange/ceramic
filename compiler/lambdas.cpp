@@ -1,6 +1,6 @@
 #include "lambdas.hpp"
 #include "analyzer.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "codegen.hpp"
 #include "desugar.hpp"
 #include "env.hpp"
@@ -8,7 +8,7 @@
 #include "loader.hpp"
 #include "operators.hpp"
 
-namespace clay {
+namespace ceramic {
 struct LambdaContext {
     LambdaCapture captureBy;
     EnvPtr nonLocalEnv;
@@ -708,4 +708,4 @@ void convertFreeVars(ExprList *x, const EnvPtr &env, LambdaContext &ctx) {
     for (unsigned i = 0; i < x->size(); ++i)
         convertFreeVars(x->exprs[i], env, ctx);
 }
-} // namespace clay
+} // namespace ceramic

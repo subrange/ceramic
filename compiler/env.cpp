@@ -1,9 +1,9 @@
 #include "env.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "error.hpp"
 #include "loader.hpp"
 
-namespace clay {
+namespace ceramic {
 using namespace std;
 
 typedef llvm::StringMap<ObjectPtr>::iterator MapIter;
@@ -480,4 +480,4 @@ bool lookupExceptionAvailable(const Env *env) {
 
     return false;
 }
-} // namespace clay
+} // namespace ceramic

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 // evaluation value
 struct EValue : public Object {
     TypePtr type;
@@ -87,4 +87,4 @@ void evalDestroyAndPopStack(unsigned marker);
 EValuePtr evalAllocValue(TypePtr t);
 
 EValuePtr evalOneAsRef(ExprPtr expr, EnvPtr env);
-} // namespace clay
+} // namespace ceramic

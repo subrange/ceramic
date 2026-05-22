@@ -2,10 +2,10 @@
 
 #include <llvm/ADT/FoldingSet.h>
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "codegen.hpp"
 
-namespace clay {
+namespace ceramic {
 struct ExtArgInfo {
     enum Kind { Direct, Indirect };
 
@@ -119,4 +119,4 @@ struct ExternalTarget : public RefCounted {
 typedef Pointer<ExternalTarget> ExternalTargetPtr;
 
 ExternalTargetPtr getExternalTarget();
-} // namespace clay
+} // namespace ceramic

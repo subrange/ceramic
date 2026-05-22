@@ -1,7 +1,7 @@
 #include <system_error>
 
 #include "analyzer.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "codegen.hpp"
 #include "constructors.hpp"
 #include "desugar.hpp"
@@ -14,7 +14,7 @@
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
-namespace clay {
+namespace ceramic {
 using namespace std;
 
 static vector<PathString> searchPath;
@@ -140,20 +140,20 @@ static void initModuleSuffixes() {
     buf.clear();                                                               \
     sout.resync();
 
-    ADD_SUFFIX("." << os << "." << cpu << "." << bits << ".clay")
-    ADD_SUFFIX("." << os << "." << cpu << ".clay")
-    ADD_SUFFIX("." << os << "." << bits << ".clay")
-    ADD_SUFFIX("." << cpu << "." << bits << ".clay")
-    ADD_SUFFIX("." << os << ".clay")
-    ADD_SUFFIX("." << cpu << ".clay")
-    ADD_SUFFIX("." << bits << ".clay")
+    ADD_SUFFIX("." << os << "." << cpu << "." << bits << ".ceramic")
+    ADD_SUFFIX("." << os << "." << cpu << ".ceramic")
+    ADD_SUFFIX("." << os << "." << bits << ".ceramic")
+    ADD_SUFFIX("." << cpu << "." << bits << ".ceramic")
+    ADD_SUFFIX("." << os << ".ceramic")
+    ADD_SUFFIX("." << cpu << ".ceramic")
+    ADD_SUFFIX("." << bits << ".ceramic")
     if (!osgroup.empty()) {
-        ADD_SUFFIX("." << osgroup << ".clay")
+        ADD_SUFFIX("." << osgroup << ".ceramic")
     }
 
 #undef ADD_SUFFIX
 
-    moduleSuffixes.emplace_back(llvm::StringRef(".clay"));
+    moduleSuffixes.emplace_back(llvm::StringRef(".ceramic"));
 }
 
 void initLoader() { initModuleSuffixes(); }
@@ -1496,4 +1496,4 @@ void addGlobals(ModulePtr m, llvm::ArrayRef<TopLevelItemPtr> toplevels) {
         }
     }
 }
-} // namespace clay
+} // namespace ceramic

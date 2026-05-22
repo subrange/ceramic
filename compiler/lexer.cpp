@@ -1,8 +1,8 @@
 #include "lexer.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "error.hpp"
 
-namespace clay {
+namespace ceramic {
 static void initLexer(SourcePtr s, unsigned offset, size_t length);
 static void cleanupLexer();
 static bool nextToken(Token &x);
@@ -1035,4 +1035,4 @@ success:
         x.location = locationFor(p);
     return true;
 }
-} // namespace clay
+} // namespace ceramic

@@ -1,10 +1,10 @@
 #include "clone.hpp"
 #include "analyzer.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
-namespace clay {
+namespace ceramic {
 CodePtr clone(CodePtr x) {
     CodePtr y = new Code();
     y->location = x->location;
@@ -468,4 +468,4 @@ void clone(llvm::ArrayRef<CatchPtr> x, vector<CatchPtr> &out) {
     for (unsigned i = 0; i < x.size(); ++i)
         out.push_back(clone(x[i]));
 }
-} // namespace clay
+} // namespace ceramic

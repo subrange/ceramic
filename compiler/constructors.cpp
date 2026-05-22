@@ -1,11 +1,11 @@
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "loader.hpp"
 // #include "patterns.hpp"
 // #include "analyzer.hpp"
 #include "constructors.hpp"
 // #include "env.hpp"
 
-namespace clay {
+namespace ceramic {
 vector<OverloadPtr> pointerOverloads;
 vector<OverloadPtr> codePointerOverloads;
 vector<OverloadPtr> cCodePointerOverloads;
@@ -136,4 +136,4 @@ void initBuiltinConstructor(RecordDeclPtr x) {
     defaultOverload->env = x->env;
     x->overloads.push_back(defaultOverload);
 }
-} // namespace clay
+} // namespace ceramic

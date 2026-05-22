@@ -1,9 +1,9 @@
 #include "parser.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "desugar.hpp"
 #include "error.hpp"
 
-namespace clay {
+namespace ceramic {
 map<llvm::StringRef, IdentifierPtr> Identifier::freeIdentifiers;
 
 static vector<Token> *tokens;
@@ -3794,4 +3794,4 @@ ReplItem parseInteractive(const SourcePtr &source, unsigned offset,
     applyParser(source, offset, length, replItems, false, x);
     return x;
 }
-} // namespace clay
+} // namespace ceramic

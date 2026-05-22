@@ -1,6 +1,6 @@
 #include "desugar.hpp"
 #include "analyzer.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "clone.hpp"
 #include "error.hpp"
 #include "evaluator.hpp"
@@ -8,7 +8,7 @@
 #include "operators.hpp"
 #include "parser.hpp"
 
-namespace clay {
+namespace ceramic {
 ExprPtr desugarCharLiteral(char c) {
     ExprPtr nameRef = operator_expr_charLiteral();
     CallPtr call = new Call(nameRef, new ExprList());
@@ -513,4 +513,4 @@ OverloadPtr desugarAsOverload(OverloadPtr &x) {
     x->isInline = FORCE_INLINE;
     return spec;
 }
-} // namespace clay
+} // namespace ceramic

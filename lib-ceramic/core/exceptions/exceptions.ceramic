@@ -1,0 +1,173 @@
+import core.libc as libc;
+import core.errors.backtrace.*;
+import __operators__.(
+    throwValue,
+    continueException,
+    exceptionIs?,
+    exceptionAs,
+    exceptionAsAny,
+    unhandledExceptionInExternal,
+    exceptionInInitializer,
+    exceptionInFinalizer,
+);
+
+
+/// @section  Exception, NoException, currentException 
+
+variant Exception;
+
+record NoException ();
+instance Exception (NoException);
+
+overload Exception() = Exception(NoException());
+
+record GenericException (
+    message: StringLiteralRef,
+);
+[S when StringLiteral?(S)]
+overload GenericException(#S) : GenericException 
+    = GenericException(StringLiteralRef(S));
+
+instance Exception (GenericException);
+
+
+
+record ExceptionContext (
+    backtrace: Backtrace,
+    file: StringLiteralRef,
+    line: UInt,
+);
+
+private record ExceptionData (
+    exception: Exception,
+    context: ExceptionContext,
+);
+
+private exceptionObject(exp:RawPointer) : ByRef[ExceptionData] 
+    = ref Pointer[ExceptionData](exp)^;
+
+
+
+/// @section  printUnhandledExceptionToStderr
+
+// Print unhandled exception to stderr.
+// This function is called from program bootstrap code (see
+// `core.system.runMain`). Must print at least one line. Last line must
+// be terminated with \n character. This is very simple implementation
+// that depends on nothing but core. `printer.exception` module contains
+// more sophisticated version.
+define printUnhandledExceptionToStderr(e) :;
+
+default printUnhandledExceptionToStderr(e) : {
+    libc.fprintf(libc.stderr, cstring("unhandled %s exception\n"), cstring(MemberTypeName(e)));
+}
+
+
+
+/// @section  throwValue, continueException 
+
+[T when Type?(T)]
+default throwValue(x:T, ..ignored) : {
+    errorWithPrintfNoThrow(stringLiteralConcat("exception of type ", StaticName(T)," thrown with exceptions disabled"));
+}
+
+private forceinline allocateExceptionDataWithFileAndLine(forward x, file, line) : Pointer[ExceptionData] =
+    allocateExceptionData(x, ExceptionContext(Backtrace(), file, line));
+
+// allocateExceptionData cannot be inlined, because allocateObject is also an alias function that throws
+private allocateExceptionData(forward x, forward context) : Pointer[ExceptionData] =
+    allocateObject(ExceptionData(Exception(x), context));
+
+[ when ExceptionsEnabled?]
+alias overload throwValue(x) : {
+    var exp = allocateExceptionDataWithFileAndLine(x, StringLiteralRef(__FILE__), UInt(__LINE__));
+    if (not Flag?("ceramic.DisableBacktraceOnThrow")) {
+        exp^.context.backtrace = captureBacktrace();
+    }
+    signalException(RawPointer(exp));
+}
+
+[ when ExceptionsEnabled?]
+alias overload throwValue(x, context) : {
+    var exp = allocateExceptionData(x, context);
+    signalException(RawPointer(exp));
+}
+
+[S when StringLiteral?(S)]
+alias overload throwValue(#S) : {
+    throwValue(GenericException(S));
+}
+
+overload continueException(exp:RawPointer) : {
+    signalException(exp);
+}
+
+private signalException(exp:RawPointer) __llvm__ {
+    %expv = load i8** %exp
+    ret i8* %expv
+}
+
+
+
+/// @section  throwButPropagate 
+
+throwButPropagate(ex, ..T) {
+    if (true)
+        throw ex;
+    else
+        return forward ..mapValues(typeToLValue, ..T);
+}
+
+alias throwButPropagateLike(ex, ..expr) {
+    if (true)
+        throw ex;
+    else
+        return forward ..expr;
+}
+
+
+
+/// @section  exceptionIs?, exceptionAs, exceptionAsAny 
+
+[T]
+overload exceptionIs?(#T, exp:RawPointer) : Bool = nestedVariantIs?(exceptionObject(exp).exception, T);
+
+[T]
+overload exceptionAs(#T, exp:RawPointer) : T, ExceptionContext {
+    finally freeRawMemory(exp);
+    return
+        moveUnsafe(nestedVariantAs(exceptionObject(exp).exception, T)),
+        moveUnsafe(exceptionObject(exp).context);
+}
+
+overload exceptionAsAny(exp:RawPointer) : Exception, ExceptionContext {
+    finally freeRawMemory(exp);
+    return
+        moveUnsafe(exceptionObject(exp).exception),
+        moveUnsafe(exceptionObject(exp).context);
+}
+
+
+
+/// @section  unhandledExceptionInExternal 
+//
+
+private forceinline errorMsg(msg) : {
+    libc.fprintf(libc.stderr, cstring(msg));
+    showBacktrace();
+}
+
+overload unhandledExceptionInExternal() : {
+    errorMsg("unhandled exception in external procedure\n");
+    libc.abort();
+}
+
+overload exceptionInInitializer() : {
+    errorMsg("exception when initializing globals\n");
+    libc.abort();
+}
+
+overload exceptionInFinalizer() : {
+    errorMsg("exception when destroying globals\n");
+    libc.abort();
+}

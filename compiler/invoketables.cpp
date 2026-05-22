@@ -1,5 +1,5 @@
 #include "invoketables.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "clone.hpp"
 #include "constructors.hpp"
 #include "error.hpp"
@@ -8,7 +8,7 @@
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
-namespace clay {
+namespace ceramic {
 static bool _finalOverloadsEnabled = false;
 
 void setFinalOverloadsEnabled(bool enabled) {
@@ -410,4 +410,4 @@ InvokeEntry *lookupInvokeEntry(ObjectPtr callable, llvm::ArrayRef<PVData> args,
 
     return entry;
 }
-} // namespace clay
+} // namespace ceramic

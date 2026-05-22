@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 void addGlobal(ModulePtr module, IdentifierPtr name, Visibility visibility,
                ObjectPtr value);
 
@@ -25,4 +25,4 @@ ExprPtr lookupCallByNameExprHead(EnvPtr env);
 Location safeLookupCallByNameLocation(EnvPtr env);
 
 bool lookupExceptionAvailable(const Env *env);
-} // namespace clay
+} // namespace ceramic

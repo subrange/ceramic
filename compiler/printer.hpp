@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 template <class T>
 llvm::raw_ostream &operator<<(llvm::raw_ostream &out, llvm::ArrayRef<T> v) {
     out << "[";
@@ -52,4 +52,4 @@ void printTypeAndValue(llvm::raw_ostream &out, EValuePtr ev);
 void printValue(llvm::raw_ostream &out, EValuePtr ev);
 
 string shortString(llvm::StringRef in);
-} // namespace clay
+} // namespace ceramic

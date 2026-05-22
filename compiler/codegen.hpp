@@ -1,10 +1,10 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "types.hpp"
 
-namespace clay {
-static const unsigned short DW_LANG_user_CLAY = 0xC1A4;
+namespace ceramic {
+static const unsigned short DW_LANG_user_CERAMIC = 0xC1A4;
 
 extern llvm::Module *llvmModule;
 extern llvm::DIBuilder *llvmDIBuilder;
@@ -219,4 +219,4 @@ llvm::Constant *valueHolderToLLVMConstant(ValueHolder *vh, CodegenContext *ctx);
 CValuePtr staticCValue(ObjectPtr obj, CodegenContext *ctx);
 
 std::string getCodeName(InvokeEntry *entry);
-} // namespace clay
+} // namespace ceramic

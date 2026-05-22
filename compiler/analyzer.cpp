@@ -1,6 +1,6 @@
 #include "analyzer.hpp"
 #include "analyzer_op.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "clone.hpp"
 #include "codegen.hpp"
 #include "constructors.hpp"
@@ -19,7 +19,7 @@
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
-namespace clay {
+namespace ceramic {
 GVarInstance::GVarInstance(const GlobalVariablePtr &gvar,
                            llvm::ArrayRef<ObjectPtr> params)
     : gvar(gvar), params(params), llGlobal(nullptr), debugInfo(nullptr),
@@ -2653,4 +2653,4 @@ ExprPtr implicitUnpackExpr(size_t wantCount, const ExprListPtr &exprs) {
     else
         return nullptr;
 }
-} // namespace clay
+} // namespace ceramic

@@ -3,8 +3,8 @@ all: \
     Example.app/Contents/Info.plist \
     Example.app/Contents/Resources/MainMenu.nib
 
-Example.app/Contents/MacOS/example: example.clay Example.app/Contents/MacOS
-	clay -I ../../../lib-clay -framework Cocoa -o Example.app/Contents/MacOS/example example.clay
+Example.app/Contents/MacOS/example: example.ceramic Example.app/Contents/MacOS
+	ceramic -I ../../../lib-ceramic -framework Cocoa -o Example.app/Contents/MacOS/example example.ceramic
 
 Example.app:
 	mkdir -p Example.app

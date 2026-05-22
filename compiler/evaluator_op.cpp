@@ -9,7 +9,7 @@
 
 #include "evaluator_op.hpp"
 
-namespace clay {
+namespace ceramic {
 static llvm::StringMap<const void *> staticStringTableConstants;
 
 static void setSizeTEValue(EValuePtr v, size_t x) {
@@ -349,7 +349,7 @@ static void binaryNumericOp(EValuePtr a, EValuePtr b, EValuePtr out) {
                 T<long long>().eval(a, b, out);
                 break;
             case 128:
-                T<clay_int128>().eval(a, b, out);
+                T<ceramic_int128>().eval(a, b, out);
                 break;
             default:
                 assert(false);
@@ -369,7 +369,7 @@ static void binaryNumericOp(EValuePtr a, EValuePtr b, EValuePtr out) {
                 T<unsigned long long>().eval(a, b, out);
                 break;
             case 128:
-                T<clay_uint128>().eval(a, b, out);
+                T<ceramic_uint128>().eval(a, b, out);
                 break;
             default:
                 assert(false);
@@ -517,7 +517,7 @@ static void unaryNumericOp(EValuePtr a, EValuePtr out) {
                 T<long long>().eval(a, out);
                 break;
             case 128:
-                T<clay_int128>().eval(a, out);
+                T<ceramic_int128>().eval(a, out);
                 break;
             default:
                 assert(false);
@@ -537,7 +537,7 @@ static void unaryNumericOp(EValuePtr a, EValuePtr out) {
                 T<unsigned long long>().eval(a, out);
                 break;
             case 128:
-                T<clay_uint128>().eval(a, out);
+                T<ceramic_uint128>().eval(a, out);
                 break;
             default:
                 assert(false);
@@ -621,7 +621,7 @@ static void binaryIntegerOp(EValuePtr a, EValuePtr b, EValuePtr out) {
             T<long long>().eval(a, b, out);
             break;
         case 128:
-            T<clay_int128>().eval(a, b, out);
+            T<ceramic_int128>().eval(a, b, out);
             break;
         default:
             assert(false);
@@ -641,7 +641,7 @@ static void binaryIntegerOp(EValuePtr a, EValuePtr b, EValuePtr out) {
             T<unsigned long long>().eval(a, b, out);
             break;
         case 128:
-            T<clay_uint128>().eval(a, b, out);
+            T<ceramic_uint128>().eval(a, b, out);
             break;
         default:
             assert(false);
@@ -742,11 +742,11 @@ template <> struct next_larger_type<int> {
 };
 
 template <> struct next_larger_type<ptrdiff64_t> {
-    typedef clay_int128 type;
+    typedef ceramic_int128 type;
 };
 
-template <> struct next_larger_type<clay_int128> {
-    typedef clay_int128 type;
+template <> struct next_larger_type<ceramic_int128> {
+    typedef ceramic_int128 type;
 };
 
 template <> struct next_larger_type<unsigned char> {
@@ -762,11 +762,11 @@ template <> struct next_larger_type<unsigned> {
 };
 
 template <> struct next_larger_type<size64_t> {
-    typedef clay_uint128 type;
+    typedef ceramic_uint128 type;
 };
 
-template <> struct next_larger_type<clay_uint128> {
-    typedef clay_uint128 type;
+template <> struct next_larger_type<ceramic_uint128> {
+    typedef ceramic_uint128 type;
 };
 
 template <typename T>
@@ -821,7 +821,7 @@ static void unaryIntegerOp(EValuePtr a, EValuePtr out) {
             T<long long>().eval(a, out);
             break;
         case 128:
-            T<clay_int128>().eval(a, out);
+            T<ceramic_int128>().eval(a, out);
             break;
         default:
             assert(false);
@@ -841,7 +841,7 @@ static void unaryIntegerOp(EValuePtr a, EValuePtr out) {
             T<unsigned long long>().eval(a, out);
             break;
         case 128:
-            T<clay_uint128>().eval(a, out);
+            T<ceramic_uint128>().eval(a, out);
             break;
         default:
             assert(false);
@@ -918,7 +918,7 @@ static void op_numericConvert2(EValuePtr dest, EValuePtr src) {
                 op_numericConvert3<D, long long, CHECK>::perform(dest, src);
                 break;
             case 128:
-                op_numericConvert3<D, clay_int128, CHECK>::perform(dest, src);
+                op_numericConvert3<D, ceramic_int128, CHECK>::perform(dest, src);
                 break;
             default:
                 assert(false);
@@ -940,7 +940,7 @@ static void op_numericConvert2(EValuePtr dest, EValuePtr src) {
                                                                           src);
                 break;
             case 128:
-                op_numericConvert3<D, clay_uint128, CHECK>::perform(dest, src);
+                op_numericConvert3<D, ceramic_uint128, CHECK>::perform(dest, src);
                 break;
             default:
                 assert(false);
@@ -991,7 +991,7 @@ static void op_numericConvert(EValuePtr dest, EValuePtr src) {
                 op_numericConvert2<long long, CHECK>(dest, src);
                 break;
             case 128:
-                op_numericConvert2<clay_int128, CHECK>(dest, src);
+                op_numericConvert2<ceramic_int128, CHECK>(dest, src);
                 break;
             default:
                 assert(false);
@@ -1011,7 +1011,7 @@ static void op_numericConvert(EValuePtr dest, EValuePtr src) {
                 op_numericConvert2<unsigned long long, CHECK>(dest, src);
                 break;
             case 128:
-                op_numericConvert2<clay_uint128, CHECK>(dest, src);
+                op_numericConvert2<ceramic_uint128, CHECK>(dest, src);
                 break;
             default:
                 assert(false);
@@ -1060,7 +1060,7 @@ static ptrdiff_t op_intToPtrInt(EValuePtr a) {
         case 64:
             return ptrdiff_t(a->as<long long>());
         case 128:
-            return ptrdiff_t(a->as<clay_int128>());
+            return ptrdiff_t(a->as<ceramic_int128>());
         default:
             assert(false);
         }
@@ -1075,7 +1075,7 @@ static ptrdiff_t op_intToPtrInt(EValuePtr a) {
         case 64:
             return ptrdiff_t(a->as<unsigned long long>());
         case 128:
-            return ptrdiff_t(a->as<clay_uint128>());
+            return ptrdiff_t(a->as<ceramic_uint128>());
         default:
             assert(false);
         }
@@ -1101,7 +1101,7 @@ static size_t op_intToSizeT(EValuePtr a) {
         case 64:
             return size_t(a->as<long long>());
         case 128:
-            return size_t(a->as<clay_int128>());
+            return size_t(a->as<ceramic_int128>());
         default:
             assert(false);
         }
@@ -1116,7 +1116,7 @@ static size_t op_intToSizeT(EValuePtr a) {
         case 64:
             return size_t(a->as<unsigned long long>());
         case 128:
-            return size_t(a->as<clay_uint128>());
+            return size_t(a->as<ceramic_uint128>());
         default:
             assert(false);
         }
@@ -1146,7 +1146,7 @@ static void op_pointerToInt(EValuePtr dest, EValuePtr ev) {
             dest->as<long long>() = ev->as<long long>();
             break;
         case 128:
-            dest->as<clay_int128>() = ev->as<clay_int128>();
+            dest->as<ceramic_int128>() = ev->as<ceramic_int128>();
             break;
         default:
             assert(false);
@@ -1166,7 +1166,7 @@ static void op_pointerToInt(EValuePtr dest, EValuePtr ev) {
             dest->as<unsigned long long>() = ev->as<unsigned long long>();
             break;
         case 128:
-            dest->as<clay_uint128>() = ev->as<clay_uint128>();
+            dest->as<ceramic_uint128>() = ev->as<ceramic_uint128>();
             break;
         default:
             assert(false);
@@ -2508,4 +2508,4 @@ void evalPrimOp(PrimOpPtr x, MultiEValuePtr args, MultiEValuePtr out) {
         assert(false);
     }
 }
-} // namespace clay
+} // namespace ceramic

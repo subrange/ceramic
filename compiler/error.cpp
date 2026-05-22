@@ -1,5 +1,5 @@
 #include "error.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "codegen.hpp"
 #include "evaluator.hpp"
 #include "invoketables.hpp"
@@ -8,7 +8,7 @@
 
 #include <cstdarg>
 
-namespace clay {
+namespace ceramic {
 bool shouldPrintFullMatchErrors;
 set<pair<string, string>> logMatchSymbols;
 
@@ -485,4 +485,4 @@ void printFileLineCol(llvm::raw_ostream &out, Location const &location) {
     getLineCol(location, line, column, tabColumn);
     out << location.source->fileName << "(" << line + 1 << "," << column << ")";
 }
-} // namespace clay
+} // namespace ceramic

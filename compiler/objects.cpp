@@ -1,8 +1,8 @@
 #include "objects.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "types.hpp"
 
-namespace clay {
+namespace ceramic {
 //
 // ValueHolder constructor and destructor
 //
@@ -12,7 +12,7 @@ ValueHolder::ValueHolder(TypePtr type) : Object(VALUE_HOLDER), type(type) {
 }
 
 ValueHolder::~ValueHolder() {
-    // FIXME: call clay 'destroy'
+    // FIXME: call ceramic 'destroy'
     free(this->buf);
 }
 
@@ -20,7 +20,7 @@ ValueHolder::~ValueHolder() {
 // objectEquals
 //
 
-// FIXME: this doesn't handle arbitrary values (need to call clay)
+// FIXME: this doesn't handle arbitrary values (need to call ceramic)
 bool _objectValueEquals(ObjectPtr a, ObjectPtr b) {
     // at this point pointer identity should already have been checked by
     // objectEquals
@@ -65,7 +65,7 @@ static unsigned identityHash(Object *a) {
     return unsigned(int(v));
 }
 
-// FIXME: this doesn't handle arbitrary values (need to call clay)
+// FIXME: this doesn't handle arbitrary values (need to call ceramic)
 unsigned objectHash(ObjectPtr a) {
     switch (a->objKind) {
     case IDENTIFIER: {
@@ -78,7 +78,7 @@ unsigned objectHash(ObjectPtr a) {
 
     case VALUE_HOLDER: {
         ValueHolder *b = (ValueHolder *)a.ptr();
-        // TODO: call clay 'hash'
+        // TODO: call ceramic 'hash'
         unsigned h = 0;
         size_t n = typeSize(b->type);
         for (unsigned i = 0; i < n; ++i)
@@ -136,4 +136,4 @@ void ObjectTable::rehash() {
 
     this->buckets = newBuckets;
 }
-} // namespace clay
+} // namespace ceramic

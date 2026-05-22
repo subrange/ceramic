@@ -1,6 +1,6 @@
 #pragma once
 
-namespace clay {
+namespace ceramic {
 template <class T> class Pointer {
     T *p;
 
@@ -65,4 +65,4 @@ struct RefCounted {
 
     virtual ~RefCounted() = default;
 };
-} // namespace clay
+} // namespace ceramic

@@ -1,6 +1,6 @@
 #include "types.hpp"
 #include "analyzer.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "codegen.hpp"
 #include "env.hpp"
 #include "error.hpp"
@@ -13,7 +13,7 @@
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
-namespace clay {
+namespace ceramic {
 TypePtr boolType;
 TypePtr int8Type;
 TypePtr int16Type;
@@ -1664,4 +1664,4 @@ string typeName(TypePtr type) {
     typePrint(os, type);
     return string(os.str());
 }
-} // namespace clay
+} // namespace ceramic

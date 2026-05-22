@@ -34,13 +34,13 @@ def cleanup(f):
 
 
 print("--- Is the compiler on the path and runnable?")
-call_or_die(["clay"], 2)
+call_or_die(["ceramic"], 2)
 print("--- Does it respond to `--help`?")
-call_or_die(["clay", "--help"], 2)
+call_or_die(["ceramic", "--help"], 2)
 print("--- Does it respond to `/?`?")
-call_or_die(["clay", "/?"], 2)
-print("--- Can it compile `examples/hello.clay`?")
-call_or_die(["clay", "examples/hello.clay"])
+call_or_die(["ceramic", "/?"], 2)
+print("--- Can it compile `examples/hello.ceramic`?")
+call_or_die(["ceramic", "examples/hello.ceramic"])
 try:
     print("--- Is the result executable?")
     call_or_die(["./hello"])
@@ -48,24 +48,24 @@ finally:
     cleanup("hello")
     cleanup("hello.exe")
 
-print("--- Is clay-fix on the path and runnable?")
-if call_or_false(["clay-fix"], 2):
+print("--- Is ceramic-fix on the path and runnable?")
+if call_or_false(["ceramic-fix"], 2):
     print("--- Does it respond to `--help`?")
-    call_or_die(["clay-fix", "--help"], 2)
+    call_or_die(["ceramic-fix", "--help"], 2)
     print("--- Does it respond to `/?`?")
-    call_or_die(["clay-fix", "--help"], 2)
+    call_or_die(["ceramic-fix", "--help"], 2)
     print("--- Creating a temporary v0.0 clone...")
     git = "git"
     if sys.platform == "win32":
         git = "git.cmd"
     call_or_die([git, "clone", ".", "tempv0.0", "-b", "v0.0"])
     try:
-        print("--- How much clay can clay-fix fix?")
+        print("--- How much ceramic can ceramic-fix fix?")
         libfiles = []
-        for root, dirnames, filenames in os.walk("tempv0.0/lib-clay"):
-            for filename in fnmatch.filter(filenames, "*.clay"):
+        for root, dirnames, filenames in os.walk("tempv0.0/lib-ceramic"):
+            for filename in fnmatch.filter(filenames, "*.ceramic"):
                 libfiles.append(os.path.join(root, filename))
-        call_or_die(["clay-fix", "-v", "0.0"] + libfiles)
+        call_or_die(["ceramic-fix", "-v", "0.0"] + libfiles)
     finally:
         print("--- Cleaning up temporary v0.0 clone...")
 
@@ -78,22 +78,22 @@ if call_or_false(["clay-fix"], 2):
 
         shutil.rmtree("tempv0.0", onerror=onerror)
 else:
-    print("--- clay-fix not found; I'll assume it wasn't installed")
+    print("--- ceramic-fix not found; I'll assume it wasn't installed")
 
-print("--- Is clay-bindgen on the path and runnable?")
-if call_or_false(["clay-bindgen"], 2):
+print("--- Is ceramic-bindgen on the path and runnable?")
+if call_or_false(["ceramic-bindgen"], 2):
     print("--- Does it respond to `--help`?")
-    call_or_die(["clay-bindgen", "--help"], 2)
+    call_or_die(["ceramic-bindgen", "--help"], 2)
     print("--- Does it respond to `/?`?")
-    call_or_die(["clay-bindgen", "--help"], 2)
+    call_or_die(["ceramic-bindgen", "--help"], 2)
     print("--- Making a test C header file...")
     temph = open("temp-stdio.h", "w")
     try:
         temph.write("#include <stdio.h>\n")
         temph.close()
-        print("--- Can clay-bindgen generate bindings for `stdio.h`?")
-        call_or_die(["clay-bindgen", "temp-stdio.h"])
+        print("--- Can ceramic-bindgen generate bindings for `stdio.h`?")
+        call_or_die(["ceramic-bindgen", "temp-stdio.h"])
     finally:
         cleanup("temp-stdio.h")
 else:
-    print("--- clay-bindgen not found; I'll assume it wasn't installed")
+    print("--- ceramic-bindgen not found; I'll assume it wasn't installed")

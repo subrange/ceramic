@@ -1,9 +1,9 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "matchinvoke.hpp"
 
-namespace clay {
+namespace ceramic {
 struct InvokeSet;
 struct InvokeEntry;
 
@@ -127,4 +127,4 @@ InvokeEntry *lookupInvokeEntry(ObjectPtr callable, llvm::ArrayRef<PVData> args,
                                MatchFailureError &failures);
 
 void setFinalOverloadsEnabled(bool enabled);
-} // namespace clay
+} // namespace ceramic

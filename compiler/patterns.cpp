@@ -1,6 +1,6 @@
 #include "patterns.hpp"
 #include "analyzer.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "codegen.hpp"
 #include "env.hpp"
 #include "error.hpp"
@@ -11,7 +11,7 @@
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
-namespace clay {
+namespace ceramic {
 //
 // derefDeep
 //
@@ -725,4 +725,4 @@ MultiPatternPtr evaluateMultiPattern(ExprListPtr exprs, EnvPtr env) {
     }
     return out.ptr();
 }
-} // namespace clay
+} // namespace ceramic

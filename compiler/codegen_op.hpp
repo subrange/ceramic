@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
                    MultiCValuePtr out);
 }

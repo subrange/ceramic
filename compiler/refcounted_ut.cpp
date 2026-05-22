@@ -3,8 +3,8 @@
 #include "refcounted.hpp"
 #include "ut.hpp"
 
-namespace clay {
-CLAY_UNITTEST(RefCounted_copy_constructor) {
+namespace ceramic {
+CERAMIC_UNITTEST(RefCounted_copy_constructor) {
     Pointer p(new RefCounted);
     UT_ASSERT(p->getRefCount() == 1);
 
@@ -12,4 +12,4 @@ CLAY_UNITTEST(RefCounted_copy_constructor) {
     UT_ASSERT(p->getRefCount() == 1);
     UT_ASSERT(p2->getRefCount() == 1);
 }
-} // namespace clay
+} // namespace ceramic

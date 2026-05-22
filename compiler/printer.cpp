@@ -1,4 +1,4 @@
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "codegen.hpp"
 #include "evaluator.hpp"
 #include "loader.hpp"
@@ -9,7 +9,7 @@
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
-namespace clay {
+namespace ceramic {
 using namespace std;
 
 void Object::print() const { llvm::errs() << *this << "\n"; }
@@ -162,23 +162,23 @@ static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out, long double x) {
     return out << buf;
 }
 
-static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out, clay_cfloat x) {
+static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out, ceramic_cfloat x) {
     char buf[128];
-    snprintf(buf, 127, "%.8g%+.8gj", clay_creal(x), clay_cimag(x));
+    snprintf(buf, 127, "%.8g%+.8gj", ceramic_creal(x), ceramic_cimag(x));
     buf[127] = 0;
     return out << buf;
 }
 
-static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out, clay_cdouble x) {
+static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out, ceramic_cdouble x) {
     char buf[128];
-    snprintf(buf, 127, "%.16g%+.16gj", clay_creal(x), clay_cimag(x));
+    snprintf(buf, 127, "%.16g%+.16gj", ceramic_creal(x), ceramic_cimag(x));
     buf[127] = 0;
     return out << buf;
 }
 
-static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out, clay_cldouble x) {
+static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out, ceramic_cldouble x) {
     char buf[128];
-    snprintf(buf, 127, "%.19Lg%+.19Lgj", clay_creal(x), clay_cimag(x));
+    snprintf(buf, 127, "%.19Lg%+.19Lgj", ceramic_creal(x), ceramic_cimag(x));
     buf[127] = 0;
     return out << buf;
 }
@@ -1124,13 +1124,13 @@ void printValue(llvm::raw_ostream &out, EValuePtr ev) {
         ComplexType *t = (ComplexType *)ev->type.ptr();
         switch (t->bits) {
         case 32:
-            writeFloat(out, ev->as<clay_cfloat>());
+            writeFloat(out, ev->as<ceramic_cfloat>());
             break;
         case 64:
-            writeFloat(out, ev->as<clay_cdouble>());
+            writeFloat(out, ev->as<ceramic_cdouble>());
             break;
         case 80:
-            writeFloat(out, ev->as<clay_cldouble>());
+            writeFloat(out, ev->as<ceramic_cldouble>());
             break;
         default:
             assert(false);
@@ -1356,12 +1356,12 @@ void typePrint(llvm::raw_ostream &out, TypePtr t) {
         assert(false);
     }
 }
-} // namespace clay
+} // namespace ceramic
 
-std::string clay::DottedName::join() const {
+std::string ceramic::DottedName::join() const {
     std::string s;
     llvm::raw_string_ostream ss(s);
-    for (llvm::SmallVector<clay::IdentifierPtr, 2>::const_iterator part =
+    for (llvm::SmallVector<ceramic::IdentifierPtr, 2>::const_iterator part =
              parts.begin();
          part != parts.end(); ++part) {
         if (part != parts.begin())

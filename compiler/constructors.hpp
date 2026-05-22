@@ -1,10 +1,10 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 bool isOverloadablePrimOp(ObjectPtr x);
 vector<OverloadPtr> &primOpOverloads(PrimOpPtr x);
 vector<OverloadPtr> &getPatternOverloads();
 void initBuiltinConstructor(RecordDeclPtr x);
-} // namespace clay
+} // namespace ceramic

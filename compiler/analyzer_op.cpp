@@ -8,7 +8,7 @@
 #include "loader.hpp"
 #include "objects.hpp"
 
-namespace clay {
+namespace ceramic {
 static size_t staticToSizeTOrIntValue(MultiPValue *args, size_t index) {
     ObjectPtr obj = unwrapStaticType(args->values[index].type);
     if (obj->objKind == VALUE_HOLDER) {
@@ -1050,4 +1050,4 @@ MultiPValuePtr analyzePrimOp(PrimOpPtr x, MultiPValuePtr args) {
         return nullptr;
     }
 }
-} // namespace clay
+} // namespace ceramic

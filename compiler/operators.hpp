@@ -1,6 +1,6 @@
 #pragma once
 
-namespace clay {
+namespace ceramic {
 ObjectPtr primitive_addressOf();
 ObjectPtr primitive_boolNot();
 ObjectPtr primitive_Pointer();
@@ -152,4 +152,4 @@ ExprPtr operator_expr_doIntegerRemainderChecked();
 ExprPtr operator_expr_doIntegerShiftLeftChecked();
 ExprPtr operator_expr_doIntegerNegateChecked();
 ExprPtr operator_expr_doIntegerConvertChecked();
-} // namespace clay
+} // namespace ceramic

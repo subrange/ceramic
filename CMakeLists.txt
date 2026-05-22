@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(clay)
+project(ceramic)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -118,9 +118,9 @@ elseif(WIN32)
 
 endif()
 
-install(DIRECTORY doc/        DESTINATION share/doc/clay)
-install(DIRECTORY examples/   DESTINATION share/doc/clay/examples)
-install(DIRECTORY lib-clay    DESTINATION lib)
+install(DIRECTORY doc/        DESTINATION share/doc/ceramic)
+install(DIRECTORY examples/   DESTINATION share/doc/ceramic/examples)
+install(DIRECTORY lib-ceramic    DESTINATION lib)
 
 add_subdirectory(compiler)
 
@@ -134,5 +134,5 @@ add_custom_target(test
     --buildflags="-Dtest.minimal"
 )
 
-add_dependencies(test clay)
+add_dependencies(test ceramic)
 

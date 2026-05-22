@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 //
 // types module
 //
@@ -134,4 +134,4 @@ inline size_t alignedUpTo(const size_t offset, const size_t align) {
 inline size_t alignedUpTo(const size_t offset, const TypePtr &type) {
     return alignedUpTo(offset, typeAlignment(type));
 }
-} // namespace clay
+} // namespace ceramic

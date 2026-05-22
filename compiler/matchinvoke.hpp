@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 //
 // match invoke
 //
@@ -124,4 +124,4 @@ MatchResultPtr matchInvoke(OverloadPtr overload, ObjectPtr callable,
                            llvm::ArrayRef<TypePtr> argsKey);
 
 void printMatchError(llvm::raw_ostream &os, const MatchResultPtr &result);
-} // namespace clay
+} // namespace ceramic

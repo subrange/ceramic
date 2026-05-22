@@ -1,7 +1,7 @@
 #include "profiler.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 static llvm::StringMap<int> countsMap;
 
 void incrementCount(const ObjectPtr &obj) {
@@ -29,4 +29,4 @@ void displayCounts() {
         llvm::outs() << count.second << " - " << count.first << '\n';
     }
 }
-} // namespace clay
+} // namespace ceramic

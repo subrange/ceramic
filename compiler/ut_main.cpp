@@ -4,7 +4,7 @@
 #include "parachute.hpp"
 #include "ut.hpp"
 
-namespace clay {
+namespace ceramic {
 struct Test {
     const char *name;
     TestFunc func;
@@ -34,8 +34,8 @@ int real_main(int argc, char **argv, char const *const *envp) {
     }
     return 0;
 }
-} // namespace clay
+} // namespace ceramic
 
 int main(const int argc, char **argv, char const *const *envp) {
-    return clay::parachute(&clay::real_main, argc, argv, envp);
+    return ceramic::parachute(&ceramic::real_main, argc, argv, envp);
 }

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 ObjectPtr derefDeep(PatternPtr x);
 MultiStaticPtr derefDeep(MultiPatternPtr x);
 bool unifyObjObj(ObjectPtr a, ObjectPtr b);
@@ -24,4 +24,4 @@ MultiPatternPtr evaluateMultiPattern(ExprListPtr exprs, EnvPtr env);
 
 void patternPrint(llvm::raw_ostream &out, PatternPtr x);
 void patternPrint(llvm::raw_ostream &out, MultiPatternPtr x);
-} // namespace clay
+} // namespace ceramic

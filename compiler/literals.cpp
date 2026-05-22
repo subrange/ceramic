@@ -1,10 +1,10 @@
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "error.hpp"
 #include "int128.hpp"
 #include "objects.hpp"
 #include "types.hpp"
 
-namespace clay {
+namespace ceramic {
 static bool ishex(char *ptr) {
     return ((ptr[0] == '+' || ptr[0] == '-') && ptr[1] == '0' &&
             (ptr[2] == 'x' || ptr[2] == 'X')) ||
@@ -132,14 +132,14 @@ template <typename F> static F parseHexFloat(char *number, char **end) {
     return value;
 }
 
-static double clay_strtod(char *ptr, char **end) {
+static double ceramic_strtod(char *ptr, char **end) {
     if (ishex(ptr))
         return parseHexFloat<double>(ptr, end);
     else
         return strtod(ptr, end);
 }
 
-static long double clay_strtold(char *ptr, char **end) {
+static long double ceramic_strtold(char *ptr, char **end) {
     // XXX parse hex long doubles
     return strtold(ptr, end);
 }
@@ -205,7 +205,7 @@ ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
         if (errno == ERANGE)
             error("int128 literal out of range");
         vh = new ValueHolder(int128Type);
-        *((clay_int128 *)vh->buf) = y;
+        *((ceramic_int128 *)vh->buf) = y;
     } else if (typeSuffix(x->suffix, defaultType, "uss", uint8Type)) {
         unsigned long y = strtoul(ptr, &end, base);
         if (*end != 0)
@@ -245,9 +245,9 @@ ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
         if (errno == ERANGE)
             error("uint128 literal out of range");
         vh = new ValueHolder(uint128Type);
-        *((clay_uint128 *)vh->buf) = y;
+        *((ceramic_uint128 *)vh->buf) = y;
     } else if (x->suffix == "f") {
-        float y = (float)clay_strtod(ptr, &end);
+        float y = (float)ceramic_strtod(ptr, &end);
         if (*end != 0)
             error("invalid float32 literal");
         if (errno == ERANGE)
@@ -255,7 +255,7 @@ ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
         vh = new ValueHolder(float32Type);
         *((float *)vh->buf) = y;
     } else if (x->suffix == "ff") {
-        double y = clay_strtod(ptr, &end);
+        double y = ceramic_strtod(ptr, &end);
         if (*end != 0)
             error("invalid float64 literal");
         if (errno == ERANGE)
@@ -263,7 +263,7 @@ ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
         vh = new ValueHolder(float64Type);
         *((double *)vh->buf) = y;
     } else if (x->suffix == "fl") {
-        long double y = clay_strtold(ptr, &end);
+        long double y = ceramic_strtold(ptr, &end);
         if (*end != 0)
             error("invalid float80 literal");
         if (errno == ERANGE)
@@ -271,7 +271,7 @@ ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
         vh = new ValueHolder(float80Type);
         *((long double *)vh->buf) = y;
     } else if (x->suffix == "fj") {
-        float y = (float)clay_strtod(ptr, &end);
+        float y = (float)ceramic_strtod(ptr, &end);
         if (*end != 0)
             error("invalid imag32 literal");
         if (errno == ERANGE)
@@ -279,7 +279,7 @@ ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
         vh = new ValueHolder(imag32Type);
         *((float *)vh->buf) = y;
     } else if (x->suffix == "j" || x->suffix == "ffj") {
-        double y = clay_strtod(ptr, &end);
+        double y = ceramic_strtod(ptr, &end);
         if (*end != 0)
             error("invalid imag64 literal");
         if (errno == ERANGE)
@@ -287,7 +287,7 @@ ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
         vh = new ValueHolder(imag64Type);
         *((double *)vh->buf) = y;
     } else if (x->suffix == "lj" || x->suffix == "flj") {
-        long double y = clay_strtold(ptr, &end);
+        long double y = ceramic_strtold(ptr, &end);
         if (*end != 0)
             error("invalid imag80 literal");
         if (errno == ERANGE)
@@ -309,7 +309,7 @@ ValueHolderPtr parseFloatLiteral(ModulePtr module, FloatLiteral *x) {
     char *end = ptr;
     ValueHolderPtr vh;
     if (typeSuffix(x->suffix, defaultType, "f", float32Type)) {
-        float y = (float)clay_strtod(ptr, &end);
+        float y = (float)ceramic_strtod(ptr, &end);
         if (*end != 0)
             error("invalid float32 literal");
         if (errno == ERANGE)
@@ -317,7 +317,7 @@ ValueHolderPtr parseFloatLiteral(ModulePtr module, FloatLiteral *x) {
         vh = new ValueHolder(float32Type);
         *((float *)vh->buf) = y;
     } else if (typeSuffix(x->suffix, defaultType, "ff", float64Type)) {
-        double y = clay_strtod(ptr, &end);
+        double y = ceramic_strtod(ptr, &end);
         if (*end != 0)
             error("invalid float64 literal");
         if (errno == ERANGE)
@@ -326,7 +326,7 @@ ValueHolderPtr parseFloatLiteral(ModulePtr module, FloatLiteral *x) {
         *((double *)vh->buf) = y;
     } else if (x->suffix == "fl" || x->suffix == "l" ||
                (x->suffix.empty() && defaultType == float80Type)) {
-        long double y = clay_strtold(ptr, &end);
+        long double y = ceramic_strtold(ptr, &end);
         if (*end != 0)
             error("invalid float80 literal");
         if (errno == ERANGE)
@@ -334,7 +334,7 @@ ValueHolderPtr parseFloatLiteral(ModulePtr module, FloatLiteral *x) {
         vh = new ValueHolder(float80Type);
         *((long double *)vh->buf) = y;
     } else if (imagTypeSuffix(x->suffix, defaultType, "fj", float32Type)) {
-        float y = (float)clay_strtod(ptr, &end);
+        float y = (float)ceramic_strtod(ptr, &end);
         if (*end != 0)
             error("invalid imag32 literal");
         if (errno == ERANGE)
@@ -342,7 +342,7 @@ ValueHolderPtr parseFloatLiteral(ModulePtr module, FloatLiteral *x) {
         vh = new ValueHolder(imag32Type);
         *((float *)vh->buf) = y;
     } else if (imagTypeSuffix(x->suffix, defaultType, "ffj", float64Type)) {
-        double y = clay_strtod(ptr, &end);
+        double y = ceramic_strtod(ptr, &end);
         if (*end != 0)
             error("invalid imag64 literal");
         if (errno == ERANGE)
@@ -351,7 +351,7 @@ ValueHolderPtr parseFloatLiteral(ModulePtr module, FloatLiteral *x) {
         *((double *)vh->buf) = y;
     } else if (x->suffix == "lj" || x->suffix == "flj" ||
                (x->suffix == "j" && defaultType == float80Type)) {
-        long double y = clay_strtold(ptr, &end);
+        long double y = ceramic_strtold(ptr, &end);
         if (*end != 0)
             error("invalid imag80 literal");
         if (errno == ERANGE)
@@ -363,4 +363,4 @@ ValueHolderPtr parseFloatLiteral(ModulePtr module, FloatLiteral *x) {
     }
     return vh;
 }
-} // namespace clay
+} // namespace ceramic

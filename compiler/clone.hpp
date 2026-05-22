@@ -2,9 +2,9 @@
 
 #include <vector>
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 
 CodePtr clone(CodePtr x);
 void clone(llvm::ArrayRef<PatternVar> x, vector<PatternVar> &out);
@@ -26,4 +26,4 @@ CaseBlockPtr clone(CaseBlockPtr x);
 void clone(llvm::ArrayRef<CaseBlockPtr> x, vector<CaseBlockPtr> &out);
 CatchPtr clone(CatchPtr x);
 void clone(llvm::ArrayRef<CatchPtr> x, vector<CatchPtr> &out);
-} // namespace clay
+} // namespace ceramic

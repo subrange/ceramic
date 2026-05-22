@@ -1,10 +1,10 @@
-# <a name="clayprimitivesreference"></a>The Clay Programming Language
+# <a name="ceramicprimitivesreference"></a>The Ceramic Programming Language
 
 ## Primitives Reference, version 0.1
 
-This document describes the contents of the `__primitives__` module synthesized by the Clay compiler and implicitly available to all Clay programs. This module provides primitive types, fundamental operations, and functions for compile-time introspection of programs. For information about the Clay language itself, consult the [Language Reference](language-reference.md).
+This document describes the contents of the `__primitives__` module synthesized by the Ceramic compiler and implicitly available to all Ceramic programs. This module provides primitive types, fundamental operations, and functions for compile-time introspection of programs. For information about the Ceramic language itself, consult the [Language Reference](language-reference.md).
 
-- [The Clay Programming Language](#the-clay-programming-language)
+- [The Ceramic Programming Language](#the-ceramic-programming-language)
   - [Primitives Reference, version 0.1](#primitives-reference-version-01)
     - [Primitive types](#primitive-types)
       - [Bool](#bool)
@@ -133,7 +133,7 @@ The compiler internally earmarks the unsigned integer type whose size correspond
 
 #### <a name="imaginaryandcomplextypes"></a>Imaginary and complex types
 
-Imaginary and complex types are provided for each floating-point type. `Imag32` etc. correspond to the same LLVM and C types as `Float32` etc., but semantically represent imaginary values in Clay. `Complex32` etc. correspond to LLVM `{float,float}` etc. types and C99 `_Complex float` etc. types.
+Imaginary and complex types are provided for each floating-point type. `Imag32` etc. correspond to the same LLVM and C types as `Float32` etc., but semantically represent imaginary values in Ceramic. `Complex32` etc. correspond to LLVM `{float,float}` etc. types and C99 `_Complex float` etc. types.
 
 #### <a name="pointer"></a>Pointer
 
@@ -141,7 +141,7 @@ Imaginary and complex types are provided for each floating-point type. `Imag32` 
 
 #### <a name="codepointer"></a>CodePointer
 
-`CodePointer[[..In], [..Out]]` is the type of a pointer to a Clay function, instantiated for the argument types `..In` and return types `..Out`. These pointers can be created using the [`makeCodePointer`](#makecodepointer) primitive function. The Clay calling convention is unspecified, so `CodePointer`s have no specific corresponding LLVM or C type beyond being a function pointer of some kind.
+`CodePointer[[..In], [..Out]]` is the type of a pointer to a Ceramic function, instantiated for the argument types `..In` and return types `..Out`. These pointers can be created using the [`makeCodePointer`](#makecodepointer) primitive function. The Ceramic calling convention is unspecified, so `CodePointer`s have no specific corresponding LLVM or C type beyond being a function pointer of some kind.
 
 #### <a name="externalcodepointertypes"></a>External code pointer types
 
@@ -153,14 +153,14 @@ Imaginary and complex types are provided for each floating-point type. `Imag32` 
 - `VarArgsCCodePointer[[A,B,C], [D]]` points to a variadic C function; it corresponds to the `D (*)(A,B,C,...)` type in C.
 - `StdCallCodePointer`, `FastCallCodePointer`, and `ThisCallCodePointer` point to functions using legacy x86 calling conventions on Windows. They correspond to C function pointer types decorated with `__stdcall`, `__fastcall`, or `__thiscall` in Microsoft dialect, or with `__attribute__((stdcall))` etc. in GCC dialect.
 
-`CCodePointer`s, along with the other external code pointer types, may be obtained by evaluating external function names, or as return values from C functions. They may also be derived directly automatically from some Clay functions using the [`makeCCodePointer`](#makeccodepointer) primitive function.
+`CCodePointer`s, along with the other external code pointer types, may be obtained by evaluating external function names, or as return values from C functions. They may also be derived directly automatically from some Ceramic functions using the [`makeCCodePointer`](#makeccodepointer) primitive function.
 
     // Example
     // XXX
 
 #### <a name="array"></a>Array
 
-`Array[T,n]` is the type of a fixed-size, locally-allocated array, containing `n` elements of type `T`. The `n` parameter must currently be an `Int32` (regardless of the target word size). It corresponds to the LLVM `[n x %T]` type, or the C `T [n]` type; however, unlike C arrays, Clay arrays never implicitly devolve to pointers. The [`arrayRef`](#arrayref) and [`arrayElements`](#arrayelements) primitive functions provide access to array elements.
+`Array[T,n]` is the type of a fixed-size, locally-allocated array, containing `n` elements of type `T`. The `n` parameter must currently be an `Int32` (regardless of the target word size). It corresponds to the LLVM `[n x %T]` type, or the C `T [n]` type; however, unlike C arrays, Ceramic arrays never implicitly devolve to pointers. The [`arrayRef`](#arrayref) and [`arrayElements`](#arrayelements) primitive functions provide access to array elements.
 
 #### <a name="vec"></a>Vec
 
@@ -178,7 +178,7 @@ No primitives are currently provided for manipulating `Vec` types; they are prim
 
 #### <a name="static"></a>Static
 
-`Static[x]` is a stateless type used to represent compile-time values. Clay symbols, static strings, and `static` expressions evaluate to values of instances of this type.
+`Static[x]` is a stateless type used to represent compile-time values. Ceramic symbols, static strings, and `static` expressions evaluate to values of instances of this type.
 
 (`Static` values are actually not quite completely stateless yet; they are emitted as `i8 undef` values at the LLVM level. They thus still unfortunately take up space inside tuples and record types.)
 
@@ -280,7 +280,7 @@ These functions provide fundamental arithmetic operations for the primitive [`Bo
 
 `numericLesser?` returns `true` if `a` is numerically less than `b`, and `false` otherwise. For signed integer types, the function corresponds to an LLVM `icmp slt` instruction; for unsigned types, `icmp ult`; and for floating-point types, `fcmp ult`. Floating point comparison follows IEEE 754 unordered comparison rules; `-0.0` is not less than `+0.0` and comparisons involving NaN are always false and non-signaling.
 
-(`__primitives__` does not currently provide the full set of floating-point comparison operators. The Clay library currently implements floating-point ordered and unordered comparison using inline LLVM functions. For floating-point, these primitives are used only for compile-time evaluation, which does not support inline LLVM.)
+(`__primitives__` does not currently provide the full set of floating-point comparison operators. The Ceramic library currently implements floating-point ordered and unordered comparison using inline LLVM functions. For floating-point, these primitives are used only for compile-time evaluation, which does not support inline LLVM.)
 
 #### <a name="numericadd"></a>numericAdd
 
@@ -472,7 +472,7 @@ These operations create, dereference, compare, and convert pointers. Unlike norm
 
 ### <a name="functionpointeroperations"></a>Function pointer operations
 
-These operations create and invoke pointers to instances of Clay functions. Unlike normal symbols, they may not be overloaded.
+These operations create and invoke pointers to instances of Ceramic functions. Unlike normal symbols, they may not be overloaded.
 
 #### <a name="makecodepointer"></a>makeCodePointer
 
@@ -495,7 +495,7 @@ The matched overload must meet the following criteria to be deemed C-compatible:
 - It must return zero or one values.
 - It must not have any arguments of types with nontrivial `copy`, `move`, or `destroy` operations.
 
-Like an external function, if a Clay exception escapes from the pointed-to overload, the `unhandledExceptionInExternal` operator function is called.
+Like an external function, if a Ceramic exception escapes from the pointed-to overload, the `unhandledExceptionInExternal` operator function is called.
 
 #### <a name="callccodepointer"></a>callCCodePointer
 

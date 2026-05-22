@@ -1,7 +1,7 @@
 #include "evaluator.hpp"
 #include "analyzer.hpp"
 #include "checkedcast.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "codegen.hpp"
 #include "constructors.hpp"
 #include "desugar.hpp"
@@ -17,7 +17,7 @@
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
-namespace clay {
+namespace ceramic {
 MultiEValuePtr evalMultiArgsAsRef(ExprListPtr exprs, EnvPtr env);
 MultiEValuePtr evalArgExprAsRef(ExprPtr x, EnvPtr env);
 
@@ -2354,4 +2354,4 @@ EnvPtr evalBinding(BindingPtr x, EnvPtr env) {
     }
     }
 }
-} // namespace clay
+} // namespace ceramic

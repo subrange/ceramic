@@ -1,4 +1,4 @@
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "codegen.hpp"
 #include "env.hpp"
 #include "error.hpp"
@@ -11,7 +11,7 @@
 #include <csignal>
 #include <cstdio>
 
-namespace clay {
+namespace ceramic {
 typedef llvm::SmallString<16U> Str;
 
 const char *replAnonymousFunctionName = "__replAnonymousFunction__";
@@ -274,7 +274,7 @@ static void eval(llvm::StringRef line) {
     setjmp(recovery);
     while (true) {
         llvm::errs().flush();
-        llvm::errs() << "clay>";
+        llvm::errs() << "ceramic>";
         char buf[255];
         string line = fgets(buf, 255, stdin);
         line = stripSpaces(line);
@@ -296,7 +296,7 @@ void runInteractive(llvm::Module *llvmModule_, ModulePtr module_) {
 
     llvmModule = llvmModule_;
     module = module_;
-    llvm::errs() << "Clay interpreter\n";
+    llvm::errs() << "Ceramic interpreter\n";
     llvm::errs() << ":q to exit\n";
     llvm::errs() << ":print {identifier} to print an identifier\n";
     llvm::errs() << ":modules to list global modules\n";
@@ -341,4 +341,4 @@ void runInteractive(llvm::Module *llvmModule_, ModulePtr module_) {
 
     interactiveLoop();
 }
-} // namespace clay
+} // namespace ceramic

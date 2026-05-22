@@ -1,11 +1,11 @@
 #include "externals.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "error.hpp"
 #include "objects.hpp"
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
-namespace clay {
+namespace ceramic {
 static llvm::Value *promoteCVarArg(CallingConv conv, TypePtr t,
                                    llvm::Value *llv, CodegenContext *ctx) {
     if (conv == CC_LLVM)
@@ -1223,4 +1223,4 @@ void initExternalTarget(string targetString) {
 }
 
 ExternalTargetPtr getExternalTarget() { return externalTarget; }
-} // namespace clay
+} // namespace ceramic

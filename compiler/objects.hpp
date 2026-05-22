@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 struct ValueHolder : public Object {
     TypePtr type;
     char *buf;
@@ -62,4 +62,4 @@ struct ObjectTable : public RefCounted {
   private:
     void rehash();
 };
-} // namespace clay
+} // namespace ceramic

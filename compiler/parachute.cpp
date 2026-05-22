@@ -7,7 +7,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-namespace clay {
+namespace ceramic {
 // SEH parachute
 
 static int emergencyCompileContext(LPEXCEPTION_POINTERS exceptionInfo) {
@@ -34,18 +34,18 @@ int parachute(int (*mainfn)(int, char **, char const *const *), int argc,
     assert(false);
     return 86;
 }
-} // namespace clay
+} // namespace ceramic
 
 #else
 
 // FIXME should at least try to use VEH for mingw/cygwin
 
-namespace clay {
+namespace ceramic {
 int parachute(int (*mainfn)(int, char **, char const *const *), int argc,
               char **argv, char const *const *envp) {
     return mainfn(argc, argv, envp);
 }
-} // namespace clay
+} // namespace ceramic
 
 #endif
 
@@ -55,7 +55,7 @@ int parachute(int (*mainfn)(int, char **, char const *const *), int argc,
 
 #include <csignal>
 
-namespace clay {
+namespace ceramic {
 static volatile int threatLevel = 0;
 
 static void emergencyCompileContext(const int sig) {
@@ -79,6 +79,6 @@ int parachute(int (*mainfn)(int, char **, char const *const *), int argc,
     signal(SIGABRT, emergencyCompileContext);
     return mainfn(argc, argv, envp);
 }
-} // namespace clay
+} // namespace ceramic
 
 #endif

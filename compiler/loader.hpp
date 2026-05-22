@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 extern llvm::StringMap<ModulePtr> globalModules;
 extern llvm::StringMap<string> globalFlags;
 extern ModulePtr globalMainModule;
@@ -241,4 +241,4 @@ llvm::StringRef primOpName(PrimOpCode op);
 static inline llvm::StringRef primOpName(const PrimOpPtr &x) {
     return primOpName(x->primOpCode);
 }
-} // namespace clay
+} // namespace ceramic

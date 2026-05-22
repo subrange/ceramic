@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 ExprPtr desugarCharLiteral(char c);
 void desugarFieldRef(FieldRefPtr x, ModulePtr module);
 ExprPtr desugarStaticIndexing(StaticIndexingPtr x);
@@ -20,4 +20,4 @@ llvm::ArrayRef<StatementPtr> desugarEvalStatement(EvalStatementPtr eval,
 llvm::ArrayRef<TopLevelItemPtr> desugarEvalTopLevel(EvalTopLevelPtr eval,
                                                     EnvPtr env);
 OverloadPtr desugarAsOverload(OverloadPtr &x);
-} // namespace clay
+} // namespace ceramic

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 void evalPrimOp(PrimOpPtr x, MultiEValuePtr args, MultiEValuePtr out);
 }

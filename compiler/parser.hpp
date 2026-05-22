@@ -1,9 +1,9 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "lexer.hpp"
 
-namespace clay {
+namespace ceramic {
 enum ParserFlags { NoParserFlags = 0, ParserKeepDocumentation = 1 };
 
 struct ReplItem {
@@ -34,4 +34,4 @@ ReplItem parseInteractive(const SourcePtr &source, unsigned offset,
 typedef vector<Token> (*AddTokensCallback)();
 
 void setAddTokens(AddTokensCallback f);
-} // namespace clay
+} // namespace ceramic

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x);
 ValueHolderPtr parseFloatLiteral(ModulePtr module, FloatLiteral *x);
-} // namespace clay
+} // namespace ceramic

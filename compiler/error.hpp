@@ -1,26 +1,26 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "printer.hpp"
 
 #if defined(__GNUC__) || defined(__clang__)
-#define CLAY_NORETURN __attribute__((noreturn))
+#define CERAMIC_NORETURN __attribute__((noreturn))
 #endif
 
-#ifndef CLAY_NORETURN
-#define CLAY_NORETURN
+#ifndef CERAMIC_NORETURN
+#define CERAMIC_NORETURN
 #endif
 
-namespace clay {
-void error(llvm::Twine const &msg) CLAY_NORETURN;
-void error(Location const &location, llvm::Twine const &msg) CLAY_NORETURN;
+namespace ceramic {
+void error(llvm::Twine const &msg) CERAMIC_NORETURN;
+void error(Location const &location, llvm::Twine const &msg) CERAMIC_NORETURN;
 
 void warning(llvm::Twine const &msg);
 
-void fmtError(const char *fmt, ...) CLAY_NORETURN;
+void fmtError(const char *fmt, ...) CERAMIC_NORETURN;
 
 template <class T>
-void error(Pointer<T> context, llvm::Twine const &msg) CLAY_NORETURN;
+void error(Pointer<T> context, llvm::Twine const &msg) CERAMIC_NORETURN;
 
 template <class T> void error(Pointer<T> context, llvm::Twine const &msg) {
     if (context->location.ok())
@@ -29,17 +29,17 @@ template <class T> void error(Pointer<T> context, llvm::Twine const &msg) {
 }
 
 template <class T>
-void error(T const *context, llvm::Twine const &msg) CLAY_NORETURN;
+void error(T const *context, llvm::Twine const &msg) CERAMIC_NORETURN;
 
 template <class T> void error(T const *context, llvm::Twine const &msg) {
     error(context->location, msg);
 }
 
-void argumentError(size_t index, llvm::StringRef msg) CLAY_NORETURN;
+void argumentError(size_t index, llvm::StringRef msg) CERAMIC_NORETURN;
 
 template <typename T>
 void argumentError(size_t index, llvm::StringRef msg,
-                   const T &argument) CLAY_NORETURN;
+                   const T &argument) CERAMIC_NORETURN;
 
 template <typename T>
 void argumentError(const size_t index, const llvm::StringRef msg,
@@ -51,12 +51,12 @@ void argumentError(const size_t index, const llvm::StringRef msg,
     error(sout.str());
 }
 
-void arityError(size_t expected, size_t received) CLAY_NORETURN;
-void arityError2(size_t minExpected, size_t received) CLAY_NORETURN;
+void arityError(size_t expected, size_t received) CERAMIC_NORETURN;
+void arityError2(size_t minExpected, size_t received) CERAMIC_NORETURN;
 
 template <class T>
 void arityError(Pointer<T> context, size_t expected,
-                size_t received) CLAY_NORETURN;
+                size_t received) CERAMIC_NORETURN;
 
 template <class T>
 void arityError(Pointer<T> context, size_t expected, size_t received) {
@@ -67,7 +67,7 @@ void arityError(Pointer<T> context, size_t expected, size_t received) {
 
 template <class T>
 void arityError2(Pointer<T> context, size_t minExpected,
-                 size_t received) CLAY_NORETURN;
+                 size_t received) CERAMIC_NORETURN;
 
 template <class T>
 void arityError2(Pointer<T> context, size_t minExpected, size_t received) {
@@ -95,31 +95,31 @@ void ensureArity2(T const &args, size_t size, bool hasVarArgs) {
 }
 
 void arityMismatchError(size_t leftArity, size_t rightArity,
-                        bool hasVarArg) CLAY_NORETURN;
+                        bool hasVarArg) CERAMIC_NORETURN;
 
 void typeError(llvm::StringRef expected,
-               const TypePtr &receivedType) CLAY_NORETURN;
+               const TypePtr &receivedType) CERAMIC_NORETURN;
 void typeError(const TypePtr &expectedType,
-               const TypePtr &receivedType) CLAY_NORETURN;
+               const TypePtr &receivedType) CERAMIC_NORETURN;
 
 void argumentTypeError(unsigned index, llvm::StringRef expected,
-                       const TypePtr &receivedType) CLAY_NORETURN;
+                       const TypePtr &receivedType) CERAMIC_NORETURN;
 
 void argumentTypeError(unsigned index, const TypePtr &expectedType,
-                       const TypePtr &receivedType) CLAY_NORETURN;
+                       const TypePtr &receivedType) CERAMIC_NORETURN;
 
 void indexRangeError(llvm::StringRef kind, size_t value,
-                     size_t maxValue) CLAY_NORETURN;
+                     size_t maxValue) CERAMIC_NORETURN;
 
 void argumentIndexRangeError(unsigned index, llvm::StringRef kind, size_t value,
-                             size_t maxValue) CLAY_NORETURN;
+                             size_t maxValue) CERAMIC_NORETURN;
 
 extern bool shouldPrintFullMatchErrors;
 extern set<pair<string, string>> logMatchSymbols;
 
-void matchBindingError(MatchResultPtr const &result) CLAY_NORETURN;
+void matchBindingError(MatchResultPtr const &result) CERAMIC_NORETURN;
 void matchFailureLog(MatchFailureError const &err);
-void matchFailureError(MatchFailureError const &err) CLAY_NORETURN;
+void matchFailureError(MatchFailureError const &err) CERAMIC_NORETURN;
 
 class CompilerError : std::exception {};
-} // namespace clay
+} // namespace ceramic

@@ -22,7 +22,7 @@ build*/
 *.pyc
 testlog.txt
 *.orig
-*.claycache
+*.ceramiccache
 tags
 cscope.out
 .gdb_history

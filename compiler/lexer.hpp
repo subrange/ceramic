@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
+namespace ceramic {
 //
 // Token
 //
@@ -49,4 +49,4 @@ void tokenize(SourcePtr source, unsigned offset, size_t length,
               vector<Token> &tokens);
 
 bool isSpace(char c);
-} // namespace clay
+} // namespace ceramic

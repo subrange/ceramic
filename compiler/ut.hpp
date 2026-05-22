@@ -2,16 +2,16 @@
 
 #include <stdexcept>
 
-namespace clay {
+namespace ceramic {
 typedef void (*TestFunc)();
 
 void register_test(const char *name, TestFunc);
 
-#define CLAY_UNITTEST(NAME)                                                    \
+#define CERAMIC_UNITTEST(NAME)                                                    \
     void NAME##_testImpl();                                                    \
     struct TestRegistrator_##NAME {                                            \
         TestRegistrator_##NAME() {                                             \
-            ::clay::register_test(#NAME, &NAME##_testImpl);                    \
+            ::ceramic::register_test(#NAME, &NAME##_testImpl);                    \
         }                                                                      \
     };                                                                         \
     static TestRegistrator_##NAME testRegistrator_##NAME;                      \
@@ -35,4 +35,4 @@ struct AssertionError : std::runtime_error {
             throw AssertionError();                                            \
         }                                                                      \
     } while (0)
-} // namespace clay
+} // namespace ceramic

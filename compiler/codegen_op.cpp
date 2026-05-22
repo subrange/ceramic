@@ -12,7 +12,7 @@
 #include "operators.hpp"
 #include "types.hpp"
 
-namespace clay {
+namespace ceramic {
 static llvm::StringMap<llvm::Constant *> stringTableConstants;
 
 //
@@ -402,7 +402,7 @@ static llvm::Constant *codegenStringTableConstant(llvm::StringRef s) {
 
     llvm::SmallString<128> buf;
     llvm::raw_svector_ostream symbolName(buf);
-    symbolName << "\"" << s << "\" clay";
+    symbolName << "\"" << s << "\" ceramic";
 
     llvm::GlobalVariable *gvar = new llvm::GlobalVariable(
         *llvmModule, initializer->getType(), true,
@@ -2307,4 +2307,4 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         break;
     }
 }
-} // namespace clay
+} // namespace ceramic

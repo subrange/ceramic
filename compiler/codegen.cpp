@@ -1,6 +1,6 @@
 #include "codegen.hpp"
 #include "analyzer.hpp"
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "codegen_op.hpp"
 #include "constructors.hpp"
 #include "desugar.hpp"
@@ -21,7 +21,7 @@
 
 #pragma clang diagnostic ignored "-Wcovered-switch-default"
 
-namespace clay {
+namespace ceramic {
 llvm::Module *llvmModule = nullptr;
 llvm::DIBuilder *llvmDIBuilder = nullptr;
 llvm::ExecutionEngine *llvmEngine;
@@ -1237,7 +1237,7 @@ void codegenGVarInstance(GVarInstancePtr x) {
 
     llvm::SmallString<128> symbolBuf;
     llvm::raw_svector_ostream symbolStr(symbolBuf);
-    symbolStr << nameStr.str() << " " << y.type << " clay";
+    symbolStr << nameStr.str() << " " << y.type << " ceramic";
 
     x->staticGlobal = new ValueHolder(y.type);
     x->llGlobal = new llvm::GlobalVariable(
@@ -1634,7 +1634,7 @@ llvm::Value *codegenSimpleConstant(EValuePtr ev) {
                 val = _sintConstant<long long>(ev);
                 break;
             case 128:
-                val = _sintConstant<clay_int128>(ev);
+                val = _sintConstant<ceramic_int128>(ev);
                 break;
             default:
                 assert(false);
@@ -1654,7 +1654,7 @@ llvm::Value *codegenSimpleConstant(EValuePtr ev) {
                 val = _uintConstant<unsigned long long>(ev);
                 break;
             case 128:
-                val = _uintConstant<clay_uint128>(ev);
+                val = _uintConstant<ceramic_uint128>(ev);
                 break;
             default:
                 assert(false);
@@ -2545,7 +2545,7 @@ string getCodeName(InvokeEntry *entry) {
         }
     }
 
-    sout << " clay";
+    sout << " ceramic";
 
     return sout.str();
 }
@@ -4185,8 +4185,8 @@ static void finalizeSimpleContext(CodegenContext *ctx, ObjectPtr errorProc) {
 }
 
 static void initializeCtorsDtors() {
-    setUpSimpleContext(constructorsCtx, "clayglobals_init");
-    setUpSimpleContext(destructorsCtx, "clayglobals_destroy");
+    setUpSimpleContext(constructorsCtx, "ceramicglobals_init");
+    setUpSimpleContext(destructorsCtx, "ceramicglobals_destroy");
 
     if (isMsvcTarget()) {
         constructorsCtx->llvmFunc->setSection(".text$yc");
@@ -4385,10 +4385,10 @@ llvm::TargetMachine *initLLVM(llvm::StringRef targetTriple,
         llvm::sys::fs::make_absolute(absFileName);
         llvmDIBuilder = new llvm::DIBuilder(*llvmModule);
         llvmDIBuilder->createCompileUnit(
-            llvm::dwarf::DW_LANG_C_plus_plus, // DW_LANG_user_CLAY,
+            llvm::dwarf::DW_LANG_C_plus_plus, // DW_LANG_user_CERAMIC,
             llvm::sys::path::filename(absFileName),
             llvm::sys::path::parent_path(absFileName),
-            "clay compiler " CLAY_COMPILER_VERSION, optLevel > 0, flags, 0);
+            "ceramic compiler " CERAMIC_COMPILER_VERSION, optLevel > 0, flags, 0);
     } else
         llvmDIBuilder = nullptr;
 
@@ -4460,4 +4460,4 @@ void codegenAfterRepl(llvm::Function *&ctor, llvm::Function *&dtor) {
     ctor = constructorsCtx->llvmFunc;
     dtor = destructorsCtx->llvmFunc;
 }
-} // namespace clay
+} // namespace ceramic
