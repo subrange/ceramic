@@ -1,6 +1,6 @@
 <mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
   <mime-type type="text/x-ceramic">
     <comment>Ceramic Source</comment>
-    <glob pattern="*.ceramic"/>
+    <glob pattern="*.crm"/>
   </mime-type>
 </mime-info>

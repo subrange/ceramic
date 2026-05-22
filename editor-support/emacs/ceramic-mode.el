@@ -33,7 +33,7 @@
     ceramic-mode-map)
   "Keymap for Ceramic major mode")
 
-(add-to-list 'auto-mode-alist '("\\.ceramic\\'" . ceramic-mode))
+(add-to-list 'auto-mode-alist '("\\.crm\\'" . ceramic-mode))
 
 (defconst ceramic-quoted-string-re "\\(\".*?[^\\]\"\\|'.*?[^\\]'\\)")
 (defconst ceramic-quoted-string-or-regex-re "\\(/.*?[^\\]/\\w*\\|\".*?[^\\]\"\\|'.*?[^\\]'\\)")

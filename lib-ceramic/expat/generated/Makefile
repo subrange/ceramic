@@ -1,2 +1,2 @@
-generated.ceramic: 
-	ceramic-bindgen -match expat -import unix -import libc -o generated.ceramic generated_from.h
+generated.crm: 
+	ceramic-bindgen -match expat -import unix -import libc -o generated.crm generated_from.h

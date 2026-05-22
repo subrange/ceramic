@@ -786,18 +786,18 @@ Compiler frontend changes:
 * External entry points for the main module are also now always compiled;
   '-shared' now only affects the type of file output by the compiler.
 * The default output filename for executables and dynamic libraries is now the
-  basename of the input file instead of 'a.out'. For instance, 'ceramic hello.ceramic'
+  basename of the input file instead of 'a.out'. For instance, 'ceramic hello.crm'
   will output an executable named 'hello' (or 'hello.exe' if compiling for a
   Windows target).
 * FreeBSD is now supported. Thanks to Daniel Kolesa.
 * A new '-D' flag sets compiler flags, which may be queried by the 'Flag?' or
   'Flag' primitives.
-    $ cat foo.ceramic
+    $ cat foo.crm
     main() { println(Flag?(#"FOO")); println(Flag(#"BAR")); }
-    $ ceramic -DFOO -DBAR=bar -run foo.ceramic
+    $ ceramic -DFOO -DBAR=bar -run foo.crm
     true
     bar
-    $ ceramic -DBAR -run foo.ceramic
+    $ ceramic -DBAR -run foo.crm
     false
 
     $

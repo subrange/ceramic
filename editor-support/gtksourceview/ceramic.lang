@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 <language id="ceramic" _name="Ceramic" version="2.0" _section="Sources">
     <metadata>
         <property name="mimetypes">text/x-ceramic</property>
-        <property name="globs">*.ceramic</property>
+        <property name="globs">*.crm</property>
         <property name="line-comment-start">//</property>
         <property name="block-comment-start">/*</property>
         <property name="block-comment-end">*/</property>

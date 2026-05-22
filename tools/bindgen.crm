@@ -541,7 +541,7 @@ instance Exception (
 overload printTo(s, _:Usage) {
     printlnTo(s, "Usage: ceramic-bindgen [clang options...] [bindgen options...] input.h");
     printlnTo(s, "Bindgen options:");
-    printlnTo(s, "  -o <output.ceramic>   Write bindings to <output.ceramic> (default stdout)");
+    printlnTo(s, "  -o <output.crm>   Write bindings to <output.crm> (default stdout)");
     printlnTo(s, "  -import <module>   Prefix \"import <module>.*;\" to generated bindings");
     printlnTo(s, "  -match <name>      Only output bindings for definitions from files");
     printlnTo(s, "                     whose name contains <name>");

@@ -78,7 +78,7 @@ def getCeramicCompiler(opt):
 
 def getCeramicPlatform(opt):
     with tempfile.NamedTemporaryFile(
-        suffix=".ceramic", delete=False, mode="w", encoding="utf-8"
+        suffix=".crm", delete=False, mode="w", encoding="utf-8"
     ) as platform_ceramic:
         platform_ceramic.write(
             "import core.platform.(OSString, OSFamilyString, CPUString, CPUBits);\n"

@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
          it != ite; it.increment(ec)) {
         llvm::sys::fs::file_status status;
         if (!it->status() && is_regular_file(status) &&
-            endsWith(it->path(), ".ceramic")) {
+            endsWith(it->path(), ".crm")) {
             std::string fqn;
 
             llvm::sys::path::const_iterator word =

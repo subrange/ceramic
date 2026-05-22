@@ -34,8 +34,8 @@ function! CeramicCompleteLibraryModule(arglead, cmdline, cursorpos)
     let modules = globpath(g:LibCeramic, modulelead . "*")
     if modules != ""
         let modulesl = split(modules, "\n")
-        let modulesl = filter(modulesl, 'getftype(v:val) == "dir" || matchstr(v:val, "\\.ceramic$") != ""')
-        let modulesl = map(modulesl, 'substitute(v:val, "\\(\\..*\\)\\?\\.ceramic$", "", "")')
+        let modulesl = filter(modulesl, 'getftype(v:val) == "dir" || matchstr(v:val, "\\.crm$") != ""')
+        let modulesl = map(modulesl, 'substitute(v:val, "\\(\\..*\\)\\?\\.crm$", "", "")')
         let modulesl = map(modulesl, 'substitute(v:val, "^\\V" . escape(g:LibCeramic, "\\") . "\\v[/\\\\]", "", "")')
         let modulesl = s:unique(modulesl)
         let modulesl = map(modulesl, 'substitute(v:val, "/\\|\\\\", ".", "g")')
@@ -49,28 +49,28 @@ command! -nargs=1 -complete=customlist,CeramicCompleteLibraryModule LibCeramicNe
 command! -nargs=1 LibCeramicAlternate :call SelectLibCeramicAlternate(<args>)
 
 function! CeramicModuleFileNames(path)
-    let names = [a:path . ".ceramic"]
+    let names = [a:path . ".crm"]
     let oses = ["unix", "windows", "linux", "freebsd", "macosx"]
     let cpus = ["x86", "ppc", "arm"]
     let bits = ["32", "64"]
     for bit in bits
-        let names += [a:path . "." . bit . ".ceramic"]
+        let names += [a:path . "." . bit . ".crm"]
     endfor
     for cpu in cpus
-        let names += [a:path . "." . cpu . ".ceramic"]
+        let names += [a:path . "." . cpu . ".crm"]
         for bit in bits
-            let names += [a:path . "." . cpu . "." . bit . ".ceramic"]
+            let names += [a:path . "." . cpu . "." . bit . ".crm"]
         endfor
     endfor
     for os in oses
-        let names += [a:path . "." . os . ".ceramic"]
+        let names += [a:path . "." . os . ".crm"]
         for bit in bits
-            let names += [a:path . "." . os . "." . bit . ".ceramic"]
+            let names += [a:path . "." . os . "." . bit . ".crm"]
         endfor
         for cpu in cpus
-            let names += [a:path . "." . os . "." . cpu . ".ceramic"]
+            let names += [a:path . "." . os . "." . cpu . ".crm"]
             for bit in bits
-                let names += [a:path . "." . os . "." . cpu . "." . bit . ".ceramic"]
+                let names += [a:path . "." . os . "." . cpu . "." . bit . ".crm"]
             endfor
         endfor
     endfor
@@ -104,7 +104,7 @@ function! SelectLibCeramicAlternate(n)
 endfunction
 
 function! CreateLibCeramicModule(module)
-    let modulename = g:LibCeramic . "/" . substitute(a:module, "\\.", "/", "g") . ".ceramic"
+    let modulename = g:LibCeramic . "/" . substitute(a:module, "\\.", "/", "g") . ".crm"
     let modulepath = substitute(modulename, "[/\\\\][^/\\\\]*$", "", "")
     exe "silent !mkdir -p " shellescape(modulepath)
     exe "edit " fnameescape(modulename)
@@ -114,5 +114,5 @@ function! CreateLibCeramicModuleDir(module)
     let modulepath = g:LibCeramic . "/" . substitute(a:module, "\\.", "/", "g")
     let basename = substitute(a:module, "^.*\\.", "", "")
     exe "silent !mkdir -p " shellescape(modulepath)
-    exe "edit " fnameescape(modulepath . "/" . basename . ".ceramic")
+    exe "edit " fnameescape(modulepath . "/" . basename . ".crm")
 endfunction

@@ -1,8 +1,8 @@
 
 all : ceramic_nbody.exe c_nbody.exe cpp_nbody.exe
 
-ceramic_nbody.exe : nbody.ceramic
-	ceramic -no-exceptions -o ceramic_nbody.exe nbody.ceramic -lm
+ceramic_nbody.exe : nbody.crm
+	ceramic -no-exceptions -o ceramic_nbody.exe nbody.crm -lm
 
 c_nbody.exe : nbody.c
 	clang -O3 -o c_nbody.exe nbody.c

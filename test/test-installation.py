@@ -39,8 +39,8 @@ print("--- Does it respond to `--help`?")
 call_or_die(["ceramic", "--help"], 2)
 print("--- Does it respond to `/?`?")
 call_or_die(["ceramic", "/?"], 2)
-print("--- Can it compile `examples/hello.ceramic`?")
-call_or_die(["ceramic", "examples/hello.ceramic"])
+print("--- Can it compile `examples/hello.crm`?")
+call_or_die(["ceramic", "examples/hello.crm"])
 try:
     print("--- Is the result executable?")
     call_or_die(["./hello"])
@@ -63,7 +63,7 @@ if call_or_false(["ceramic-fix"], 2):
         print("--- How much ceramic can ceramic-fix fix?")
         libfiles = []
         for root, dirnames, filenames in os.walk("tempv0.0/lib-ceramic"):
-            for filename in fnmatch.filter(filenames, "*.ceramic"):
+            for filename in fnmatch.filter(filenames, "*.crm"):
                 libfiles.append(os.path.join(root, filename))
         call_or_die(["ceramic-fix", "-v", "0.0"] + libfiles)
     finally:

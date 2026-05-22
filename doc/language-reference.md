@@ -261,7 +261,7 @@ Multiple-value patterns (including symbol parameters) may end with a trailing va
 
 ### <a name="modules"></a>Modules
 
-Ceramic programs are organized into modules. Modules correspond one-to-one with Ceramic source files. Modules are named in Ceramic hierarchially using dotted names; these correspond to paths in the filesystem. The name `foo.bar` corresponds to (in search order) `foo/bar.ceramic` or `foo/bar/bar.ceramic` under one of the compiler's search paths. Hierarchical names are only used for source organization, and no semantic relationship is implied among modules with hierarchically related names.
+Ceramic programs are organized into modules. Modules correspond one-to-one with Ceramic source files. Modules are named in Ceramic hierarchially using dotted names; these correspond to paths in the filesystem. The name `foo.bar` corresponds to (in search order) `foo/bar.crm` or `foo/bar/bar.crm` under one of the compiler's search paths. Hierarchical names are only used for source organization, and no semantic relationship is implied among modules with hierarchically related names.
 
 Modules form the basis of encapsulation and namespacing in Ceramic. Every module has an independent namespace comprising its imported modules and symbols, selected via [import declarations](#importdeclarations), and its own defined [symbols](#symbols), created by [top-level definitions](#topleveldefinitions) in the module source code. Modules can control access to their namespace from other importing modules by marking symbols as public or private.
 
@@ -462,15 +462,15 @@ It is an error to import two modules or module members using the same name.
 However, it is allowed to import multiple modules with `.*` even if they contain members with conflicting names, so long as no ambiguous names are actually referenced.
 
     // Example
-    // foo.ceramic
+    // foo.crm
     a() { }
     b() { }
 
-    // bar.ceramic
+    // bar.crm
     b() { }
     c() { }
 
-    // main.ceramic
+    // main.crm
     import foo.*; // ok
     import bar.*; // ok
 
@@ -483,7 +483,7 @@ However, it is allowed to import multiple modules with `.*` even if they contain
 Such ambiguities can be resolved by explicitly importing the ambiguous name from one of the imported modules.
 
     // Example
-    // main.ceramic
+    // main.crm
     import foo.*;
     import bar.*;
     import bar.(b);
@@ -497,7 +497,7 @@ Such ambiguities can be resolved by explicitly importing the ambiguous name from
 A name defined in the current module may also shadow a name imported by `.*`, in which case the current module's definition takes precedence.
 
     // Example
-    // main.ceramic
+    // main.crm
     import foo.*;
     import bar.*;
 
@@ -534,10 +534,10 @@ Such a declaration must appear after any [import declarations](#importdeclaratio
 The module attribute list can be an arbitrary [multiple value expression](#multiplevalueexpressions), which can reference any imported symbols but not symbols defined within the module itself.
 
     // Example
-    // foo.ceramic
+    // foo.crm
     GraphicsModuleAttributes() = Float32, Int32;
 
-    // bar.ceramic
+    // bar.crm
     import foo;
 
     in bar (..foo.GraphicsModuleAttributes());
@@ -698,13 +698,13 @@ Top-level forms work by creating or modifying symbols, which are module-level gl
 Static strings (also referred to as identifiers in some places, though that causes confusion with [identifier tokens](#identifiersandkeywords)), are similar to symbols in that they have no runtime state and implicitly evaluate to singleton `Static[identifier]` types. Unlike symbols, static strings are not associated with any module. A static string is referenced by a [string literal](#stringliterals) prefixed with a `#` token; the same static string is identical everywhere. A static string that is a valid [identifier token](#identifiersandkeywords) may also be referenced as a bare identifier prefixed with a `#`.
 
     // Example
-    // a.ceramic
+    // a.crm
     foo() = #"foo";
 
-    // b.ceramic
+    // b.crm
     foo() = #foo;
 
-    // main.ceramic
+    // main.crm
     import a;
     import b;
 
@@ -994,17 +994,17 @@ Within a module, overloads are matched to a call site's symbol name and argument
 Match order among overloads from different modules is done walking the import graph depth-first. (If you think is this _really_ stupid, you are correct.) Resolution order among circularly-dependent modules is undefined.
 
     // Example
-    // a.ceramic
+    // a.crm
     define foo(x);
     // visited last
     overload foo(x:Int) {}
 
-    // b.ceramic
+    // b.crm
     import a;
     // visited second
     overload a.foo(x:Int) {}
 
-    // c.ceramic
+    // c.crm
     import b;
     import a;
     // visited first
@@ -1425,7 +1425,7 @@ An external definition without a function body declares an external entry point 
 An external definition with a body defines a Ceramic function with external linkage. The function will use C's symbol naming and calling convention (including passed-by-value arguments), in order to be linkable from C or other C-compatible language code.
 
     // Example
-    // square.ceramic:
+    // square.crm:
     // Implement an function in Ceramic and make it available to C.
     external square(x:Float64) : Float64 = x*x;
 

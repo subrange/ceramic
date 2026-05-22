@@ -1,4 +1,4 @@
-all: generated.macosx.x86.32.ceramic generated.macosx.x86.64.ceramic
+all: generated.macosx.x86.32.crm generated.macosx.x86.64.crm
 
 CERAMIC_BINDGEN_FLAGS = -x objective-c \
     -import libc \
@@ -8,8 +8,8 @@ CERAMIC_BINDGEN_FLAGS = -x objective-c \
     -import cocoa.quartzcore \
     -match /AppKit
 
-generated.macosx.x86.32.ceramic: generated_from.h
+generated.macosx.x86.32.crm: generated_from.h
 	ceramic-bindgen -arch i386 $(CERAMIC_BINDGEN_FLAGS) -o $@ $<
-generated.macosx.x86.64.ceramic: generated_from.h
+generated.macosx.x86.64.crm: generated_from.h
 	ceramic-bindgen -arch x86_64 $(CERAMIC_BINDGEN_FLAGS) -o $@ $<
 

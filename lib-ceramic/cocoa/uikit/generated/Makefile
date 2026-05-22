@@ -1,4 +1,4 @@
-all: generated.macosx.arm.ceramic
+all: generated.macosx.arm.crm
 
 CERAMIC_BINDGEN_FLAGS = -x objective-c \
     -import libc \
@@ -8,6 +8,6 @@ CERAMIC_BINDGEN_FLAGS = -x objective-c \
     -import cocoa.quartzcore \
     -match /UIKit
 
-generated.macosx.arm.ceramic: generated_from.h
+generated.macosx.arm.crm: generated_from.h
 	ceramic-bindgen -arch armv6 -isysroot $(IOS_SDK_ROOT) $(CERAMIC_BINDGEN_FLAGS) -o $@ $<
 

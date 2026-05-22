@@ -1,11 +1,11 @@
 
 all : ceramic_mandelbrot_non_simd.exe ceramic_mandelbrot.exe c_mandelbrot.exe cpp_mandelbrot.exe
 
-ceramic_mandelbrot_non_simd.exe : mandelbrot_non_simd.ceramic
-	ceramic -no-exceptions -o ceramic_mandelbrot_non_simd.exe mandelbrot_non_simd.ceramic -lm
+ceramic_mandelbrot_non_simd.exe : mandelbrot_non_simd.crm
+	ceramic -no-exceptions -o ceramic_mandelbrot_non_simd.exe mandelbrot_non_simd.crm -lm
 
-ceramic_mandelbrot.exe : mandelbrot.ceramic
-	ceramic -no-exceptions -o ceramic_mandelbrot.exe mandelbrot.ceramic -lm
+ceramic_mandelbrot.exe : mandelbrot.crm
+	ceramic -no-exceptions -o ceramic_mandelbrot.exe mandelbrot.crm -lm
 
 c_mandelbrot.exe : mandelbrot.c
 	clang -O3 -o c_mandelbrot.exe mandelbrot.c

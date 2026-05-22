@@ -3,7 +3,7 @@ and the plugin/ceramic.vim file inside ~/.vim/plugin for ceramic-specific comman
 
 Add the following line to your .vimrc file to use the syntax highlighter:
 --
-au BufRead,BufNewFile *.ceramic set filetype=ceramic
+au BufRead,BufNewFile *.crm set filetype=ceramic
 --
 
 If you've installed Ceramic to a different path from /usr/local/lib, set

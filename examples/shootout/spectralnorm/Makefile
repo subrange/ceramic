@@ -1,11 +1,11 @@
 
 all : ceramic_spectralnorm_non_simd.exe ceramic_spectralnorm.exe c_spectralnorm.exe cpp_spectralnorm.exe
 
-ceramic_spectralnorm_non_simd.exe : spectralnorm_non_simd.ceramic
-	ceramic -no-exceptions -o ceramic_spectralnorm_non_simd.exe spectralnorm_non_simd.ceramic -lm
+ceramic_spectralnorm_non_simd.exe : spectralnorm_non_simd.crm
+	ceramic -no-exceptions -o ceramic_spectralnorm_non_simd.exe spectralnorm_non_simd.crm -lm
 
-ceramic_spectralnorm.exe : spectralnorm.ceramic
-	ceramic -no-exceptions -o ceramic_spectralnorm.exe spectralnorm.ceramic -lm
+ceramic_spectralnorm.exe : spectralnorm.crm
+	ceramic -no-exceptions -o ceramic_spectralnorm.exe spectralnorm.crm -lm
 
 c_spectralnorm.exe : spectralnorm.c
 	clang -O3 -o c_spectralnorm.exe spectralnorm.c

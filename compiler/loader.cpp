@@ -140,20 +140,20 @@ static void initModuleSuffixes() {
     buf.clear();                                                               \
     sout.resync();
 
-    ADD_SUFFIX("." << os << "." << cpu << "." << bits << ".ceramic")
-    ADD_SUFFIX("." << os << "." << cpu << ".ceramic")
-    ADD_SUFFIX("." << os << "." << bits << ".ceramic")
-    ADD_SUFFIX("." << cpu << "." << bits << ".ceramic")
-    ADD_SUFFIX("." << os << ".ceramic")
-    ADD_SUFFIX("." << cpu << ".ceramic")
-    ADD_SUFFIX("." << bits << ".ceramic")
+    ADD_SUFFIX("." << os << "." << cpu << "." << bits << ".crm")
+    ADD_SUFFIX("." << os << "." << cpu << ".crm")
+    ADD_SUFFIX("." << os << "." << bits << ".crm")
+    ADD_SUFFIX("." << cpu << "." << bits << ".crm")
+    ADD_SUFFIX("." << os << ".crm")
+    ADD_SUFFIX("." << cpu << ".crm")
+    ADD_SUFFIX("." << bits << ".crm")
     if (!osgroup.empty()) {
-        ADD_SUFFIX("." << osgroup << ".ceramic")
+        ADD_SUFFIX("." << osgroup << ".crm")
     }
 
 #undef ADD_SUFFIX
 
-    moduleSuffixes.emplace_back(llvm::StringRef(".ceramic"));
+    moduleSuffixes.emplace_back(llvm::StringRef(".crm"));
 }
 
 void initLoader() { initModuleSuffixes(); }

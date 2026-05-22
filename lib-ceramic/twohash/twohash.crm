@@ -1,5 +1,5 @@
 //
-//  twohash/twohash.ceramic - two-hashed, unordered set/map containers
+//  twohash/twohash.crm - two-hashed, unordered set/map containers
 //
 //  Copyright (c) 2010 Marc Fauconneau
 //
@@ -108,7 +108,7 @@ overload EntryType(#T) = EntryType(Type(typeToLValue(T).data));
 //
 // Entry semantics
 //
-// (copied from records.ceramic)
+// (copied from records.crm)
 
 [T when Entry?(T)]
 overload RegularRecord?(#T) = false;

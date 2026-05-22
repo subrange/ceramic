@@ -29,5 +29,5 @@ main() {
     var d = mapped(copy, c);
     f( d );
 
-    f( lines(File("main.ceramic")) );
+    f( lines(File("main.crm")) );
 }

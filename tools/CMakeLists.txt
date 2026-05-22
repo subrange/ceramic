@@ -1,5 +1,5 @@
 set(BINDGEN_SOURCES
-    bindgen.ceramic
+    bindgen.crm
 )
 
 if (WIN32)
@@ -22,7 +22,7 @@ if(BUILD_BINDGEN)
             -I${ceramic_SOURCE_DIR}/tools
             -o ${ceramic_BINARY_DIR}/tools/ceramic-bindgen${CMAKE_EXECUTABLE_SUFFIX}
             ${LIBCLANG_LDFLAGS}
-            ${ceramic_SOURCE_DIR}/tools/bindgen.ceramic)
+            ${ceramic_SOURCE_DIR}/tools/bindgen.crm)
 
     add_custom_target(ceramic-bindgen-target ALL
         DEPENDS ${ceramic_BINARY_DIR}/tools/ceramic-bindgen${CMAKE_EXECUTABLE_SUFFIX})

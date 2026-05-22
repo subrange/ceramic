@@ -1,8 +1,8 @@
 
 all : ceramic_fannkuch.exe c_fannkuch.exe cpp_fannkuch.exe
 
-ceramic_fannkuch.exe : fannkuch.ceramic
-	ceramic -no-exceptions -o ceramic_fannkuch.exe fannkuch.ceramic
+ceramic_fannkuch.exe : fannkuch.crm
+	ceramic -no-exceptions -o ceramic_fannkuch.exe fannkuch.crm
 
 c_fannkuch.exe : fannkuch.c
 	clang -O3 -o c_fannkuch.exe fannkuch.c

@@ -1,1 +1,1 @@
-autocmd BufRead,BufNewFile *.ceramic set filetype=ceramic
+autocmd BufRead,BufNewFile *.crm set filetype=ceramic

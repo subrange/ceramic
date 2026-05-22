@@ -7,7 +7,7 @@
 //
 // Build instructions:
 //
-//   ceramic -no-exceptions -c tinyhello.ceramic
+//   ceramic -no-exceptions -c tinyhello.crm
 //   ld -o tinyhello tinyhello.o
 //   strip tinyhello
 //

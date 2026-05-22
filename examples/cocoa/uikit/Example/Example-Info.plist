@@ -11,7 +11,7 @@
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
-	<string>in.tachyon.ceramic.uikit.example</string>
+	<string>in.tachyon.crm.uikit.example</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
