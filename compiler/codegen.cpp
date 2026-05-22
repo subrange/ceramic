@@ -24,6 +24,7 @@
 namespace ceramic {
 llvm::Module *llvmModule = nullptr;
 llvm::DIBuilder *llvmDIBuilder = nullptr;
+llvm::DICompileUnit *llvmDICompileUnit = nullptr;
 llvm::ExecutionEngine *llvmEngine;
 const llvm::DataLayout *llvmDataLayout;
 llvm::LLVMContext llvmContext;
@@ -4384,13 +4385,17 @@ llvm::TargetMachine *initLLVM(llvm::StringRef targetTriple,
         llvm::SmallString<260> absFileName(name);
         llvm::sys::fs::make_absolute(absFileName);
         llvmDIBuilder = new llvm::DIBuilder(*llvmModule);
-        llvmDIBuilder->createCompileUnit(
+        llvmDICompileUnit = llvmDIBuilder->createCompileUnit(
             llvm::dwarf::DW_LANG_C_plus_plus, // DW_LANG_user_CERAMIC,
-            llvm::sys::path::filename(absFileName),
-            llvm::sys::path::parent_path(absFileName),
-            "ceramic compiler " CERAMIC_COMPILER_VERSION, optLevel > 0, flags, 0);
-    } else
+            llvmDIBuilder->createFile(
+                llvm::sys::path::filename(absFileName),
+                llvm::sys::path::parent_path(absFileName)),
+            "ceramic compiler " CERAMIC_COMPILER_VERSION, optLevel > 0, flags,
+            0);
+    } else {
         llvmDIBuilder = nullptr;
+        llvmDICompileUnit = nullptr;
+    }
 
     string err;
     const llvm::Target *target =

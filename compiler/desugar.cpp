@@ -406,9 +406,8 @@ static SourcePtr evalToSource(Location const &location, ExprListPtr args,
     printFileLineCol(sourceNameOut, location);
     sourceNameOut << ">";
 
-    return new Source(
-        sourceNameOut.str(),
-        llvm::MemoryBuffer::getMemBufferCopy(sourceTextBuf).get());
+    return new Source(sourceNameOut.str(),
+                      llvm::MemoryBuffer::getMemBufferCopy(sourceTextBuf));
 }
 
 ExprListPtr desugarEvalExpr(EvalExprPtr eval, EnvPtr env) {

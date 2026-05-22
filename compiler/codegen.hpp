@@ -8,6 +8,7 @@ static const unsigned short DW_LANG_user_CERAMIC = 0xC1A4;
 
 extern llvm::Module *llvmModule;
 extern llvm::DIBuilder *llvmDIBuilder;
+extern llvm::DICompileUnit *llvmDICompileUnit;
 extern const llvm::DataLayout *llvmDataLayout;
 extern llvm::LLVMContext llvmContext;
 
@@ -116,7 +117,7 @@ struct ValueStackEntry {
 
 struct CodegenContext {
     llvm::Function *llvmFunc;
-    vector<llvm::TrackingVH<llvm::MDNode>> debugScope;
+    vector<llvm::TrackingMDNodeRef> debugScope;
     std::unique_ptr<llvm::IRBuilder<>> initBuilder;
     std::unique_ptr<llvm::IRBuilder<>> builder;
 
@@ -146,15 +147,15 @@ struct CodegenContext {
         : llvmFunc(llvmFunc), valueForStatics(nullptr), exceptionValue(nullptr),
           inlineDepth(0), checkExceptions(true), callByNameDepth(0) {}
 
-    llvm::DILexicalBlock getDebugScope() {
+    llvm::DILexicalBlock *getDebugScope() {
         if (debugScope.empty())
-            return llvm::DILexicalBlock(nullptr);
+            return nullptr;
         else
-            return llvm::DILexicalBlock(debugScope.back());
+            return llvm::cast<llvm::DILexicalBlock>(debugScope.back().get());
     }
 
-    void pushDebugScope(llvm::DILexicalBlock scope) {
-        debugScope.push_back((llvm::MDNode *)scope);
+    void pushDebugScope(llvm::DILexicalBlock *scope) {
+        debugScope.push_back(llvm::TrackingMDNodeRef(scope));
     }
 
     void popDebugScope() { debugScope.pop_back(); }
@@ -171,8 +172,8 @@ struct DebugLocationContext {
             if (llvmDIBuilder != nullptr && ctx->inlineDepth == 0) {
                 unsigned line, column;
                 getDebugLineCol(loc, line, column);
-                llvm::DebugLoc debugLoc =
-                    llvm::DebugLoc::get(line, column, ctx->getDebugScope());
+                llvm::DebugLoc debugLoc = llvm::DILocation::get(
+                    llvmContext, line, column, ctx->getDebugScope());
                 ctx->builder->SetCurrentDebugLocation(debugLoc);
             }
         }

@@ -42,6 +42,7 @@
 #include <llvm/IR/Metadata.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/PassManager.h>
+#include <llvm/IR/TrackingMDRef.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/IRPrinter/IRPrintingPasses.h>
@@ -88,8 +89,8 @@ template <> struct StaticAssertChecker<false> {};
 #define _CERAMIC_CAT(a, b) a##b
 #define CERAMIC_CAT(a, b) _CERAMIC_CAT(a, b)
 
-#define CERAMIC_STATIC_ASSERT(cond)                                               \
-    static const ::ceramic::StaticAssertChecker<(cond)>::type CERAMIC_CAT(           \
+#define CERAMIC_STATIC_ASSERT(cond)                                            \
+    static const ::ceramic::StaticAssertChecker<(cond)>::type CERAMIC_CAT(     \
         static_assert_, __LINE__);
 
 using std::make_pair;
@@ -569,14 +570,14 @@ struct Location;
 struct Source : public Object {
     string fileName;
     std::unique_ptr<llvm::MemoryBuffer> buffer;
-    llvm::TrackingVH<llvm::MDNode> debugInfo;
+    llvm::TrackingMDNodeRef debugInfo;
 
     Source(llvm::StringRef fileName);
 
     Source(llvm::StringRef lineOfCode, int dummy);
 
-    Source(llvm::StringRef fileName, llvm::MemoryBuffer *buffer)
-        : Object(SOURCE), fileName(fileName), buffer(buffer) {}
+    Source(llvm::StringRef fileName, std::unique_ptr<llvm::MemoryBuffer> buffer)
+        : Object(SOURCE), fileName(fileName), buffer(std::move(buffer)) {}
 
     [[nodiscard]] const char *data() const { return buffer->getBufferStart(); }
     [[nodiscard]] const char *endData() const { return buffer->getBufferEnd(); }
@@ -1823,7 +1824,7 @@ struct GVarInstance : public RefCounted {
     TypePtr type;
     ValueHolderPtr staticGlobal;
     llvm::GlobalVariable *llGlobal;
-    llvm::TrackingVH<llvm::MDNode> debugInfo;
+    llvm::TrackingMDNodeRef debugInfo;
 
     bool analyzing : 1;
 
@@ -1833,8 +1834,7 @@ struct GVarInstance : public RefCounted {
     ~GVarInstance();
 
     llvm::DIGlobalVariable *getDebugInfo() {
-        return llvm::dyn_cast_or_null<llvm::DIGlobalVariable>(
-            debugInfo.getValPtr());
+        return llvm::dyn_cast_or_null<llvm::DIGlobalVariable>(debugInfo.get());
     }
 };
 
@@ -1861,7 +1861,7 @@ struct ExternalProcedure : public TopLevelItem {
     TypePtr ptrType;
 
     llvm::Function *llvmFunc;
-    llvm::TrackingVH<llvm::MDNode> debugInfo;
+    llvm::TrackingMDNodeRef debugInfo;
 
     CallingConv callingConv : 4;
     bool hasVarArgs : 1;
@@ -1873,7 +1873,7 @@ struct ExternalProcedure : public TopLevelItem {
 
     ExternalProcedure(Module *module, Visibility visibility)
         : TopLevelItem(EXTERNAL_PROCEDURE, module, visibility),
-          attributes(new ExprList()), llvmFunc(nullptr), debugInfo(nullptr),
+          attributes(new ExprList()), llvmFunc(nullptr), debugInfo(),
           hasVarArgs(false), attributesVerified(false), analyzed(false),
           bodyCodegenned(false) {}
 
@@ -1883,13 +1883,12 @@ struct ExternalProcedure : public TopLevelItem {
                       ExprListPtr attributes)
         : TopLevelItem(EXTERNAL_PROCEDURE, module, name, visibility),
           args(args), returnType(returnType), body(body),
-          attributes(attributes), llvmFunc(nullptr), debugInfo(nullptr),
+          attributes(attributes), llvmFunc(nullptr), debugInfo(),
           hasVarArgs(hasVarArgs), attributesVerified(false), analyzed(false),
           bodyCodegenned(false) {}
 
     llvm::DISubprogram *getDebugInfo() {
-        return llvm::dyn_cast_or_null<llvm::DISubprogram>(
-            debugInfo.getValPtr());
+        return llvm::dyn_cast_or_null<llvm::DISubprogram>(debugInfo.get());
     }
 };
 
@@ -1908,7 +1907,7 @@ struct ExternalVariable : public TopLevelItem {
 
     TypePtr type2;
     llvm::GlobalVariable *llGlobal;
-    llvm::TrackingVH<llvm::MDNode> debugInfo;
+    llvm::TrackingMDNodeRef debugInfo;
 
     bool attributesVerified : 1;
     bool attrDLLImport : 1;
@@ -1916,18 +1915,17 @@ struct ExternalVariable : public TopLevelItem {
 
     ExternalVariable(Module *module, Visibility visibility)
         : TopLevelItem(EXTERNAL_VARIABLE, module, visibility),
-          attributes(new ExprList()), llGlobal(nullptr), debugInfo(nullptr),
+          attributes(new ExprList()), llGlobal(nullptr), debugInfo(),
           attributesVerified(false) {}
 
     ExternalVariable(Module *module, IdentifierPtr name, Visibility visibility,
                      ExprPtr type, ExprListPtr attributes)
         : TopLevelItem(EXTERNAL_VARIABLE, module, name, visibility), type(type),
-          attributes(attributes), llGlobal(nullptr), debugInfo(nullptr),
+          attributes(attributes), llGlobal(nullptr), debugInfo(),
           attributesVerified(false) {}
 
     llvm::DIGlobalVariable *getDebugInfo() {
-        return llvm::dyn_cast_or_null<llvm::DIGlobalVariable>(
-            debugInfo.getValPtr());
+        return llvm::dyn_cast_or_null<llvm::DIGlobalVariable>(debugInfo.get());
     }
 };
 
@@ -2126,15 +2124,14 @@ struct Module : public ANode {
     bool externalsGenerated : 1;
     bool isIntrinsicsModule : 1;
 
-    llvm::TrackingVH<llvm::MDNode> debugInfo;
+    llvm::TrackingMDNodeRef debugInfo;
 
     Module(llvm::StringRef moduleName)
         : ANode(MODULE), moduleName(moduleName), initState(BEFORE),
           publicSymbolsLoading(0), allSymbolsLoading(0),
           attributesVerified(false), publicSymbolsLoaded(false),
           allSymbolsLoaded(false), topLevelLLVMGenerated(false),
-          externalsGenerated(false), isIntrinsicsModule(false),
-          debugInfo(nullptr) {}
+          externalsGenerated(false), isIntrinsicsModule(false), debugInfo() {}
 
     Module(llvm::StringRef moduleName, llvm::ArrayRef<ImportPtr> imports,
            const ModuleDeclarationPtr &declaration,
@@ -2146,11 +2143,10 @@ struct Module : public ANode {
           publicSymbolsLoading(0), allSymbolsLoading(0),
           attributesVerified(false), publicSymbolsLoaded(false),
           allSymbolsLoaded(false), topLevelLLVMGenerated(false),
-          externalsGenerated(false), isIntrinsicsModule(false),
-          debugInfo(nullptr) {}
+          externalsGenerated(false), isIntrinsicsModule(false), debugInfo() {}
 
     llvm::DINamespace *getDebugInfo() {
-        return llvm::dyn_cast_or_null<llvm::DINamespace>(debugInfo.getValPtr());
+        return llvm::dyn_cast_or_null<llvm::DINamespace>(debugInfo.get());
     }
 };
 
@@ -2266,7 +2262,7 @@ llvm::raw_ostream &operator<<(llvm::raw_ostream &os, TypeKind);
 struct Type : public Object {
     const TypeKind typeKind;
     llvm::Type *llType;
-    llvm::TrackingVH<llvm::MDNode> debugInfo;
+    llvm::TrackingMDNodeRef debugInfo;
     size_t typeSize;
     size_t typeAlignment;
 
@@ -2277,7 +2273,7 @@ struct Type : public Object {
     bool typeInfoInitialized : 1;
 
     Type(TypeKind typeKind)
-        : Object(TYPE), typeKind(typeKind), llType(nullptr), debugInfo(nullptr),
+        : Object(TYPE), typeKind(typeKind), llType(nullptr), debugInfo(),
           overloadsInitialized(false), defined(false),
           typeInfoInitialized(false) {}
 
@@ -2290,7 +2286,7 @@ struct Type : public Object {
     }
 
     llvm::DIType *getDebugInfo() {
-        return llvm::dyn_cast_or_null<llvm::DIType>(debugInfo.getValPtr());
+        return llvm::dyn_cast_or_null<llvm::DIType>(debugInfo.get());
     }
 };
 

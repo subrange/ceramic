@@ -24,16 +24,16 @@ llvm::StringMap<ModulePtr> globalModules;
 llvm::StringMap<string> globalFlags;
 ModulePtr globalMainModule;
 
-Source::Source(llvm::StringRef fileName)
-    : Object(SOURCE), fileName(fileName), debugInfo(nullptr) {
-    if (std::error_code ec =
-            llvm::MemoryBuffer::getFileOrSTDIN(fileName, buffer))
+Source::Source(llvm::StringRef fileName) : Object(SOURCE), fileName(fileName) {
+    auto bufferOrErr = llvm::MemoryBuffer::getFileOrSTDIN(fileName);
+    if (std::error_code ec = bufferOrErr.getError())
         error("unable to open file " + fileName + ": " + ec.message());
+    else
+        buffer = std::move(bufferOrErr.get());
 }
 
-Source::Source(llvm::StringRef lineOfCode, int dummy)
-    : Object(SOURCE), debugInfo(nullptr) {
-    buffer.reset(llvm::MemoryBuffer::getMemBufferCopy(lineOfCode).get());
+Source::Source(llvm::StringRef lineOfCode, int dummy) : Object(SOURCE) {
+    buffer = llvm::MemoryBuffer::getMemBufferCopy(lineOfCode);
 }
 
 //
@@ -137,8 +137,7 @@ static void initModuleSuffixes() {
 #define ADD_SUFFIX(fmt)                                                        \
     sout << fmt;                                                               \
     moduleSuffixes.push_back(sout.str());                                      \
-    buf.clear();                                                               \
-    sout.resync();
+    buf.clear();
 
     ADD_SUFFIX("." << os << "." << cpu << "." << bits << ".crm")
     ADD_SUFFIX("." << os << "." << cpu << ".crm")
@@ -266,9 +265,9 @@ static SourcePtr loadFile(llvm::StringRef fileName,
     if (llvmDIBuilder != nullptr) {
         PathString absFileName(fileName);
         llvm::sys::fs::make_absolute(absFileName);
-        src->debugInfo = (llvm::MDNode *)llvmDIBuilder->createFile(
+        src->debugInfo.reset(llvmDIBuilder->createFile(
             llvm::sys::path::filename(absFileName),
-            llvm::sys::path::parent_path(absFileName));
+            llvm::sys::path::parent_path(absFileName)));
     }
     return src;
 }
@@ -458,8 +457,7 @@ ModulePtr loadProgramSource(llvm::StringRef name, llvm::StringRef source,
     SourcePtr mainSource =
         new Source(name, llvm::MemoryBuffer::getMemBufferCopy(source));
     if (llvmDIBuilder != nullptr) {
-        mainSource->debugInfo =
-            (llvm::MDNode *)llvmDIBuilder->createFile("-e", "");
+        mainSource->debugInfo.reset(llvmDIBuilder->createFile("-e", ""));
     }
 
     globalMainModule = parse("", mainSource);
@@ -794,15 +792,15 @@ static void initModule(ModulePtr m, llvm::ArrayRef<string> importChain) {
     }
 
     if (llvmDIBuilder != nullptr) {
-        llvm::DIFile file = m->location.ok()
-                                ? m->location.source->getDebugInfo()
-                                : llvm::DIFile();
-        m->debugInfo = (llvm::MDNode *)llvmDIBuilder->createNameSpace(
-            llvm::DICompileUnit(llvmDIBuilder->getCU()), // scope
-            m->moduleName,                               // name
-            file,                                        // file
-            1                                            // line
-        );
+        llvm::DIFile *file =
+            m->location.ok() ? m->location.source->getDebugInfo() : nullptr;
+        llvm::DIScope *scope = file != nullptr
+                                   ? (llvm::DIScope *)file
+                                   : (llvm::DIScope *)llvmDICompileUnit;
+        m->debugInfo.reset(llvmDIBuilder->createNameSpace(scope, // scope
+                                                          m->moduleName, // name
+                                                          false // exportSymbols
+                                                          ));
     }
 }
 
@@ -1309,7 +1307,7 @@ ModulePtr preludeModule() {
 }
 
 static IdentifierPtr fnameToIdent(llvm::StringRef str) {
-    string s = str;
+    string s = str.str();
     if ((s.size() > 0) && (s[s.size() - 1] == 'P'))
         s[s.size() - 1] = '?';
     return Identifier::get(s);
