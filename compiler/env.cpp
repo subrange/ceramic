@@ -102,7 +102,7 @@ static void getIntrinsicSymbols(ModulePtr module) {
     static const char *const intrinsicNames[] = {
         "",
 #define GET_INTRINSIC_NAME_TABLE
-#include "llvm/Intrinsics.gen"
+#include "llvm/IR/IntrinsicImpl.inc"
 #undef GET_INTRINSIC_NAME_TABLE
     };
     for (size_t idIter = llvm::Intrinsic::ID(1);
@@ -334,7 +334,6 @@ ObjectPtr lookupEnv(EnvPtr env, IdentifierPtr name) {
         }
         default:
             assert(false);
-            return nullptr;
         }
     } else
         return nullptr;
@@ -363,9 +362,9 @@ ModulePtr safeLookupModule(EnvPtr env) {
     }
 }
 
-llvm::DINamespace lookupModuleDebugInfo(EnvPtr env) {
+llvm::DINamespace *lookupModuleDebugInfo(EnvPtr env) {
     if (env == nullptr || env->parent == nullptr)
-        return llvm::DINamespace(nullptr);
+        return nullptr;
 
     switch (env->parent->objKind) {
     case ENV: {
@@ -377,7 +376,7 @@ llvm::DINamespace lookupModuleDebugInfo(EnvPtr env) {
         return module->getDebugInfo();
     }
     default:
-        return llvm::DINamespace(nullptr);
+        return nullptr;
     }
 }
 
@@ -420,7 +419,6 @@ ObjectPtr lookupEnvEx(EnvPtr env, IdentifierPtr name, EnvPtr nonLocalEnv,
     }
     default:
         assert(false);
-        return nullptr;
     }
 }
 

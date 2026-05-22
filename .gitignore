@@ -1,7 +1,9 @@
 .DS_Store
 Thumbs.db
 *.pdb
-.vscode/
+.vscode/*.code-workspace
+.cache/
+compile_commands.json
 *.swp
 *.swo
 *.idea/

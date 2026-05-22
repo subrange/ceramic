@@ -61,7 +61,10 @@ struct InvokeEntry {
         return invokeEntryAllocator->Allocate();
     }
 
-    virtual void dealloc() { ANodeAllocator->Deallocate(this); }
+    virtual void dealloc() {
+        ANodeAllocator->Deallocate(this, sizeof(*this),
+                                   alignof(decltype(*this)));
+    }
     llvm::DISubprogram *getDebugInfo() const {
         return llvm::dyn_cast_or_null<llvm::DISubprogram>(debugInfo.get());
     }
@@ -100,7 +103,10 @@ struct InvokeSet {
         return invokeSetAllocator->Allocate();
     }
 
-    virtual void dealloc() { ANodeAllocator->Deallocate(this); }
+    virtual void dealloc() {
+        ANodeAllocator->Deallocate(this, sizeof(*this),
+                                   alignof(decltype(*this)));
+    }
 };
 
 typedef vector<pair<OverloadPtr, MatchResultPtr>> MatchFailureVector;

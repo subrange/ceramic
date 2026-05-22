@@ -2,6 +2,7 @@
 
 #include "clay.hpp"
 
+#include "invoketables.hpp"
 #include "types.hpp"
 
 namespace clay {

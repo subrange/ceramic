@@ -27,7 +27,7 @@ struct int128_holder {
     ptrdiff64_t lowValue;
     ptrdiff64_t highPad; // not used in static math
 
-    int128_holder() {}
+    int128_holder() : lowValue(0), highPad(0) {}
 
     explicit int128_holder(ptrdiff64_t low)
         : lowValue(low), highPad(low < 0 ? -1 : 0) {}
@@ -86,7 +86,7 @@ struct uint128_holder {
     size64_t lowValue;
     size64_t highPad; // not used in static math
 
-    uint128_holder() {}
+    uint128_holder() : lowValue(0), highPad(0) {}
 
     explicit uint128_holder(size64_t low) : lowValue(low), highPad(0) {}
 
@@ -145,35 +145,30 @@ struct uint128_holder {
 } // namespace clay
 
 namespace std {
-template <> class numeric_limits<clay::int128_holder> {
-  public:
-    static clay::int128_holder min() throw() {
-        return clay::int128_holder(
-            0, std::numeric_limits<clay::ptrdiff64_t>::min());
+template <> struct numeric_limits<clay::int128_holder> {
+    static clay::int128_holder min() noexcept {
+        return {0, std::numeric_limits<clay::ptrdiff64_t>::min()};
     }
 
-    static clay::int128_holder max() throw() {
-        return clay::int128_holder(
-            -1, std::numeric_limits<clay::ptrdiff64_t>::max());
+    static clay::int128_holder max() noexcept {
+        return {-1, std::numeric_limits<clay::ptrdiff64_t>::max()};
     }
 };
 
-template <> class numeric_limits<clay::uint128_holder> {
-  public:
-    static clay::uint128_holder min() throw() {
-        return clay::uint128_holder(0, 0);
-    }
+template <> struct numeric_limits<clay::uint128_holder> {
+    static clay::uint128_holder min() noexcept { return {0, 0}; }
 
-    static clay::uint128_holder max() throw() {
-        return clay::uint128_holder(std::numeric_limits<clay::size64_t>::max(),
-                                    std::numeric_limits<clay::size64_t>::max());
+    static clay::uint128_holder max() noexcept {
+        return {std::numeric_limits<clay::size64_t>::max(),
+                std::numeric_limits<clay::size64_t>::max()};
     }
 };
 } // namespace std
 
 namespace clay {
 inline int128_holder::int128_holder(uint128_holder y)
-    : lowValue((ptrdiff64_t)y.lowValue), highPad((ptrdiff64_t)y.highPad) {}
+    : lowValue(static_cast<ptrdiff64_t>(y.lowValue)),
+      highPad(static_cast<ptrdiff64_t>(y.highPad)) {}
 
 typedef int128_holder clay_int128;
 typedef uint128_holder clay_uint128;
@@ -184,11 +179,11 @@ typedef uint128_holder clay_uint128;
 namespace clay {
 inline llvm::raw_ostream &operator<<(llvm::raw_ostream &os,
                                      const clay_int128 &x) {
-    return os << ptrdiff64_t(x);
+    return os << static_cast<ptrdiff64_t>(x);
 }
 
 inline llvm::raw_ostream &operator<<(llvm::raw_ostream &os,
                                      const clay_uint128 &x) {
-    return os << size64_t(x);
+    return os << static_cast<size64_t>(x);
 }
 } // namespace clay

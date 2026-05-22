@@ -96,7 +96,7 @@ static llvm::ArrayRef<OverloadPtr> callableOverloads(ObjectPtr x) {
 //
 
 static bool invokeTablesInitialized = false;
-static const size_t INVOKE_TABLE_SIZE = 16384;
+static constexpr size_t INVOKE_TABLE_SIZE = 16384;
 
 static vector<llvm::SmallVector<InvokeSet *, 2>> invokeTable;
 

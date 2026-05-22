@@ -45,7 +45,6 @@ if(UNIX)
         OUTPUT_VARIABLE LLVM_CXXFLAGS
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    set(LLVM_CXXFLAGS ${LLVM_CXXFLAGS})
     separate_arguments(LLVM_CXXFLAGS)
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -83,7 +82,6 @@ if(UNIX)
         OUTPUT_VARIABLE LLVM_INCLUDEDIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    set(LLVM_INCLUDEDIR ${LLVM_INCLUDEDIR})
 
     message("-- Using LLVM: ${LLVM_DIR}")
     message("-- LLVM include dir: ${LLVM_INCLUDEDIR}")
@@ -94,6 +92,7 @@ if(UNIX)
 
 elseif(WIN32)
 
+    # TODO: unverified, port to find_package(LLVM CONFIG) + llvm_map_components_to_libnames.
     set(LLVM_DIR "$ENV{ProgramFiles}/LLVM" CACHE PATH "llvm install path")
 
     if(IS_DIRECTORY ${LLVM_DIR})
@@ -118,10 +117,6 @@ elseif(WIN32)
     set(CMAKE_REQUIRED_LIBRARIES ${LLVM_DIR}/lib/libclang.lib)
 
 endif()
-
-set(BUILD_BINDGEN True CACHE BOOL
-    "Build the clay-bindgen tool for generating Clay bindings from C header files."
-)
 
 install(DIRECTORY doc/        DESTINATION share/doc/clay)
 install(DIRECTORY examples/   DESTINATION share/doc/clay/examples)

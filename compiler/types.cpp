@@ -1639,7 +1639,7 @@ static void defineLLVMType(TypePtr t) {
 // typeSize
 //
 
-static void initTypeInfo(TypePtr t) {
+static void initTypeInfo(const TypePtr &t) {
     if (!t->typeInfoInitialized) {
         t->typeInfoInitialized = true;
         llvm::Type *llt = llvmType(t);

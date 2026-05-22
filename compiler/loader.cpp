@@ -26,7 +26,7 @@ ModulePtr globalMainModule;
 
 Source::Source(llvm::StringRef fileName)
     : Object(SOURCE), fileName(fileName), debugInfo(nullptr) {
-    if (llvm::error_code ec =
+    if (std::error_code ec =
             llvm::MemoryBuffer::getFileOrSTDIN(fileName, buffer))
         error("unable to open file " + fileName + ": " + ec.message());
 }
@@ -50,8 +50,6 @@ static llvm::StringRef getOS(llvm::Triple const &triple) {
         return "freebsd";
     case llvm::Triple::Linux:
         return "linux";
-    case llvm::Triple::Cygwin:
-    case llvm::Triple::MinGW32:
     case llvm::Triple::Win32:
         return "windows";
     case llvm::Triple::NetBSD:
@@ -62,8 +60,7 @@ static llvm::StringRef getOS(llvm::Triple const &triple) {
         return "solaris";
     case llvm::Triple::Haiku:
         return "haiku";
-    case llvm::Triple::Minix:
-        return "minix";
+    // case llvm::Triple::Minix: return "minix";
     default: {
         llvm::StringRef os = triple.getOSName();
         if (os.empty())
@@ -83,8 +80,7 @@ static llvm::StringRef getOSGroup(llvm::Triple const &triple) {
     case llvm::Triple::OpenBSD:
     case llvm::Triple::Solaris:
     case llvm::Triple::Haiku:
-    case llvm::Triple::Minix:
-        return "unix";
+    // case llvm::Triple::Minix: return "unix";
     default:
         return "";
     }
@@ -157,7 +153,7 @@ static void initModuleSuffixes() {
 
 #undef ADD_SUFFIX
 
-    moduleSuffixes.push_back(llvm::StringRef(".clay"));
+    moduleSuffixes.emplace_back(llvm::StringRef(".clay"));
 }
 
 void initLoader() { initModuleSuffixes(); }
@@ -264,7 +260,7 @@ static PathString locateModule(DottedNamePtr name) {
 static SourcePtr loadFile(llvm::StringRef fileName,
                           vector<string> *sourceFiles) {
     if (sourceFiles != nullptr)
-        sourceFiles->push_back(fileName);
+        sourceFiles->push_back(fileName.str());
 
     SourcePtr src = new Source(fileName);
     if (llvmDIBuilder != nullptr) {
@@ -934,7 +930,7 @@ llvm::StringRef primOpName(PrimOpCode op) {
 //
 
 static string toPrimStr(llvm::StringRef s) {
-    string name = s;
+    string name = s.str();
     if (name[s.size() - 1] == 'P')
         name[s.size() - 1] = '?';
     return name;

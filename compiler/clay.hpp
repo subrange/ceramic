@@ -27,6 +27,7 @@
 #include <llvm/Bitcode/BitcodeWriterPass.h>
 #include <llvm/CodeGen/ValueTypes.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/Orc/Core.h>
 #include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
 #include <llvm/ExecutionEngine/Orc/LLJIT.h>
@@ -581,9 +582,7 @@ struct Source : public Object {
     [[nodiscard]] const char *endData() const { return buffer->getBufferEnd(); }
     [[nodiscard]] size_t size() const { return buffer->getBufferSize(); }
 
-    [[nodiscard]] llvm::DIFile *getDebugInfo() const {
-        // TODO: implement this...
-    }
+    [[nodiscard]] llvm::DIFile *getDebugInfo() const { return nullptr; }
 };
 
 struct Location {
@@ -717,7 +716,9 @@ struct ANode : public Object {
         return ANodeAllocator->Allocate(num_bytes, alignof(ANode));
     }
 
-    void operator delete(void *anode) { ANodeAllocator->Deallocate(anode); }
+    void operator delete(void *anode) {
+        ANodeAllocator->Deallocate(anode, sizeof(ANode), alignof(ANode));
+    }
 };
 
 struct Identifier : public ANode {
@@ -1831,8 +1832,9 @@ struct GVarInstance : public RefCounted {
 
     ~GVarInstance();
 
-    llvm::DIGlobalVariable getDebugInfo() {
-        return llvm::DIGlobalVariable(debugInfo);
+    llvm::DIGlobalVariable *getDebugInfo() {
+        return llvm::dyn_cast_or_null<llvm::DIGlobalVariable>(
+            debugInfo.getValPtr());
     }
 };
 
@@ -1885,7 +1887,10 @@ struct ExternalProcedure : public TopLevelItem {
           hasVarArgs(hasVarArgs), attributesVerified(false), analyzed(false),
           bodyCodegenned(false) {}
 
-    llvm::DISubprogram getDebugInfo() { return llvm::DISubprogram(debugInfo); }
+    llvm::DISubprogram *getDebugInfo() {
+        return llvm::dyn_cast_or_null<llvm::DISubprogram>(
+            debugInfo.getValPtr());
+    }
 };
 
 struct ExternalArg : public ANode {
@@ -1920,8 +1925,9 @@ struct ExternalVariable : public TopLevelItem {
           attributes(attributes), llGlobal(nullptr), debugInfo(nullptr),
           attributesVerified(false) {}
 
-    llvm::DIGlobalVariable getDebugInfo() {
-        return llvm::DIGlobalVariable(debugInfo);
+    llvm::DIGlobalVariable *getDebugInfo() {
+        return llvm::dyn_cast_or_null<llvm::DIGlobalVariable>(
+            debugInfo.getValPtr());
     }
 };
 
@@ -1951,7 +1957,7 @@ enum DocumentationAnnotation {
     SectionAnnotation,
     ModuleAnnotation,
     OverloadAnnotation,
-    RecordAnnotion,
+    RecordAnnotation,
     InvalidAnnotation
 };
 
@@ -2143,7 +2149,9 @@ struct Module : public ANode {
           externalsGenerated(false), isIntrinsicsModule(false),
           debugInfo(nullptr) {}
 
-    llvm::DINamespace getDebugInfo() { return llvm::DINamespace(debugInfo); }
+    llvm::DINamespace *getDebugInfo() {
+        return llvm::dyn_cast_or_null<llvm::DINamespace>(debugInfo.getValPtr());
+    }
 };
 
 //
@@ -2277,9 +2285,13 @@ struct Type : public Object {
         return ANodeAllocator->Allocate(num_bytes, alignof(Type));
     }
 
-    void operator delete(void *type) { ANodeAllocator->Deallocate(type); }
+    void operator delete(void *type) {
+        ANodeAllocator->Deallocate(type, sizeof(Type), alignof(Type));
+    }
 
-    llvm::MDNode *getDebugInfo() { return llvm::DIType(debugInfo); }
+    llvm::DIType *getDebugInfo() {
+        return llvm::dyn_cast_or_null<llvm::DIType>(debugInfo.getValPtr());
+    }
 };
 
 struct BoolType : public Type {

@@ -463,10 +463,18 @@ static void codegenCWrapper(InvokeEntry *entry, CallingConv cc) {
     llvm::Function *llCWrapper =
         llvm::Function::Create(llFuncType, llvm::Function::InternalLinkage,
                                ccName + callableName, llvmModule);
-    for (vector<pair<unsigned, llvm::Attributes>>::const_iterator attr =
-             extFunc->attrs.begin();
-         attr != extFunc->attrs.end(); ++attr)
-        llCWrapper->addAttribute(attr->first, attr->second);
+
+    // #include <llvm/IR/Function.h>
+    // #include <llvm/IR/Attributes.h>
+    // std::vector<std::pair<unsigned, llvm::Attribute>> attrs;
+    // for (const auto &attr : extFunc->attrs)
+    //     llCWrapper->addAttribute(attr.first, attr.second);
+
+    // for (vector<pair<unsigned, llvm::Attributes> >::const_iterator
+    //      attr = extFunc->attrs.begin();
+    //      attr != extFunc->attrs.end();
+    //      ++attr)
+    //     llCWrapper->addAttribute(attr->first, attr->second);
 
     llCWrapper->setCallingConv(extFunc->llConv);
 
@@ -2016,8 +2024,12 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         PointerTypePtr ptrT;
         llvm::Value *ptr = pointerValue(args, 1, ptrT, ctx);
 
-        llvm::Value *result = ctx->builder->Insert(new llvm::LoadInst(
-            ptr, "", false, unsigned(typeAlignment(ptrT->pointeeType)), order));
+        llvm::Type *elementLlTy = llvmType(ptrT->pointeeType);
+        auto li = new llvm::LoadInst(elementLlTy, ptr, "", false,
+                                     llvm::Align(static_cast<unsigned>(
+                                         typeAlignment(ptrT->pointeeType))),
+                                     order);
+        llvm::Value *result = ctx->builder->Insert(li);
 
         assert(out->size() == 1);
         CValuePtr out0 = out->values[0];

@@ -2599,18 +2599,18 @@ void codegenCodeBody(InvokeEntry *entry) {
     switch (entry->isInline) {
     case INLINE:
         if (inlineEnabled())
-            llFunc->addFnAttr(llvm::Attributes::InlineHint);
+            llFunc->addFnAttr(llvm::Attribute::InlineHint);
         break;
     case NEVER_INLINE:
-        llFunc->addFnAttr(llvm::Attributes::NoInline);
+        llFunc->addFnAttr(llvm::Attribute::NoInline);
         break;
     default:
         break;
     }
 
     for (unsigned i = 1; i <= llArgTypes.size(); ++i) {
-        llvm::Attributes attrs = llvm::Attributes::get(
-            llFunc->getContext(), llvm::Attributes::NoAlias);
+        llvm::AttributeList attrs = llvm::Attribute::get(
+            llFunc->getContext(), llvm::Attribute::NoAlias);
         llFunc->addAttribute(i, attrs);
     }
 
@@ -2669,8 +2669,8 @@ void codegenCodeBody(InvokeEntry *entry) {
     llvm::BasicBlock *returnBlock = newBasicBlock("return", &ctx);
     llvm::BasicBlock *exceptionBlock = newBasicBlock("exception", &ctx);
 
-    ctx.initBuilder.reset(new llvm::IRBuilder<>(initBlock));
-    ctx.builder.reset(new llvm::IRBuilder<>(codeBlock));
+    ctx.initBuilder = std::make_unique<llvm::IRBuilder<>>(initBlock);
+    ctx.builder = std::make_unique<llvm::IRBuilder<>>(codeBlock);
 
     if (llvmDIBuilder != nullptr) {
         llvm::DebugLoc debugLoc =
@@ -4400,22 +4400,22 @@ llvm::TargetMachine *initLLVM(llvm::StringRef targetTriple,
         return nullptr;
     }
     llvm::Reloc::Model reloc =
-        relocPic ? llvm::Reloc::PIC_ : llvm::Reloc::Default;
-    llvm::CodeModel::Model codeModel = llvm::CodeModel::Default;
+        relocPic ? llvm::Reloc::PIC_ : llvm::Reloc::Static;
+    llvm::CodeModel::Model codeModel = llvm::CodeModel::Small;
 
-    llvm::CodeGenOpt::Level level;
+    llvm::CodeGenOptLevel level;
     switch (optLevel) {
     case 0:
-        level = llvm::CodeGenOpt::None;
+        level = llvm::CodeGenOptLevel::None;
         break;
     case 1:
-        level = llvm::CodeGenOpt::Less;
+        level = llvm::CodeGenOptLevel::Less;
         break;
     case 2:
-        level = llvm::CodeGenOpt::Default;
+        level = llvm::CodeGenOptLevel::Default;
         break;
     default:
-        level = llvm::CodeGenOpt::Aggressive;
+        level = llvm::CodeGenOptLevel::Aggressive;
         break;
     }
 

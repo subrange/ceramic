@@ -1719,7 +1719,7 @@ void evalCallCompiledCode(InvokeEntry *entry, MultiEValuePtr args,
     for (size_t i = 0; i < args->size(); ++i) {
         EValuePtr earg = args->values[i];
         assert(earg->type == entry->argsKey[i]);
-        gvArgs.push_back(llvm::GenericValue(earg->addr));
+        gvArgs.emplace_back(earg->addr);
     }
 
     assert(out->size() == entry->returnTypes.size());
@@ -1728,10 +1728,10 @@ void evalCallCompiledCode(InvokeEntry *entry, MultiEValuePtr args,
         EValuePtr ev = out->values[i];
         if (entry->returnIsRef[i]) {
             assert(ev->type == pointerType(t));
-            gvArgs.push_back(llvm::GenericValue(out->values[i]->addr));
+            gvArgs.emplace_back(out->values[i]->addr);
         } else {
             assert(ev->type == t);
-            gvArgs.push_back(llvm::GenericValue(out->values[i]->addr));
+            gvArgs.emplace_back(out->values[i]->addr);
         }
     }
     error("calling compiled code is not supported in the evaluator");

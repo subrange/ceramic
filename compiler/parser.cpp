@@ -3461,7 +3461,7 @@ documentationAnnotation(std::map<DocumentationAnnotation, string> &an) {
     } else if (key == "overload" || key == "default") {
         ano = OverloadAnnotation;
     } else if (key == "record") {
-        ano = RecordAnnotion;
+        ano = RecordAnnotation;
     } else {
         ano = InvalidAnnotation;
         pushLocation(location);
