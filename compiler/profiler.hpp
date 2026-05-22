@@ -3,6 +3,6 @@
 #include "clay.hpp"
 
 namespace clay {
-    void incrementCount(const ObjectPtr &obj);
-    void displayCounts();
-}
+void incrementCount(const ObjectPtr &obj);
+void displayCounts();
+} // namespace clay

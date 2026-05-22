@@ -3,5 +3,5 @@
 #include "clay.hpp"
 
 namespace clay {
-    MultiPValuePtr analyzePrimOp(PrimOpPtr x, MultiPValuePtr args);
+MultiPValuePtr analyzePrimOp(PrimOpPtr x, MultiPValuePtr args);
 }

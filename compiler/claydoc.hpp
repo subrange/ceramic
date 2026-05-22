@@ -1,8 +1,8 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "clay.hpp"
 
@@ -32,7 +32,7 @@ struct DocState {
     std::map<std::string, DocModule *> modules;
 };
 
-std::string identifierString(const clay::IdentifierPtr& id);
+std::string identifierString(const clay::IdentifierPtr &id);
 
 void emitHtmlModule(std::string outpath, DocModule *mod, std::string fqn);
 void emitHtmlIndex(std::string outpath, DocState *);

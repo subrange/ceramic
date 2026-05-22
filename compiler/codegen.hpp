@@ -4,257 +4,219 @@
 #include "types.hpp"
 
 namespace clay {
-    static const unsigned short DW_LANG_user_CLAY = 0xC1A4;
+static const unsigned short DW_LANG_user_CLAY = 0xC1A4;
 
-    extern llvm::Module *llvmModule;
-    extern llvm::DIBuilder *llvmDIBuilder;
-    extern const llvm::DataLayout *llvmDataLayout;
-    extern llvm::LLVMContext llvmContext;
+extern llvm::Module *llvmModule;
+extern llvm::DIBuilder *llvmDIBuilder;
+extern const llvm::DataLayout *llvmDataLayout;
+extern llvm::LLVMContext llvmContext;
 
-    llvm::PointerType *exceptionReturnType();
-    llvm::Value *noExceptionReturnValue();
+llvm::PointerType *exceptionReturnType();
+llvm::Value *noExceptionReturnValue();
 
-    llvm::TargetMachine *initLLVM(llvm::StringRef targetTriple,
-                                  llvm::StringRef targetCPU,
-                                  llvm::StringRef targetFeatures,
-                                  bool softFloat,
-                                  llvm::StringRef name,
-                                  llvm::StringRef flags,
-                                  bool relocPic,
-                                  bool debug,
-                                  unsigned optLevel);
+llvm::TargetMachine *initLLVM(llvm::StringRef targetTriple,
+                              llvm::StringRef targetCPU,
+                              llvm::StringRef targetFeatures, bool softFloat,
+                              llvm::StringRef name, llvm::StringRef flags,
+                              bool relocPic, bool debug, unsigned optLevel);
 
-    bool inlineEnabled();
-    void setInlineEnabled(bool enabled);
-    bool exceptionsEnabled();
-    void setExceptionsEnabled(bool enabled);
+bool inlineEnabled();
+void setInlineEnabled(bool enabled);
+bool exceptionsEnabled();
+void setExceptionsEnabled(bool enabled);
 
-    void initExternalTarget(string target);
+void initExternalTarget(string target);
 
-    // codegen value
-    struct CValue : public Object {
-        TypePtr type;
-        llvm::Value *llValue;
-        const bool forwardedRValue: 1;
+// codegen value
+struct CValue : public Object {
+    TypePtr type;
+    llvm::Value *llValue;
+    const bool forwardedRValue : 1;
 
-        CValue(TypePtr type, llvm::Value *llValue, bool forwardedRValue = false)
-            : Object(CVALUE), type(type), llValue(llValue),
-              forwardedRValue(forwardedRValue) {
-            llvmType(type); // force full definition of type
+    CValue(TypePtr type, llvm::Value *llValue, bool forwardedRValue = false)
+        : Object(CVALUE), type(type), llValue(llValue),
+          forwardedRValue(forwardedRValue) {
+        llvmType(type); // force full definition of type
+    }
+};
+
+struct MultiCValue : public Object {
+    vector<CValuePtr> values;
+
+    MultiCValue() : Object(MULTI_CVALUE) {}
+
+    MultiCValue(CValuePtr pv) : Object(MULTI_CVALUE) { values.push_back(pv); }
+
+    MultiCValue(llvm::ArrayRef<CValuePtr> values)
+        : Object(MULTI_CVALUE), values(values) {}
+
+    size_t size() { return values.size(); }
+    void add(CValuePtr x) { values.push_back(x); }
+
+    void add(MultiCValuePtr x) {
+        values.insert(values.end(), x->values.begin(), x->values.end());
+    }
+
+    void toArgsKey(vector<TypePtr> *types) {
+        for (vector<CValuePtr>::const_iterator i = values.begin(),
+                                               end = values.end();
+             i != end; ++i) {
+            types->push_back((*i)->type);
         }
-    };
+    }
+};
 
-    struct MultiCValue : public Object {
-        vector<CValuePtr> values;
+struct JumpTarget {
+    llvm::BasicBlock *block;
+    size_t stackMarker;
+    int useCount;
 
-        MultiCValue()
-            : Object(MULTI_CVALUE) {
-        }
+    JumpTarget() : block(nullptr), stackMarker(0), useCount(0) {}
 
-        MultiCValue(CValuePtr pv)
-            : Object(MULTI_CVALUE) {
-            values.push_back(pv);
-        }
+    JumpTarget(llvm::BasicBlock *block, size_t stackMarker)
+        : block(block), stackMarker(stackMarker), useCount(0) {}
+};
 
-        MultiCValue(llvm::ArrayRef<CValuePtr> values)
-            : Object(MULTI_CVALUE), values(values) {
-        }
+struct CReturn {
+    TypePtr type;
+    CValuePtr value;
+    bool byRef : 1;
 
-        size_t size() { return values.size(); }
-        void add(CValuePtr x) { values.push_back(x); }
+    CReturn(bool byRef, TypePtr type, CValuePtr value)
+        : type(type), value(value), byRef(byRef) {}
+};
 
-        void add(MultiCValuePtr x) {
-            values.insert(values.end(), x->values.begin(), x->values.end());
-        }
+struct StackSlot {
+    llvm::Type *llType;
+    llvm::Value *llValue;
 
-        void toArgsKey(vector<TypePtr> *types) {
-            for (vector<CValuePtr>::const_iterator i = values.begin(), end = values.end();
-                 i != end;
-                 ++i) {
-                types->push_back((*i)->type);
+    StackSlot(llvm::Type *llType, llvm::Value *llValue)
+        : llType(llType), llValue(llValue) {}
+};
+
+enum ValueStackEntryType { LOCAL_VALUE, FINALLY_STATEMENT, ONERROR_STATEMENT };
+
+struct ValueStackEntry {
+    ValueStackEntryType type;
+    CValuePtr value;
+    EnvPtr statementEnv;
+    StatementPtr statement;
+
+    explicit ValueStackEntry(CValuePtr value)
+        : type(LOCAL_VALUE), value(value), statementEnv(nullptr),
+          statement(nullptr) {}
+
+    ValueStackEntry(ValueStackEntryType type, EnvPtr statementEnv,
+                    StatementPtr statement)
+        : type(type), value(nullptr), statementEnv(statementEnv),
+          statement(statement) {
+        assert(type != LOCAL_VALUE);
+    }
+};
+
+struct CodegenContext {
+    llvm::Function *llvmFunc;
+    vector<llvm::TrackingVH<llvm::MDNode>> debugScope;
+    std::unique_ptr<llvm::IRBuilder<>> initBuilder;
+    std::unique_ptr<llvm::IRBuilder<>> builder;
+
+    vector<ValueStackEntry> valueStack;
+    llvm::Value *valueForStatics;
+
+    vector<StackSlot> allocatedSlots;
+    vector<StackSlot> discardedSlots;
+
+    vector<vector<CReturn>> returnLists;
+    vector<JumpTarget> returnTargets;
+    llvm::StringMap<JumpTarget> labels;
+    vector<JumpTarget> breaks;
+    vector<JumpTarget> continues;
+    vector<JumpTarget> exceptionTargets;
+    llvm::Value *exceptionValue;
+    int inlineDepth; //: 31;
+    bool checkExceptions : 1;
+
+    int callByNameDepth;
+
+    CodegenContext()
+        : llvmFunc(nullptr), valueForStatics(nullptr), exceptionValue(nullptr),
+          inlineDepth(0), checkExceptions(true), callByNameDepth(0) {}
+
+    CodegenContext(llvm::Function *llvmFunc)
+        : llvmFunc(llvmFunc), valueForStatics(nullptr), exceptionValue(nullptr),
+          inlineDepth(0), checkExceptions(true), callByNameDepth(0) {}
+
+    llvm::DILexicalBlock getDebugScope() {
+        if (debugScope.empty())
+            return llvm::DILexicalBlock(nullptr);
+        else
+            return llvm::DILexicalBlock(debugScope.back());
+    }
+
+    void pushDebugScope(llvm::DILexicalBlock scope) {
+        debugScope.push_back((llvm::MDNode *)scope);
+    }
+
+    void popDebugScope() { debugScope.pop_back(); }
+};
+
+struct DebugLocationContext {
+    Location loc;
+    CodegenContext *ctx;
+
+    DebugLocationContext(Location const &loc, CodegenContext *ctx)
+        : loc(loc), ctx(ctx) {
+        if (loc.ok()) {
+            pushLocation(loc);
+            if (llvmDIBuilder != nullptr && ctx->inlineDepth == 0) {
+                unsigned line, column;
+                getDebugLineCol(loc, line, column);
+                llvm::DebugLoc debugLoc =
+                    llvm::DebugLoc::get(line, column, ctx->getDebugScope());
+                ctx->builder->SetCurrentDebugLocation(debugLoc);
             }
         }
-    };
+    }
 
-    struct JumpTarget {
-        llvm::BasicBlock *block;
-        size_t stackMarker;
-        int useCount;
-
-        JumpTarget() : block(nullptr), stackMarker(0), useCount(0) {
+    ~DebugLocationContext() {
+        if (loc.ok()) {
+            popLocation();
         }
+    }
 
-        JumpTarget(llvm::BasicBlock *block, size_t stackMarker)
-            : block(block), stackMarker(stackMarker), useCount(0) {
-        }
-    };
+  private:
+    DebugLocationContext(const DebugLocationContext &) {}
 
-    struct CReturn {
-        TypePtr type;
-        CValuePtr value;
-        bool byRef: 1;
+    void operator=(const DebugLocationContext &) {}
+};
 
-        CReturn(bool byRef, TypePtr type, CValuePtr value)
-            : type(type), value(value), byRef(byRef) {
-        }
-    };
+void codegenGVarInstance(GVarInstancePtr x);
+void codegenExternalVariable(ExternalVariablePtr x);
+void codegenExternalProcedure(ExternalProcedurePtr x, bool codegenBody);
 
-    struct StackSlot {
-        llvm::Type *llType;
-        llvm::Value *llValue;
+struct InvokeEntry;
 
-        StackSlot(llvm::Type *llType, llvm::Value *llValue)
-            : llType(llType), llValue(llValue) {
-        }
-    };
+InvokeEntry *codegenCallable(ObjectPtr x, llvm::ArrayRef<PVData> args);
 
-    enum ValueStackEntryType {
-        LOCAL_VALUE,
-        FINALLY_STATEMENT,
-        ONERROR_STATEMENT
-    };
+void codegenCodeBody(InvokeEntry *entry);
+void codegenCWrapper(InvokeEntry *entry);
 
-    struct ValueStackEntry {
-        ValueStackEntryType type;
-        CValuePtr value;
-        EnvPtr statementEnv;
-        StatementPtr statement;
+void codegenCallValue(CValuePtr callable, MultiCValuePtr args,
+                      CodegenContext *ctx, MultiCValuePtr out);
+void codegenCallValue(CValuePtr callable, MultiCValuePtr args,
+                      MultiPValuePtr pvArgs, CodegenContext *ctx,
+                      MultiCValuePtr out);
+void codegenEntryPoints(ModulePtr module, bool importedExternals);
+void codegenMain(ModulePtr module);
 
-        explicit ValueStackEntry(CValuePtr value)
-            : type(LOCAL_VALUE), value(value), statementEnv(nullptr), statement(nullptr) {
-        }
+void codegenBeforeRepl(ModulePtr module);
+void codegenAfterRepl(llvm::Function *&ctor, llvm::Function *&dtor);
 
-        ValueStackEntry(ValueStackEntryType type,
-                        EnvPtr statementEnv,
-                        StatementPtr statement)
-            : type(type), value(nullptr), statementEnv(statementEnv), statement(statement) {
-            assert(type != LOCAL_VALUE);
-        }
-    };
+void codegenValueForward(CValuePtr dest, CValuePtr src, CodegenContext *ctx);
+void codegenStaticObject(ObjectPtr x, CodegenContext *ctx, MultiCValuePtr out);
 
-    struct CodegenContext {
-        llvm::Function *llvmFunc;
-        vector<llvm::TrackingVH<llvm::MDNode> > debugScope;
-        std::unique_ptr<llvm::IRBuilder<> > initBuilder;
-        std::unique_ptr<llvm::IRBuilder<> > builder;
+llvm::Constant *valueHolderToLLVMConstant(ValueHolder *vh, CodegenContext *ctx);
+CValuePtr staticCValue(ObjectPtr obj, CodegenContext *ctx);
 
-        vector<ValueStackEntry> valueStack;
-        llvm::Value *valueForStatics;
-
-        vector<StackSlot> allocatedSlots;
-        vector<StackSlot> discardedSlots;
-
-        vector<vector<CReturn> > returnLists;
-        vector<JumpTarget> returnTargets;
-        llvm::StringMap<JumpTarget> labels;
-        vector<JumpTarget> breaks;
-        vector<JumpTarget> continues;
-        vector<JumpTarget> exceptionTargets;
-        llvm::Value *exceptionValue;
-        int inlineDepth; //:31;
-        bool checkExceptions: 1;
-
-        int callByNameDepth;
-
-        CodegenContext()
-            : llvmFunc(nullptr),
-              valueForStatics(nullptr),
-              exceptionValue(nullptr),
-              inlineDepth(0),
-              checkExceptions(true),
-              callByNameDepth(0) {
-        }
-
-        CodegenContext(llvm::Function *llvmFunc)
-            : llvmFunc(llvmFunc),
-              valueForStatics(nullptr),
-              exceptionValue(nullptr),
-              inlineDepth(0),
-              checkExceptions(true),
-              callByNameDepth(0) {
-        }
-
-        llvm::DILexicalBlock getDebugScope() {
-            if (debugScope.empty())
-                return llvm::DILexicalBlock(nullptr);
-            else
-                return llvm::DILexicalBlock(debugScope.back());
-        }
-
-        void pushDebugScope(llvm::DILexicalBlock scope) {
-            debugScope.push_back((llvm::MDNode *) scope);
-        }
-
-        void popDebugScope() {
-            debugScope.pop_back();
-        }
-    };
-
-    struct DebugLocationContext {
-        Location loc;
-        CodegenContext *ctx;
-
-        DebugLocationContext(Location const &loc, CodegenContext *ctx)
-            : loc(loc), ctx(ctx) {
-            if (loc.ok()) {
-                pushLocation(loc);
-                if (llvmDIBuilder != nullptr && ctx->inlineDepth == 0) {
-                    unsigned line, column;
-                    getDebugLineCol(loc, line, column);
-                    llvm::DebugLoc debugLoc = llvm::DebugLoc::get(line, column, ctx->getDebugScope());
-                    ctx->builder->SetCurrentDebugLocation(debugLoc);
-                }
-            }
-        }
-
-        ~DebugLocationContext() {
-            if (loc.ok()) {
-                popLocation();
-            }
-        }
-
-    private :
-        DebugLocationContext(const DebugLocationContext &) {
-        }
-
-        void operator=(const DebugLocationContext &) {
-        }
-    };
-
-    void codegenGVarInstance(GVarInstancePtr x);
-    void codegenExternalVariable(ExternalVariablePtr x);
-    void codegenExternalProcedure(ExternalProcedurePtr x, bool codegenBody);
-
-    struct InvokeEntry;
-
-    InvokeEntry *codegenCallable(ObjectPtr x,
-                                 llvm::ArrayRef<PVData> args);
-
-    void codegenCodeBody(InvokeEntry *entry);
-    void codegenCWrapper(InvokeEntry *entry);
-
-    void codegenCallValue(CValuePtr callable,
-                          MultiCValuePtr args,
-                          CodegenContext *ctx,
-                          MultiCValuePtr out);
-    void codegenCallValue(CValuePtr callable,
-                          MultiCValuePtr args,
-                          MultiPValuePtr pvArgs,
-                          CodegenContext *ctx,
-                          MultiCValuePtr out);
-    void codegenEntryPoints(ModulePtr module, bool importedExternals);
-    void codegenMain(ModulePtr module);
-
-    void codegenBeforeRepl(ModulePtr module);
-    void codegenAfterRepl(llvm::Function *&ctor, llvm::Function *&dtor);
-
-    void codegenValueForward(CValuePtr dest, CValuePtr src, CodegenContext *ctx);
-    void codegenStaticObject(ObjectPtr x,
-                             CodegenContext *ctx,
-                             MultiCValuePtr out);
-
-    llvm::Constant *valueHolderToLLVMConstant(ValueHolder *vh, CodegenContext *ctx);
-    CValuePtr staticCValue(ObjectPtr obj, CodegenContext *ctx);
-
-    std::string getCodeName(InvokeEntry *entry);
-}
+std::string getCodeName(InvokeEntry *entry);
+} // namespace clay
