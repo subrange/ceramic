@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [main, llvm-3.2-to-latest]
+    branches: [main]
   pull_request:
     branches: [main]
 
