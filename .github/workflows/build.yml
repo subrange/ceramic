@@ -29,3 +29,22 @@ jobs:
 
       - name: Build
         run: cmake --build build
+
+      - name: Test
+        run: cmake --build build --target test
+
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format-19
+
+      - name: Check formatting
+        run: |
+          find compiler tools -name '*.cpp' -o -name '*.hpp' \
+            | xargs clang-format-19 --dry-run --Werror
