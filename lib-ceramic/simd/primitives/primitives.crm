@@ -4,10 +4,10 @@
 
 [T,n]
 vecElementRef(a:Vec[T,n], i:Int) --> returned:ByRef[T] __llvm__{
-    %iVal = load $Int * %i
-    %ptr = getelementptr ${Vec[T,n]} * %a, i32 0, $Int %iVal
-    store $T * %ptr, $T ** %returned
-    ret i8* null
+    %iVal = load $Int, ptr %i
+    %ptr = getelementptr ${Vec[T,n]}, ptr %a, i32 0, $Int %iVal
+    store ptr %ptr, ptr %returned
+    ret ptr null
 }
 
 
@@ -18,20 +18,20 @@ define add;
 
 [T,n when Integer?(T)]
 overload add(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = add ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 [T,n when Float?(T)]
 overload add(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = fadd ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 
@@ -42,20 +42,20 @@ define subtract;
 
 [T,n when Integer?(T)]
 overload subtract(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = sub ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 [T,n when Float?(T)]
 overload subtract(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = fsub ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 
@@ -66,20 +66,20 @@ define multiply;
 
 [T,n when Integer?(T)]
 overload multiply(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = mul ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 [T,n when Float?(T)]
 overload multiply(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = fmul ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 
@@ -90,29 +90,29 @@ define divide;
 
 [T,n when SignedInteger?(T)]
 overload divide(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = sdiv ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 [T,n when UnsignedInteger?(T)]
 overload divide(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = udiv ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 [T,n when Float?(T)]
 overload divide(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = fdiv ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 
@@ -123,29 +123,29 @@ define remainder;
 
 [T,n when SignedInteger?(T)]
 overload remainder(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = srem ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 [T,n when UnsignedInteger?(T)]
 overload remainder(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = urem ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 [T,n when Float?(T)]
 overload remainder(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = frem ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 
@@ -156,11 +156,11 @@ define bitshl;
 
 [T,n when Integer?(T)]
 overload bitshl(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = shl ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 
@@ -171,20 +171,20 @@ define bitshr;
 
 [T,n when SignedInteger?(T)]
 overload bitshr(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = ashr ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 [T,n when UnsignedInteger?(T)]
 overload bitshr(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = lshr ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 
@@ -193,27 +193,27 @@ overload bitshr(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
 
 [T,n when Integer?(T)]
 bitand(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = and ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 [T,n when Integer?(T)]
 bitor(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = or ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }
 
 [T,n when Integer?(T)]
 bitxor(a:Vec[T,n], b:Vec[T,n]) --> returned:Vec[T,n] __llvm__{
-    %1 = load ${Vec[T,n]} * %a
-    %2 = load ${Vec[T,n]} * %b
+    %1 = load ${Vec[T,n]}, ptr %a
+    %2 = load ${Vec[T,n]}, ptr %b
     %3 = xor ${Vec[T,n]} %1, %2
-    store ${Vec[T,n]} %3, ${Vec[T,n]} * %returned
-    ret i8* null
+    store ${Vec[T,n]} %3, ptr %returned
+    ret ptr null
 }

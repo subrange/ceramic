@@ -4,6 +4,8 @@
 #include <utility>
 #include <vector>
 
+#include <llvm/Support/Signals.h>
+
 #include "ceramic.hpp"
 #include "codegen.hpp"
 #include "error.hpp"
@@ -223,7 +225,14 @@ static bool generateBinary(llvm::Module *module,
     llvm::Triple triple(llvmModule->getTargetTriple());
     if (sharedLib) {
         clangArgs.emplace_back("-shared");
-
+    } else if (triple.getOS() == llvm::Triple::Linux) {
+        // Object files use the Static relocation model. Modern clang defaults
+        // to PIE which can't link non-PIC objects.
+        // TODO: switch Linux to PIC by default (set genPIC = true for
+        // Triple::Linux in main2) and drop this -no-pie workaround.
+        clangArgs.emplace_back("-no-pie");
+    }
+    if (sharedLib) {
         if (triple.isOSWindows()) {
             string linkerFlags;
             PathString defPath;
@@ -420,6 +429,7 @@ static void printVersion() {
 }
 
 int main2(int argc, char **argv, char const *const *envp) {
+    llvm::sys::PrintStackTraceOnErrorSignal(argv[0]);
     if (argc == 1) {
         usage(argv[0]);
         return 2;

@@ -103,8 +103,8 @@ overload continueException(exp:RawPointer) : {
 }
 
 private signalException(exp:RawPointer) __llvm__ {
-    %expv = load i8** %exp
-    ret i8* %expv
+    %expv = load ptr, ptr %exp
+    ret ptr %expv
 }
 
 

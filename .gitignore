@@ -24,6 +24,8 @@ build*/
 testlog.txt
 *.orig
 *.ceramiccache
+ceramicobj-*.obj
+core.*
 tags
 cscope.out
 .gdb_history

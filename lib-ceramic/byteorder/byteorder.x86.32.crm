@@ -4,10 +4,10 @@ public import byteorder.common.*;
 
 [I32 when inValues?(I32, Int32, UInt32)]
 overload reverseBytes(n:I32) --> returned:I32 __llvm__ {
-    %nn = load $I32 * %n
+    %nn = load $I32, ptr %n
     %rr = call $I32 asm "bswapl $0", "=r,r"($I32 %nn)
-    store $I32 %rr, $I32 * %returned
-    ret i8* null
+    store $I32 %rr, ptr %returned
+    ret ptr null
 }
 
 [I64 when inValues?(I64, Int64, UInt64)]

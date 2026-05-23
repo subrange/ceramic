@@ -4268,11 +4268,14 @@ static void finalizeCtorsDtors() {
 
 static void generateLLVMCtorsAndDtors() {
     // make types for llvm.global_ctors, llvm.global_dtors
+    // LLVM requires {i32 priority, ptr func, ptr associated}
     vector<llvm::Type *> fieldTypes;
     fieldTypes.push_back(llvmIntType(32));
     llvm::Type *funcType = constructorsCtx->llvmFunc->getFunctionType();
     llvm::Type *funcPtrType = llvm::PointerType::getUnqual(funcType);
     fieldTypes.push_back(funcPtrType);
+    llvm::Type *associatedPtrType = llvm::PointerType::getUnqual(llvmContext);
+    fieldTypes.push_back(associatedPtrType);
     llvm::StructType *structType =
         llvm::StructType::get(llvmContext, fieldTypes);
     llvm::ArrayType *arrayType = llvm::ArrayType::get(structType, 1);
@@ -4283,6 +4286,8 @@ static void generateLLVMCtorsAndDtors() {
         llvmContext, llvm::APInt(32, llvm::StringRef("65535"), 10));
     structElems1.push_back(prio1);
     structElems1.push_back(constructorsCtx->llvmFunc);
+    structElems1.push_back(llvm::ConstantPointerNull::get(
+        llvm::PointerType::getUnqual(llvmContext)));
     llvm::Constant *structVal1 =
         llvm::ConstantStruct::get(structType, structElems1);
     vector<llvm::Constant *> arrayElems1;
@@ -4304,6 +4309,8 @@ static void generateLLVMCtorsAndDtors() {
             llvmContext, llvm::APInt(32, llvm::StringRef("65535"), 10));
         structElems2.push_back(prio2);
         structElems2.push_back(destructorsCtx->llvmFunc);
+        structElems2.push_back(llvm::ConstantPointerNull::get(
+            llvm::PointerType::getUnqual(llvmContext)));
         llvm::Constant *structVal2 =
             llvm::ConstantStruct::get(structType, structElems2);
         vector<llvm::Constant *> arrayElems2;

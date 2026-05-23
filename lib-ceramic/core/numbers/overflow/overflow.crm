@@ -31,16 +31,16 @@ declare {i64, i1} @llvm.umul.with.overflow.i64(i64 %a, i64 %b)
 [op, T]
 private forceinline overflowIntrinsic(#op, a:T, b:T) --> out:T, overflow:Bool
 __llvm__{
-    %av = load $T* %a
-    %bv = load $T* %b
+    %av = load $T, ptr %a
+    %bv = load $T, ptr %b
 
     %result = call {$T, i1} @llvm.$op.with.overflow.$T ($T %av, $T %bv);
     %outv = extractvalue {$T, i1} %result, 0
     %overflowbit = extractvalue {$T, i1} %result, 1
 
-    store $T %outv, $T* %out
-    store $Bool %overflowbit, $Bool* %overflow
-    ret i8* null
+    store $T %outv, ptr %out
+    store $Bool %overflowbit, ptr %overflow
+    ret ptr null
 }
 
 [T when Integer?(T)] define integerAddWithOverflow(x:T, y:T) : T, Bool;
