@@ -1,8 +1,8 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
-    void incrementCount(const ObjectPtr &obj);
-    void displayCounts();
-}
+namespace ceramic {
+void incrementCount(const ObjectPtr &obj);
+void displayCounts();
+} // namespace ceramic

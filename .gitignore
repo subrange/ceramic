@@ -2,6 +2,9 @@
 Thumbs.db
 *.pdb
 .vscode/
+checklist.md
+.cache/
+compile_commands.json
 *.swp
 *.swo
 *.idea/
@@ -20,7 +23,9 @@ build*/
 *.pyc
 testlog.txt
 *.orig
-*.claycache
+*.ceramiccache
+ceramicobj-*.obj
+core.*
 tags
 cscope.out
 .gdb_history

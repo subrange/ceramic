@@ -1,32 +1,38 @@
 #pragma once
 
-namespace clay {
-    typedef void (*TestFunc)();
+#include <stdexcept>
 
-    void register_test(const char *name, TestFunc);
+namespace ceramic {
+typedef void (*TestFunc)();
 
-#define CLAY_UNITTEST(NAME) \
-    void NAME ## _testImpl (); \
-    struct TestRegistrator_ ## NAME { \
-        TestRegistrator_ ## NAME () { \
-            ::clay::register_test(#NAME, &NAME ## _testImpl); \
-        } \
-    }; \
-    static TestRegistrator_ ## NAME testRegistrator_ ## NAME; \
-    void NAME ## _testImpl()
+void register_test(const char *name, TestFunc);
 
-    struct AssertionError {
-    };
+#define CERAMIC_UNITTEST(NAME)                                                 \
+    void NAME##_testImpl();                                                    \
+    struct TestRegistrator_##NAME {                                            \
+        TestRegistrator_##NAME() {                                             \
+            ::ceramic::register_test(#NAME, &NAME##_testImpl);                 \
+        }                                                                      \
+    };                                                                         \
+    static TestRegistrator_##NAME testRegistrator_##NAME;                      \
+    void NAME##_testImpl()
 
-#define UT_FAIL() do { \
-        printf("failure in %s at %s:%d\n", __func__, __FILE__, __LINE__); \
-        throw AssertionError(); \
+struct AssertionError : std::runtime_error {
+    AssertionError() : std::runtime_error("AssertionError") {}
+};
+
+#define UT_FAIL()                                                              \
+    do {                                                                       \
+        printf("failure in %s at %s:%d\n", __func__, __FILE__, __LINE__);      \
+        throw AssertionError();                                                \
     } while (0)
 
-#define UT_ASSERT(COND) do { \
-        if (!(COND)) { \
-            printf("condition %s failed in %s at %s:%d\n", #COND, __func__, __FILE__, __LINE__); \
-            throw AssertionError(); \
-        } \
+#define UT_ASSERT(COND)                                                        \
+    do {                                                                       \
+        if (!(COND)) {                                                         \
+            printf("condition %s failed in %s at %s:%d\n", #COND, __func__,    \
+                   __FILE__, __LINE__);                                        \
+            throw AssertionError();                                            \
+        }                                                                      \
     } while (0)
-}
+} // namespace ceramic

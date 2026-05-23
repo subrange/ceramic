@@ -1,130 +1,130 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "matchinvoke.hpp"
 
-namespace clay {
-    struct InvokeSet;
-    struct InvokeEntry;
+namespace ceramic {
+struct InvokeSet;
+struct InvokeEntry;
 
-    static llvm::SpecificBumpPtrAllocator<InvokeEntry> *invokeEntryAllocator
-            = new llvm::SpecificBumpPtrAllocator<InvokeEntry>();
-    static llvm::SpecificBumpPtrAllocator<InvokeSet> *invokeSetAllocator
-            = new llvm::SpecificBumpPtrAllocator<InvokeSet>();
+static auto invokeEntryAllocator =
+    new llvm::SpecificBumpPtrAllocator<InvokeEntry>();
+static auto invokeSetAllocator =
+    new llvm::SpecificBumpPtrAllocator<InvokeSet>();
 
-    struct InvokeEntry {
-        InvokeSet *parent;
-        ObjectPtr callable;
-        vector<TypePtr> argsKey;
-        vector<uint8_t> forwardedRValueFlags;
+struct InvokeEntry {
+    virtual ~InvokeEntry() = default;
 
-        CodePtr origCode;
-        CodePtr code;
-        EnvPtr env;
-        EnvPtr interfaceEnv;
+    InvokeSet *parent;
+    ObjectPtr callable;
+    vector<TypePtr> argsKey;
+    vector<uint8_t> forwardedRValueFlags;
 
-        vector<TypePtr> fixedArgTypes;
-        vector<IdentifierPtr> fixedArgNames;
-        IdentifierPtr varArgName;
-        vector<TypePtr> varArgTypes;
-        unsigned varArgPosition;
+    CodePtr origCode;
+    CodePtr code;
+    EnvPtr env;
+    EnvPtr interfaceEnv;
 
-        InlineAttribute isInline;
+    vector<TypePtr> fixedArgTypes;
+    vector<IdentifierPtr> fixedArgNames;
+    IdentifierPtr varArgName;
+    vector<TypePtr> varArgTypes;
+    unsigned varArgPosition;
 
-        ObjectPtr analysis;
-        vector<uint8_t> returnIsRef;
-        vector<TypePtr> returnTypes;
+    InlineAttribute isInline;
 
-        llvm::Function *llvmFunc;
-        llvm::Function *llvmCWrappers[CC_Count];
+    ObjectPtr analysis;
+    vector<uint8_t> returnIsRef;
+    vector<TypePtr> returnTypes;
 
-        llvm::TrackingVH<llvm::MDNode> debugInfo;
+    llvm::Function *llvmFunc;
+    llvm::Function *llvmCWrappers[CC_Count]{};
 
-        bool analyzed: 1;
-        bool analyzing: 1;
-        bool callByName: 1; // if callByName the rest of InvokeEntry is not set
-        bool runtimeNop: 1;
+    llvm::TrackingMDNodeRef debugInfo;
 
-        InvokeEntry(InvokeSet *parent,
-                    ObjectPtr callable,
-                    llvm::ArrayRef<TypePtr> argsKey)
-            : parent(parent), callable(callable),
-              argsKey(argsKey),
-              varArgPosition(0),
-              isInline(IGNORE),
-              llvmFunc(nullptr),
-              debugInfo(nullptr),
-              analyzed(false),
-              analyzing(false),
-              callByName(false),
-              runtimeNop(false) {
-            for (size_t i = 0; i < CC_Count; ++i)
-                llvmCWrappers[i] = nullptr;
-        }
+    bool analyzed : 1;
+    bool analyzing : 1;
+    bool callByName : 1; // if callByName the rest of InvokeEntry is not set
+    bool runtimeNop : 1;
 
-        void *operator new(size_t num_bytes) {
-            return invokeEntryAllocator->Allocate();
-        }
+    InvokeEntry(InvokeSet *parent, const ObjectPtr &callable,
+                llvm::ArrayRef<TypePtr> argsKey)
+        : parent(parent), callable(callable), argsKey(argsKey),
+          varArgPosition(0), isInline(IGNORE), llvmFunc(nullptr),
+          debugInfo(nullptr), analyzed(false), analyzing(false),
+          callByName(false), runtimeNop(false) {
+        for (auto &llvmCWrapper : llvmCWrappers)
+            llvmCWrapper = nullptr;
+    }
 
-        virtual void dealloc() { ANodeAllocator->Deallocate(this); }
-        llvm::DISubprogram getDebugInfo() { return llvm::DISubprogram(debugInfo); }
-    };
+    void *operator new(size_t num_bytes) {
+        return invokeEntryAllocator->Allocate();
+    }
 
-    extern vector<OverloadPtr> patternOverloads;
+    virtual void dealloc() {
+        ANodeAllocator->Deallocate(this, sizeof(*this),
+                                   alignof(decltype(*this)));
+    }
+    llvm::DISubprogram *getDebugInfo() const {
+        return llvm::dyn_cast_or_null<llvm::DISubprogram>(debugInfo.get());
+    }
+};
 
-    struct InvokeSet {
-        ObjectPtr callable;
-        vector<TypePtr> argsKey;
-        OverloadPtr interface;
-        vector<OverloadPtr> overloads;
+extern vector<OverloadPtr> patternOverloads;
 
-        vector<MatchSuccessPtr> matches;
-        map<vector<bool>, InvokeEntry *> tempnessMap;
-        map<vector<ValueTempness>, InvokeEntry *> tempnessMap2;
+struct InvokeSet {
+    virtual ~InvokeSet() = default;
 
-        unsigned nextOverloadIndex; //:31;
+    ObjectPtr callable;
+    vector<TypePtr> argsKey;
+    OverloadPtr interface;
+    vector<OverloadPtr> overloads;
 
-        bool shouldLog: 1;
-        bool evaluatingPredicate: 1;
+    vector<MatchSuccessPtr> matches;
+    map<vector<bool>, InvokeEntry *> tempnessMap;
+    map<vector<ValueTempness>, InvokeEntry *> tempnessMap2;
 
-        InvokeSet(ObjectPtr callable,
-                  llvm::ArrayRef<TypePtr> argsKey,
-                  OverloadPtr symbolInterface,
-                  llvm::ArrayRef<OverloadPtr> symbolOverloads)
-            : callable(callable), argsKey(argsKey),
-              interface(symbolInterface),
-              overloads(symbolOverloads), nextOverloadIndex(0),
-              shouldLog(false),
-              evaluatingPredicate(false) {
-            overloads.insert(overloads.end(), patternOverloads.begin(), patternOverloads.end());
-        }
+    unsigned nextOverloadIndex; //: 31;
 
-        void *operator new(size_t num_bytes) {
-            return invokeSetAllocator->Allocate();
-        }
+    bool shouldLog : 1;
+    bool evaluatingPredicate : 1;
 
-        virtual void dealloc() { ANodeAllocator->Deallocate(this); }
-    };
+    InvokeSet(const ObjectPtr &callable, llvm::ArrayRef<TypePtr> argsKey,
+              const OverloadPtr &symbolInterface,
+              llvm::ArrayRef<OverloadPtr> symbolOverloads)
+        : callable(callable), argsKey(argsKey), interface(symbolInterface),
+          overloads(symbolOverloads), nextOverloadIndex(0), shouldLog(false),
+          evaluatingPredicate(false) {
+        overloads.insert(overloads.end(), patternOverloads.begin(),
+                         patternOverloads.end());
+    }
 
-    typedef vector<pair<OverloadPtr, MatchResultPtr> > MatchFailureVector;
+    void *operator new(size_t num_bytes) {
+        return invokeSetAllocator->Allocate();
+    }
 
-    struct MatchFailureError {
-        MatchFailureVector failures;
-        bool failedInterface: 1;
-        bool ambiguousMatch: 1;
+    virtual void dealloc() {
+        ANodeAllocator->Deallocate(this, sizeof(*this),
+                                   alignof(decltype(*this)));
+    }
+};
 
-        MatchFailureError() : failedInterface(false), ambiguousMatch(false) {
-        }
-    };
+typedef vector<pair<OverloadPtr, MatchResultPtr>> MatchFailureVector;
 
-    InvokeSet *lookupInvokeSet(ObjectPtr callable,
-                               llvm::ArrayRef<TypePtr> argsKey);
+struct MatchFailureError {
+    MatchFailureVector failures;
+    bool failedInterface : 1;
+    bool ambiguousMatch : 1;
 
-    vector<InvokeSet *> lookupInvokeSets(ObjectPtr callable);
+    MatchFailureError() : failedInterface(false), ambiguousMatch(false) {}
+};
 
-    InvokeEntry *lookupInvokeEntry(ObjectPtr callable,
-                                   llvm::ArrayRef<PVData> args,
-                                   MatchFailureError &failures);
+InvokeSet *lookupInvokeSet(ObjectPtr callable, llvm::ArrayRef<TypePtr> argsKey);
 
-    void setFinalOverloadsEnabled(bool enabled);
-}
+vector<InvokeSet *> lookupInvokeSets(ObjectPtr callable);
+
+InvokeEntry *lookupInvokeEntry(ObjectPtr callable, llvm::ArrayRef<PVData> args,
+                               MatchFailureError &failures);
+
+void setFinalOverloadsEnabled(bool enabled);
+} // namespace ceramic

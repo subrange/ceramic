@@ -25,8 +25,8 @@ class TestOptions:
     testRoot = os.path.dirname(os.path.abspath(__file__))
     runTestRoot = os.path.dirname(os.path.abspath(__file__))
     testLogFile = "testlog.txt"
-    clayCompiler = None
-    clayPlatform = None
+    ceramicCompiler = None
+    ceramicPlatform = None
     cleanUpLater = []
 
 
@@ -40,7 +40,7 @@ def indented(txt):
 
 
 #
-# getClayCompiler
+# getCeramicCompiler
 #
 
 
@@ -54,48 +54,48 @@ def which(program):
     return None
 
 
-def getClayCompiler(opt):
+def getCeramicCompiler(opt):
     buildPath = ["..", "build", "compiler"]
-    clayexe = None
+    ceramicexe = None
     if sys.platform == "win32":
-        clayexe = "clay.exe"
+        ceramicexe = "ceramic.exe"
     else:
-        clayexe = "clay"
+        ceramicexe = "ceramic"
 
-    compiler = os.path.join(opt.testRoot, *(buildPath + [clayexe]))
+    compiler = os.path.join(opt.testRoot, *(buildPath + [ceramicexe]))
     if not os.path.exists(compiler):
-        compiler = which(clayexe)
+        compiler = which(ceramicexe)
         if compiler is None:
-            print("could not find the clay compiler")
+            print("could not find the ceramic compiler")
             sys.exit(1)
     return compiler
 
 
 #
-# getClayPlatform, fileForPlatform
+# getCeramicPlatform, fileForPlatform
 #
 
 
-def getClayPlatform(opt):
+def getCeramicPlatform(opt):
     with tempfile.NamedTemporaryFile(
-        suffix=".clay", delete=False, mode="w", encoding="utf-8"
-    ) as platform_clay:
-        platform_clay.write(
+        suffix=".crm", delete=False, mode="w", encoding="utf-8"
+    ) as platform_ceramic:
+        platform_ceramic.write(
             "import core.platform.(OSString, OSFamilyString, CPUString, CPUBits);\n"
         )
-        platform_clay.write("import printer.(println);\n")
-        platform_clay.write("main() {\n")
-        platform_clay.write('    println("[Target]");\n')
-        platform_clay.write('    println("platform: ", OSString);\n')
-        platform_clay.write('    println("platform-family: ", OSFamilyString);\n')
-        platform_clay.write('    println("architecture: ", CPUString);\n')
-        platform_clay.write('    println("bits: ", CPUBits);\n')
-        platform_clay.write("    return 0;\n")
-        platform_clay.write("}\n")
-        src_path = platform_clay.name
+        platform_ceramic.write("import printer.(println);\n")
+        platform_ceramic.write("main() {\n")
+        platform_ceramic.write('    println("[Target]");\n')
+        platform_ceramic.write('    println("platform: ", OSString);\n')
+        platform_ceramic.write('    println("platform-family: ", OSFamilyString);\n')
+        platform_ceramic.write('    println("architecture: ", CPUString);\n')
+        platform_ceramic.write('    println("bits: ", CPUBits);\n')
+        platform_ceramic.write("    return 0;\n")
+        platform_ceramic.write("}\n")
+        src_path = platform_ceramic.name
 
     try:
-        cmd = [opt.clayCompiler] + opt.testBuildFlags + ["-o", "test.exe", src_path]
+        cmd = [opt.ceramicCompiler] + opt.testBuildFlags + ["-o", "test.exe", src_path]
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError:
         raise RuntimeError("could not build an executable with: " + " ".join(cmd))
@@ -127,7 +127,7 @@ def getClayPlatform(opt):
 
 
 def fileForPlatform(opt, folder, name, ext):
-    platform, family, arch, bits = opt.clayPlatform
+    platform, family, arch, bits = opt.ceramicPlatform
     platformNames = [
         "%s.%s.%s.%s.%s" % (name, platform, arch, bits, ext),
         "%s.%s.%s.%s.%s" % (name, family, arch, bits, ext),
@@ -248,9 +248,9 @@ class TestCase(object):
         TestCase.allCases.append(self)
         self.testfile = testfile
 
-    def cmdline(self, clay):
+    def cmdline(self, ceramic):
         r = (
-            [clay, "-I" + self.path, "-o", "test.exe", "-Dtest.minimal"]
+            [ceramic, "-I" + self.path, "-o", "test.exe", "-Dtest.minimal"]
             + self.opt.testBuildFlags
             + self.buildflags
             + [self.testfile]
@@ -357,7 +357,7 @@ class TestCase(object):
         outfilename = "test.exe"
         outfilename = os.path.join(".", outfilename)
         process = subprocess.Popen(
-            self.cmdline(self.opt.clayCompiler),
+            self.cmdline(self.opt.ceramicCompiler),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
@@ -426,10 +426,10 @@ class TestDisabledCase(TestCase):
 
 
 def findTestCase(opt, folder, base=None):
-    testPath = fileForPlatform(opt, folder, "test", "clay")
-    mainPath = fileForPlatform(opt, folder, "main", "clay")
-    testDisabledPath = fileForPlatform(opt, folder, "test-disabled", "clay")
-    mainDisabledPath = fileForPlatform(opt, folder, "main-disabled", "clay")
+    testPath = fileForPlatform(opt, folder, "test", "ceramic")
+    mainPath = fileForPlatform(opt, folder, "main", "ceramic")
+    testDisabledPath = fileForPlatform(opt, folder, "test-disabled", "ceramic")
+    mainDisabledPath = fileForPlatform(opt, folder, "main-disabled", "ceramic")
     if os.path.isfile(testPath):
         TestModuleCase(opt, folder, testPath, base)
     elif os.path.isfile(testDisabledPath):
@@ -467,13 +467,13 @@ def runTests(opt):
     logfile = open(opt.testLogFile, "w")
     try:
         print("[TargetPlatform]")
-        platform, family, arch, bits = opt.clayPlatform
+        platform, family, arch, bits = opt.ceramicPlatform
         print("platform:", platform)
         print("cpu:", arch)
         print("bits:", bits)
         print()
         print("[Compiler]")
-        print("exe:", opt.clayCompiler)
+        print("exe:", opt.ceramicCompiler)
         print()
         print("[Tests]")
         for test in testcases:
@@ -514,13 +514,13 @@ def runTests(opt):
 def main():
     opt = TestOptions()
 
-    argp = argparse.ArgumentParser(description="Run the Clay test suite.")
+    argp = argparse.ArgumentParser(description="Run the Ceramic test suite.")
     argp.add_argument(
         "-I",
         metavar="path",
-        dest="libClayPaths",
+        dest="libCeramicPaths",
         action="append",
-        help="Specifies the Clay module path(s) to use.",
+        help="Specifies the Ceramic module path(s) to use.",
     )
     argp.add_argument(
         "--arch",
@@ -535,17 +535,17 @@ def main():
         help="Specifies the target triple to build for.",
     )
     argp.add_argument(
-        "--clay",
+        "--ceramic",
         metavar="path",
-        dest="clayCompiler",
-        help="Use the specified clay compiler (defaults to clay on path, or in build dir).",
+        dest="ceramicCompiler",
+        help="Use the specified ceramic compiler (defaults to ceramic on path, or in build dir).",
     )
     argp.add_argument(
         "--buildflags",
         nargs="+",
         metavar="flags",
         dest="buildFlags",
-        help="Additional build flags to pass through to the Clay compiler.",
+        help="Additional build flags to pass through to the Ceramic compiler.",
     )
     argp.add_argument(
         "--root",
@@ -569,9 +569,9 @@ def main():
 
     if args.arch is not None:
         opt.testBuildFlags += ["-arch", args.arch]
-    if args.libClayPaths is not None:
+    if args.libCeramicPaths is not None:
         opt.testBuildFlags += [
-            "-I" + os.path.abspath(path) for path in args.libClayPaths
+            "-I" + os.path.abspath(path) for path in args.libCeramicPaths
         ]
     if args.target is not None:
         opt.testBuildFlags += ["-target", args.target]
@@ -585,13 +585,13 @@ def main():
     else:
         opt.runTestRoot = opt.testRoot
 
-    if args.clayCompiler is not None:
-        opt.clayCompiler = os.path.abspath(args.clayCompiler)
+    if args.ceramicCompiler is not None:
+        opt.ceramicCompiler = os.path.abspath(args.ceramicCompiler)
     else:
-        opt.clayCompiler = getClayCompiler(opt)
+        opt.ceramicCompiler = getCeramicCompiler(opt)
 
     startTime = time.time()
-    opt.clayPlatform = getClayPlatform(opt)
+    opt.ceramicPlatform = getCeramicPlatform(opt)
     runTests(opt)
     for f in opt.cleanUpLater:
         try:

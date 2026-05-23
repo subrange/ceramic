@@ -1,4 +1,4 @@
-# <a name="clayprogramminglanguagereference"></a>The Clay Programming Language
+# <a name="ceramicprogramminglanguagereference"></a>The Ceramic Programming Language
 
 ## Language Reference, version 0.1
 
@@ -15,13 +15,13 @@
 
 ### <a name="conventions"></a>Conventions
 
-BNF grammar rules are provided in `monospace` blocks beginning with `# Grammar`. Examples of Clay code are provided in monospace blocks beginning with `// Example`. Regular expressions in grammar rules are delimited by `/slashes/` and use Perl `/x` syntax; that is, whitespace between the delimiting slashes is insignificant and used for readability. Literal strings in grammar rules are delimited by `"quotation marks"`.
+BNF grammar rules are provided in `monospace` blocks beginning with `# Grammar`. Examples of Ceramic code are provided in monospace blocks beginning with `// Example`. Regular expressions in grammar rules are delimited by `/slashes/` and use Perl `/x` syntax; that is, whitespace between the delimiting slashes is insignificant and used for readability. Literal strings in grammar rules are delimited by `"quotation marks"`.
 
 ### <a name="tokenization"></a>Tokenization
 
 #### <a name="sourceencoding"></a>Source encoding
 
-Clay source code is evaluated as a stream of ASCII text. (Anything other than ASCII in string and character literals is currently passed through as an opaque stream of bytes by the compiler.)
+Ceramic source code is evaluated as a stream of ASCII text. (Anything other than ASCII in string and character literals is currently passed through as an opaque stream of bytes by the compiler.)
 
 #### <a name="whitespace"></a>Whitespace
 
@@ -36,7 +36,7 @@ ASCII space, tab, carriage return, newline, and form feed are treated as whitesp
     Comment -> "/*" /.*?/ "*/"
              | "//" /.*$/
 
-Comments in Clay come in two forms: block comments, delimited by non-nesting `/*` and `*/`, and line comments, begun with `//` and extending to the end of the current source line. Comments are treated grammatically as equivalent to a whitespace character.
+Comments in Ceramic come in two forms: block comments, delimited by non-nesting `/*` and `*/`, and line comments, begun with `//` and extending to the end of the current source line. Comments are treated grammatically as equivalent to a whitespace character.
 
 #### <a name="identifiersandkeywords"></a>Identifiers and keywords
 
@@ -89,7 +89,7 @@ Comments in Clay come in two forms: block comments, delimited by non-nesting `/*
              | "variant"
              | "while"
 
-Clay identifiers begin with an ASCII letter character, underscore (`_`), or question mark (`?`), and contain zero or more subsequent characters, which may be letters, underscores, question marks, or ASCII digits. A reserved keyword may not be used as an identifier.
+Ceramic identifiers begin with an ASCII letter character, underscore (`_`), or question mark (`?`), and contain zero or more subsequent characters, which may be letters, underscores, question marks, or ASCII digits. A reserved keyword may not be used as an identifier.
 
     // Examples of valid identifiers
     a a1 a_1 abc123 a? ?a ?
@@ -174,7 +174,7 @@ String literals represent a sequence of ASCII text. Syntactically, they consist 
 
 ### <a name="compilationstrategy"></a>Compilation strategy
 
-Clay uses a whole-program compilation strategy, with some support for interfacing compilation units through [external functions](#externalfunctions). A compilation unit originates from an entry point [module](#modules), the source file for which is specified in the compiler's command line. From that module, compilation proceeds as follows:
+Ceramic uses a whole-program compilation strategy, with some support for interfacing compilation units through [external functions](#externalfunctions). A compilation unit originates from an entry point [module](#modules), the source file for which is specified in the compiler's command line. From that module, compilation proceeds as follows:
 
 - Additional module source files are looked up and loaded based on the entry point module's [import declarations](#importdeclarations). Those modules' imports are then loaded recursively until all necessary modules have been loaded.
 - Each module's namespace is populated by visiting its import declarations and [top-level definitions](#topleveldefinitions). Namespace initialization does not rely on any evaluation so that forward and circular references among global names may be made freely.
@@ -182,11 +182,11 @@ Clay uses a whole-program compilation strategy, with some support for interfacin
   - If the entry point module contains a public symbol named `main`, it is passed to the `callMain` [operator function](#operatorfunctions), which is responsible for calling `main` with its command-line arguments. `callMain(static main)` thus becomes an entry point, ultimately corresponding to the C ABI `main` entry point.
   - For a `main` entry point, the `setArgcArgv(argc:Int32, argv:Pointer[Pointer[Int8]])` operator function is also instantiated. It is called with the `argc` and `argv` parameters from the C `main` function prior to `callMain`.
   - If the entry point module defines any [external functions](#externalfunctions), they are compiled as entry points.
-- Compilation proceeds from the established entry points. [Types](#typedefinitions), [functions](#functiondefinitions), and [global variable](#globalvariables) definitions are instantiated and compiled on-demand; if a definition is not used from any entry point, it is not visited after being parsed. (In a way, Clay can be thought of as a dynamic language in which operations normally emit LLVM as a side effect instead of performing computation directly.)
+- Compilation proceeds from the established entry points. [Types](#typedefinitions), [functions](#functiondefinitions), and [global variable](#globalvariables) definitions are instantiated and compiled on-demand; if a definition is not used from any entry point, it is not visited after being parsed. (In a way, Ceramic can be thought of as a dynamic language in which operations normally emit LLVM as a side effect instead of performing computation directly.)
 
 #### <a name="compiletimeevaluation"></a>Compile-time evaluation
 
-Clay's compiler provides a compile-time evaluator, which is used to evaluate the following things at compile time:
+Ceramic's compiler provides a compile-time evaluator, which is used to evaluate the following things at compile time:
 
 - predicates used in [pattern guards](#patternguards)
 - the parameters of parameterized [symbols](#symbols)
@@ -215,7 +215,7 @@ The compile-time evaluator follows the behavior of the runtime language for the 
 
     PatternSuffix -> "[" comma_list(Pattern) "]"
 
-In addition to evaluation, Clay also uses a simple unification-based pattern matching mechanism when matching [overloads](#overloadedfunctiondefinitions) to [call sites](#callexpressions) and when matching instance extensions to open [variant types](#variants). A pattern may consist of a [literal](#literalexpressions), a named [symbol](#symbols), or a free pattern variable, declared in a [pattern guard](#patternguards). Symbols may further be suffixed with a parameter pattern, which will be matched against an input symbol's parameters. The pattern is then matched structurally to its input value. The pattern match fails if the structure of the pattern does not match the structure of the input, or if a pattern variable is matched against multiple unequal values.
+In addition to evaluation, Ceramic also uses a simple unification-based pattern matching mechanism when matching [overloads](#overloadedfunctiondefinitions) to [call sites](#callexpressions) and when matching instance extensions to open [variant types](#variants). A pattern may consist of a [literal](#literalexpressions), a named [symbol](#symbols), or a free pattern variable, declared in a [pattern guard](#patternguards). Symbols may further be suffixed with a parameter pattern, which will be matched against an input symbol's parameters. The pattern is then matched structurally to its input value. The pattern match fails if the structure of the pattern does not match the structure of the input, or if a pattern variable is matched against multiple unequal values.
 
     // Example
     define foo;
@@ -261,9 +261,9 @@ Multiple-value patterns (including symbol parameters) may end with a trailing va
 
 ### <a name="modules"></a>Modules
 
-Clay programs are organized into modules. Modules correspond one-to-one with Clay source files. Modules are named in Clay hierarchially using dotted names; these correspond to paths in the filesystem. The name `foo.bar` corresponds to (in search order) `foo/bar.clay` or `foo/bar/bar.clay` under one of the compiler's search paths. Hierarchical names are only used for source organization, and no semantic relationship is implied among modules with hierarchically related names.
+Ceramic programs are organized into modules. Modules correspond one-to-one with Ceramic source files. Modules are named in Ceramic hierarchially using dotted names; these correspond to paths in the filesystem. The name `foo.bar` corresponds to (in search order) `foo/bar.crm` or `foo/bar/bar.crm` under one of the compiler's search paths. Hierarchical names are only used for source organization, and no semantic relationship is implied among modules with hierarchically related names.
 
-Modules form the basis of encapsulation and namespacing in Clay. Every module has an independent namespace comprising its imported modules and symbols, selected via [import declarations](#importdeclarations), and its own defined [symbols](#symbols), created by [top-level definitions](#topleveldefinitions) in the module source code. Modules can control access to their namespace from other importing modules by marking symbols as public or private.
+Modules form the basis of encapsulation and namespacing in Ceramic. Every module has an independent namespace comprising its imported modules and symbols, selected via [import declarations](#importdeclarations), and its own defined [symbols](#symbols), created by [top-level definitions](#topleveldefinitions) in the module source code. Modules can control access to their namespace from other importing modules by marking symbols as public or private.
 
 #### <a name="specialmodules"></a>Special modules
 
@@ -333,14 +333,14 @@ Operator functions are symbols defined by library code that are used by the lang
   - `exceptionInInitializer`
   - `unhandledExceptionInExternal`
 
-(Some additional, wartier operator function interfaces are currently required by the compiler as well. See `compiler/src/libclaynames.hpp` in the compiler source if you're morbidly interested.)
+(Some additional, wartier operator function interfaces are currently required by the compiler as well. See `compiler/src/libceramicnames.hpp` in the compiler source if you're morbidly interested.)
 
 ### <a name="sourcefilelayout"></a>Source file layout
 
     # Grammar
     Module -> Import* ModuleDeclaration? TopLevelLLVM? TopLevelItem*
 
-A clay module corresponds to a single source file. Source files are laid out in the following order:
+A ceramic module corresponds to a single source file. Source files are laid out in the following order:
 
 - Zero or more [import declarations](#importdeclarations)
 - An optional [module declaration](#moduledeclaration)
@@ -352,7 +352,7 @@ A clay module corresponds to a single source file. Source files are laid out in 
     # Grammar
     comma_list(Rule) -> (Rule ("," Rule)* ","?)?
 
-Comma-delimited lists are a common feature in Clay's grammar. In most contexts, Clay allows a comma-delimited list to optionally end with a trailing comma.
+Comma-delimited lists are a common feature in Ceramic's grammar. In most contexts, Ceramic allows a comma-delimited list to optionally end with a trailing comma.
 
     // Example
     record US_Address (
@@ -462,15 +462,15 @@ It is an error to import two modules or module members using the same name.
 However, it is allowed to import multiple modules with `.*` even if they contain members with conflicting names, so long as no ambiguous names are actually referenced.
 
     // Example
-    // foo.clay
+    // foo.crm
     a() { }
     b() { }
 
-    // bar.clay
+    // bar.crm
     b() { }
     c() { }
 
-    // main.clay
+    // main.crm
     import foo.*; // ok
     import bar.*; // ok
 
@@ -483,7 +483,7 @@ However, it is allowed to import multiple modules with `.*` even if they contain
 Such ambiguities can be resolved by explicitly importing the ambiguous name from one of the imported modules.
 
     // Example
-    // main.clay
+    // main.crm
     import foo.*;
     import bar.*;
     import bar.(b);
@@ -497,7 +497,7 @@ Such ambiguities can be resolved by explicitly importing the ambiguous name from
 A name defined in the current module may also shadow a name imported by `.*`, in which case the current module's definition takes precedence.
 
     // Example
-    // main.clay
+    // main.crm
     import foo.*;
     import bar.*;
 
@@ -534,10 +534,10 @@ Such a declaration must appear after any [import declarations](#importdeclaratio
 The module attribute list can be an arbitrary [multiple value expression](#multiplevalueexpressions), which can reference any imported symbols but not symbols defined within the module itself.
 
     // Example
-    // foo.clay
+    // foo.crm
     GraphicsModuleAttributes() = Float32, Int32;
 
-    // bar.clay
+    // bar.crm
     import foo;
 
     in bar (..foo.GraphicsModuleAttributes());
@@ -575,7 +575,7 @@ A module may optionally contain a top-level block of LLVM assembly language. The
         ret i8* null
     }
 
-Clay static values can be interpolated into LLVM code using LLVM interpolation as described for [inline LLVM functions](#inlinellvmfunctions).
+Ceramic static values can be interpolated into LLVM code using LLVM interpolation as described for [inline LLVM functions](#inlinellvmfunctions).
 
 #### <a name="topleveldefinitions"></a>Top-level definitions
 
@@ -592,13 +592,13 @@ Clay static values can be interpolated into LLVM code using LLVM interpolation a
                   | GlobalAlias
                   | ExternalVariable
 
-Top-level definitions make up the meat of Clay source code and come in three general flavors:
+Top-level definitions make up the meat of Ceramic source code and come in three general flavors:
 
 - [Type definitions](#typedefinitions)
 - [Function definitions](#functiondefinitions)
 - [Global value definitions](#globalvaluedefinitions)
 
-Clay uses a two-pass loading mechanism. Modules are imported and their namespaces populated in one pass before any definitions are evaluated. Forward and circular references are thus possible without requiring forward declarations.
+Ceramic uses a two-pass loading mechanism. Modules are imported and their namespaces populated in one pass before any definitions are evaluated. Forward and circular references are thus possible without requiring forward declarations.
 
     // Example
     // Mutually recursive functions
@@ -609,7 +609,7 @@ Clay uses a two-pass loading mechanism. Modules are imported and their namespace
     record Ping (pong:Pointer[Pong]);
     record Pong (ping:Pointer[Ping]);
 
-Most top-level definitions in Clay share common syntactic features:
+Most top-level definitions in Ceramic share common syntactic features:
 
 ##### <a name="patternguards"></a>Pattern guards
 
@@ -617,7 +617,7 @@ Most top-level definitions in Clay share common syntactic features:
     PatternGuard -> "[" comma_list(PatternVar) ("|" Expression)? "]"
     PatternVar -> Identifier | ".." Identifier
 
-Most definition forms in Clay can be genericized. Pattern guards provide the means for declaring and controlling generic behavior. A simple pattern guard declares zero or more pattern variable names enclosed in brackets, which can be used as generic types or as type parameters in the subsequent definition.
+Most definition forms in Ceramic can be genericized. Pattern guards provide the means for declaring and controlling generic behavior. A simple pattern guard declares zero or more pattern variable names enclosed in brackets, which can be used as generic types or as type parameters in the subsequent definition.
 
     // Example
     // Define printTwice for all types T
@@ -698,13 +698,13 @@ Top-level forms work by creating or modifying symbols, which are module-level gl
 Static strings (also referred to as identifiers in some places, though that causes confusion with [identifier tokens](#identifiersandkeywords)), are similar to symbols in that they have no runtime state and implicitly evaluate to singleton `Static[identifier]` types. Unlike symbols, static strings are not associated with any module. A static string is referenced by a [string literal](#stringliterals) prefixed with a `#` token; the same static string is identical everywhere. A static string that is a valid [identifier token](#identifiersandkeywords) may also be referenced as a bare identifier prefixed with a `#`.
 
     // Example
-    // a.clay
+    // a.crm
     foo() = #"foo";
 
-    // b.clay
+    // b.crm
     foo() = #foo;
 
-    // main.clay
+    // main.crm
     import a;
     import b;
 
@@ -719,7 +719,7 @@ Static strings are used as operands to the `fieldRef` [operator function](#opera
 
 ### <a name="typedefinitions"></a>Type definitions
 
-Clay provides four different kinds of user-defined types:
+Ceramic provides four different kinds of user-defined types:
 
 - [Records](#records)
 - [Variants](#variants)
@@ -878,7 +878,7 @@ Lambda types are record-like types that capture values from their enclosing scop
 
 ### <a name="functiondefinitions"></a>Function definitions
 
-Function definitions control most of Clay's compile-time and run-time behavior. Clay functions are inherently generic. They can be parameterized to provide equivalent behavior over a variety of types or compile-time values, and they can be overloaded to provide divergent implementations of a common interface. Runtime functions are instantiated for every valid set of input types with which they are invoked.
+Function definitions control most of Ceramic's compile-time and run-time behavior. Ceramic functions are inherently generic. They can be parameterized to provide equivalent behavior over a variety of types or compile-time values, and they can be overloaded to provide divergent implementations of a common interface. Runtime functions are instantiated for every valid set of input types with which they are invoked.
 
 - [Simple function definitions](#simplefunctiondefinitions)
 - [Overloaded function definitions](#overloadedfunctiondefinitions)
@@ -994,17 +994,17 @@ Within a module, overloads are matched to a call site's symbol name and argument
 Match order among overloads from different modules is done walking the import graph depth-first. (If you think is this _really_ stupid, you are correct.) Resolution order among circularly-dependent modules is undefined.
 
     // Example
-    // a.clay
+    // a.crm
     define foo(x);
     // visited last
     overload foo(x:Int) {}
 
-    // b.clay
+    // b.crm
     import a;
     // visited second
     overload a.foo(x:Int) {}
 
-    // c.clay
+    // c.crm
     import b;
     import a;
     // visited first
@@ -1120,7 +1120,7 @@ The types of the variadic argument's values may be bound to a variadic pattern v
     # Grammar
     ReferenceQualifier -> "ref" | "rvalue" | "forward"
 
-Argument declarations may be prefixed with an optional reference qualifier. Clay distinguishes "lvalues", which are values bound to a variable, referenced through a pointer, or otherwise with externally-referenceable identities, from "rvalues", which are unnamed temporary values that will exist only for the extent of a single function call. (The terms come from an lvalue being a valid expression on the **L**eft side of an assignment statement, whereas an rvalue is only valid on the **R**ight side.) Local and global variables are lvalues, as are any expressions that [return by reference](#returnstatements); the results of return-by-value expressions are rvalues.
+Argument declarations may be prefixed with an optional reference qualifier. Ceramic distinguishes "lvalues", which are values bound to a variable, referenced through a pointer, or otherwise with externally-referenceable identities, from "rvalues", which are unnamed temporary values that will exist only for the extent of a single function call. (The terms come from an lvalue being a valid expression on the **L**eft side of an assignment statement, whereas an rvalue is only valid on the **R**ight side.) Local and global variables are lvalues, as are any expressions that [return by reference](#returnstatements); the results of return-by-value expressions are rvalues.
 
     // Example
     // The result of `2+2` in this example is bound to `x` and is thus an lvalue
@@ -1337,7 +1337,7 @@ If the function body consists of a single `return` statement, a shorthand form i
 
 A function may also be implemented directly in LLVM assembly language by specifying the body as an `__llvm__` block. The contents of the block will be emitted literally into the function's body.
 
-LLVM blocks currently leak an unfortunate amount of implementation detail. To return values into Clay, named returns must be used. Arguments and named return values are bound as LLVM pointers of the corresponding LLVM type; for instance, an argument `x:Int32` will be available as the `i32*`-typed value `%x` in the LLVM code. Clay functions internally return a value of type `i8*` which should normally be null; thus, all LLVM basic blocks that exit the function must end with `ret i8* null`.
+LLVM blocks currently leak an unfortunate amount of implementation detail. To return values into Ceramic, named returns must be used. Arguments and named return values are bound as LLVM pointers of the corresponding LLVM type; for instance, an argument `x:Int32` will be available as the `i32*`-typed value `%x` in the LLVM code. Ceramic functions internally return a value of type `i8*` which should normally be null; thus, all LLVM basic blocks that exit the function must end with `ret i8* null`.
 
     // Example
     // Who needs `__primitives__.numericAdd`?
@@ -1376,7 +1376,7 @@ Inline LLVM function bodies currently cannot be evaluated at compile time.
 
 Any simple function or overload definition may be modified by an optional `inline` or `alias` attribute:
 
-- `inline` functions are compiled directly into their caller after their arguments are evaluated. If inlining is impossible (for instance, if the function is recursive), a compile-time error is raised. `inline` function code is also rendered invisible to debuggers or other source analysis tools. Clay's `inline` is intended primarily for trivial operator definitions rather than as the weaker code generation/linkage hint provided by C99 or C++'s `inline` modifiers.
+- `inline` functions are compiled directly into their caller after their arguments are evaluated. If inlining is impossible (for instance, if the function is recursive), a compile-time error is raised. `inline` function code is also rendered invisible to debuggers or other source analysis tools. Ceramic's `inline` is intended primarily for trivial operator definitions rather than as the weaker code generation/linkage hint provided by C99 or C++'s `inline` modifiers.
 - `alias` functions evaluate their arguments using call-by-name semantics. In short, alias functions behave like C preprocessor macros without the hygiene or precedence issues. In detail: The caller, instead of evaluating the alias function's arguments and passing the values to the function, will pass the argument expressions themselves into the function as closure-like entities. Unlike actual [lambda expressions](#lambdaexpressions), references into the caller's scope from alias arguments are statically resolved. Argument expressions are evaluated inside the alias function every time they are referenced. Alias functions are implicitly specialized on their source location and thus can use [compilation context operators](#compilationcontextoperators) to query their source location and other compilation context information.
 
   // Example
@@ -1408,9 +1408,9 @@ Any simple function or overload definition may be modified by an optional `inlin
 
     ExternalArg -> Identifier TypeSpec
 
-Normal Clay functions are generated with internal linkage, and are compiled and linked together into an executable or object file as a single compilation unit. External function definitions must be used to define the interface with code from outside the unit, whether it be Clay code calling out to existing C or C++ libraries, or C, C++, or Clay code wanting to call into a precompiled Clay library.
+Normal Ceramic functions are generated with internal linkage, and are compiled and linked together into an executable or object file as a single compilation unit. External function definitions must be used to define the interface with code from outside the unit, whether it be Ceramic code calling out to existing C or C++ libraries, or C, C++, or Ceramic code wanting to call into a precompiled Ceramic library.
 
-An external definition without a function body declares an external entry point for access by Clay code. Variadic C functions may also be declared by including a trailing `..` token in the declared argument list.
+An external definition without a function body declares an external entry point for access by Ceramic code. Variadic C functions may also be declared by including a trailing `..` token in the declared argument list.
 
     // Example
     // Call out to `puts` and `printf` from libc
@@ -1422,11 +1422,11 @@ An external definition without a function body declares an external entry point 
         printf(cstring("1 + 1 = %d"), 1 + 1);
     }
 
-An external definition with a body defines a Clay function with external linkage. The function will use C's symbol naming and calling convention (including passed-by-value arguments), in order to be linkable from C or other C-compatible language code.
+An external definition with a body defines a Ceramic function with external linkage. The function will use C's symbol naming and calling convention (including passed-by-value arguments), in order to be linkable from C or other C-compatible language code.
 
     // Example
-    // square.clay:
-    // Implement an function in Clay and make it available to C.
+    // square.crm:
+    // Implement an function in Ceramic and make it available to C.
     external square(x:Float64) : Float64 = x*x;
 
     /*
@@ -1440,13 +1440,13 @@ An external definition with a body defines a Clay function with external linkage
         printf("%g\n", square(2.0));
     }
 
-Compared to internal Clay functions, external functions have several limitations:
+Compared to internal Ceramic functions, external functions have several limitations:
 
 - External functions cannot be generic. Their argument and return types must be fully specified. Return types cannot be inferred, and named return bindings cannot be used. The definition cannot include a pattern guard. External functions cannot be overloaded.
 - External functions may return only zero or one values.
-- `<stdarg.h>`-compatible variadic C functions may be declared and called from Clay, but implementing C variadic functions is currently unsupported.
-- Clay exceptions cannot currently be propagated across an external boundary. A Clay exception that is unhandled in an external function will be passed to the `unhandledExceptionInExternal` [operator](#operator) function.
-- Clay types with nontrivial `copy` or `destroy` [operator function](#operatorfunctions) overloads may not be passed by value to external functions. They must be passed by pointer instead.
+- `<stdarg.h>`-compatible variadic C functions may be declared and called from Ceramic, but implementing C variadic functions is currently unsupported.
+- Ceramic exceptions cannot currently be propagated across an external boundary. A Ceramic exception that is unhandled in an external function will be passed to the `unhandledExceptionInExternal` [operator](#operator) function.
+- Ceramic types with nontrivial `copy` or `destroy` [operator function](#operatorfunctions) overloads may not be passed by value to external functions. They must be passed by pointer instead.
 
 Although they define a top-level name, external function names are not true [symbols](#symbols). An external function's name instead evaluates directly to a value of the primitive `CCodePointer[[..InTypes], [..OutTypes]]` type representing the external's function pointer.
 
@@ -1479,7 +1479,7 @@ In the `__primitives__` module, symbols are provided that, when used as external
 - [Global variables](#globalvariables)
 - [External variables](#externalvariables)
 
-Like many old-fashioned languages, Clay supports global state.
+Like many old-fashioned languages, Ceramic supports global state.
 
 #### <a name="globalaliases"></a>Global aliases
 
@@ -1612,7 +1612,7 @@ Like [external functions](#externalfunctions), external variable definitions may
     // Example
     external ("____errno$OBSCURECOMPATIBILITYTAG") errno : Int;
 
-Externally-linkable global variables defined in Clay are currently unsupported. External variables cannot currently be evaluated by the compile-time evaluator.
+Externally-linkable global variables defined in Ceramic are currently unsupported. External variables cannot currently be evaluated by the compile-time evaluator.
 
 ### <a name="statements"></a>Statements
 
@@ -1959,7 +1959,7 @@ If the left-hand expression is a single [index](#indexoperator), [static index](
 
 Property assignment operators are currently only supported for single assignment. Multiple-value assignment will always be evaluated, `move`d, and `assign`ed as described above.
 
-Assignment is a statement in Clay. Attempting to use assignment in an expression is a syntax error.
+Assignment is a statement in Ceramic. Attempting to use assignment in an expression is a syntax error.
 
     // Example
     foo(x) {
@@ -1970,7 +1970,7 @@ Assignment is a statement in Clay. Attempting to use assignment in an expression
 
 ##### <a name="updateassignmentstatements"></a>Update assignment statements
 
-Like other C-like languages, Clay provides special assignment syntax for updating a value using one of the [additive operators](#additiveoperators) or [multiplicative operators](#multiplicativeoperators).
+Like other C-like languages, Ceramic provides special assignment syntax for updating a value using one of the [additive operators](#additiveoperators) or [multiplicative operators](#multiplicativeoperators).
 
     // Example
     main() {
@@ -2108,7 +2108,7 @@ Switch statements dispatch to one of several branches based on the value of an e
         printTo(stream, " of ", card.suit);
     }
 
-Unlike other languages with `switch` forms, Clay does not allow "fall-through" between cases.
+Unlike other languages with `switch` forms, Ceramic does not allow "fall-through" between cases.
 
 #### <a name="loopstatements"></a>Loop statements
 
@@ -2218,7 +2218,7 @@ Branch statements provide nonlocal control flow within a function.
 
 #### <a name="exceptionhandlingstatements"></a>Exception handling statements
 
-Clay optionally supports exception handling. The `ExceptionsEnabled?` global alias from the `__primitives__` module will evaluate to true when exceptions are enabled for the current compilation unit. Regardless of whether exception handling is enabled at runtime, the compile-time evaluator does not currently support exception handling; the compile-time evaluator always behaves as if exceptions are disabled.
+Ceramic optionally supports exception handling. The `ExceptionsEnabled?` global alias from the `__primitives__` module will evaluate to true when exceptions are enabled for the current compilation unit. Regardless of whether exception handling is enabled at runtime, the compile-time evaluator does not currently support exception handling; the compile-time evaluator always behaves as if exceptions are disabled.
 
 ##### <a name="throwstatements"></a>Throw statements
 
@@ -2259,7 +2259,7 @@ Try statements execute their associated block normally. If an exception occurs d
         }
     }
 
-A series of catch clauses desugars into the try block's exception handler as a series of `if` statements constructed from the `exceptionIs?`, `exceptionAs`, `exceptionAsAny`, and `continueException` [operator functions](#operatorfunctions), with some additional help from the `activeException` primitive function from the `__primitives__` module, which returns a pointer to the exception that instigated the current unwinding. Clay does not yet provide a facility for fully manually coding a handler.
+A series of catch clauses desugars into the try block's exception handler as a series of `if` statements constructed from the `exceptionIs?`, `exceptionAs`, `exceptionAsAny`, and `continueException` [operator functions](#operatorfunctions), with some additional help from the `activeException` primitive function from the `__primitives__` module, which returns a pointer to the exception that instigated the current unwinding. Ceramic does not yet provide a facility for fully manually coding a handler.
 
     // Example
     foo(x) {
@@ -2346,7 +2346,7 @@ If exceptions are disabled, `onerror` scope guards are ignored. `finally` scope 
 
     EvalStatement -> "eval" ExprList ";"
 
-Eval statements provide compile-time access to the Clay parser. The associated [multiple value expression](#multiplevalueexpressions) is evaluated at compile time and concatenated into a [static string](#staticstrings), which is then parsed and expanded into one or more statements. Those statements then take the eval statement's place in execution. Eval statements may synthesize any statement, including new variable bindings.
+Eval statements provide compile-time access to the Ceramic parser. The associated [multiple value expression](#multiplevalueexpressions) is evaluated at compile time and concatenated into a [static string](#staticstrings), which is then parsed and expanded into one or more statements. Those statements then take the eval statement's place in execution. Eval statements may synthesize any statement, including new variable bindings.
 
     // Example
     main() {
@@ -2369,7 +2369,7 @@ Eval statements provide compile-time access to the Clay parser. The associated [
 
 ### <a name="expressions"></a>Expressions
 
-Expressions describe how values flow among functions in a computation. Clay provides a hierarchy of operators with which to construct expressions. Many operators are syntactic sugar for overloadable [operator functions](#operatorfunctions). The precedence hierarchy for Clay is summarized below, from highest to lowest precedence, along with sample syntax and associated operator functions where appropriate.
+Expressions describe how values flow among functions in a computation. Ceramic provides a hierarchy of operators with which to construct expressions. Many operators are syntactic sugar for overloadable [operator functions](#operatorfunctions). The precedence hierarchy for Ceramic is summarized below, from highest to lowest precedence, along with sample syntax and associated operator functions where appropriate.
 
 - Atomic expressions
   - [Name references](#namereferences)
@@ -2566,7 +2566,7 @@ Tuple expressions are used to construct tuple objects. They are evaluated by pas
     # Grammar
     EvalExpr -> "eval" Expression
 
-Like [eval statements](#evalstatements), eval expressions provide access to the Clay parser at compile time, but in expression context. The given expression is evaluated at compile time into a [static string](#staticstrings), and the result is parsed as an expression and evaluated in place of the `eval` form.
+Like [eval statements](#evalstatements), eval expressions provide access to the Ceramic parser at compile time, but in expression context. The given expression is evaluated at compile time into a [static string](#staticstrings), and the result is parsed as an expression and evaluated in place of the `eval` form.
 
     // Example
     main() {
@@ -3016,7 +3016,7 @@ In either case, an anonymous [record type](#record) is synthesized to store the 
     # Grammar
     ExprList -> comma_list(Expression)
 
-Clay functions, and thereby most expression forms, can return multiple values. The comma operator concatenates values into a multiple value list.
+Ceramic functions, and thereby most expression forms, can return multiple values. The comma operator concatenates values into a multiple value list.
 
     // Example
     twoThroughFour() = 2, 3, 4;

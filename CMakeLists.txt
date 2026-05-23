@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.25)
-project(clay)
+project(ceramic)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 find_package(Git)
@@ -35,17 +36,19 @@ if(UNIX)
     if (NOT ${LLVM_CONFIG_VERSION_RESULT} EQUAL 0)
         message(FATAL_ERROR "${LLVM_CONFIG} failed")
     endif()
+    if(LLVM_VERSION VERSION_LESS 18.0)
+        message(FATAL_ERROR "LLVM 18 or newer is required. Found ${LLVM_VERSION}")
+    endif()
 
     execute_process(
         COMMAND ${LLVM_CONFIG} --cxxflags
         OUTPUT_VARIABLE LLVM_CXXFLAGS
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    set(LLVM_CXXFLAGS "${LLVM_CXXFLAGS}")
     separate_arguments(LLVM_CXXFLAGS)
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(LLVM_CXXFLAGS "${LLVM_CXXFLAGS} -O0")
+        list(APPEND LLVM_CXXFLAGS -O0)
     endif()
 
     execute_process(
@@ -79,7 +82,6 @@ if(UNIX)
         OUTPUT_VARIABLE LLVM_INCLUDEDIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    set(LLVM_INCLUDEDIR "${LLVM_INCLUDEDIR}")
 
     message("-- Using LLVM: ${LLVM_DIR}")
     message("-- LLVM include dir: ${LLVM_INCLUDEDIR}")
@@ -90,6 +92,7 @@ if(UNIX)
 
 elseif(WIN32)
 
+    # TODO: unverified, port to find_package(LLVM CONFIG) + llvm_map_components_to_libnames.
     set(LLVM_DIR "$ENV{ProgramFiles}/LLVM" CACHE PATH "llvm install path")
 
     if(IS_DIRECTORY ${LLVM_DIR})
@@ -115,13 +118,9 @@ elseif(WIN32)
 
 endif()
 
-set(BUILD_BINDGEN True CACHE BOOL
-    "Build the clay-bindgen tool for generating Clay bindings from C header files."
-)
-
-install(DIRECTORY doc/        DESTINATION share/doc/clay)
-install(DIRECTORY examples/   DESTINATION share/doc/clay/examples)
-install(DIRECTORY lib-clay    DESTINATION lib)
+install(DIRECTORY doc/        DESTINATION share/doc/ceramic)
+install(DIRECTORY examples/   DESTINATION share/doc/ceramic/examples)
+install(DIRECTORY lib-ceramic    DESTINATION lib)
 
 add_subdirectory(compiler)
 
@@ -135,5 +134,5 @@ add_custom_target(test
     --buildflags="-Dtest.minimal"
 )
 
-add_dependencies(test clay)
+add_dependencies(test ceramic)
 

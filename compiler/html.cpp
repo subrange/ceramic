@@ -1,9 +1,9 @@
-#include "claydoc.hpp"
+#include "ceramicdoc.hpp"
+#include <errno.h>
 #include <fstream>
 #include <sstream>
-#include <errno.h>
 
-using namespace clay;
+using namespace ceramic;
 using namespace std;
 
 static void htmlEncode(std::string &data) {
@@ -11,18 +11,24 @@ static void htmlEncode(std::string &data) {
     buffer.reserve(data.size());
     for (size_t pos = 0; pos != data.size(); ++pos) {
         switch (data[pos]) {
-            case '&': buffer.append("&amp;");
-                break;
-            case '\"': buffer.append("&quot;");
-                break;
-            case '\'': buffer.append("&apos;");
-                break;
-            case '<': buffer.append("&lt;");
-                break;
-            case '>': buffer.append("&gt;");
-                break;
-            default: buffer.append(1, data[pos]);
-                break;
+        case '&':
+            buffer.append("&amp;");
+            break;
+        case '\"':
+            buffer.append("&quot;");
+            break;
+        case '\'':
+            buffer.append("&apos;");
+            break;
+        case '<':
+            buffer.append("&lt;");
+            break;
+        case '>':
+            buffer.append("&gt;");
+            break;
+        default:
+            buffer.append(1, data[pos]);
+            break;
         }
     }
     data.swap(buffer);
@@ -40,12 +46,13 @@ static void emitInlineDoc(std::ostream &o, const std::string &str) {
     o << "</div>\n";
 }
 
-static void emitHtmlOverload(std::ostream &o, DocState *state, DocObject *item) {
-    clay::OverloadPtr overload = (clay::Overload *) item->item.ptr();
+static void emitHtmlOverload(std::ostream &o, DocState *state,
+                             DocObject *item) {
+    ceramic::OverloadPtr overload = (ceramic::Overload *)item->item.ptr();
     std::string htmlName(item->name);
     htmlEncode(htmlName);
     o << "<div class='overload'> <h3> ";
-    clay::CodePtr code = overload->code;
+    ceramic::CodePtr code = overload->code;
 
     if (!!code->predicate) {
         std::string pred = code->predicate->asString();
@@ -54,7 +61,8 @@ static void emitHtmlOverload(std::ostream &o, DocState *state, DocObject *item) 
     }
 
     if (state->references[item->name])
-        o << "<a class='reference' href='" << state->references[item->name]->fqn << ".html#" << htmlName << "'> ";
+        o << "<a class='reference' href='" << state->references[item->name]->fqn
+          << ".html#" << htmlName << "'> ";
     else
         o << "<span class='brokenreference'>";
 
@@ -77,7 +85,8 @@ static void emitHtmlOverload(std::ostream &o, DocState *state, DocObject *item) 
         if (!!arg->name) {
             std::string name = identifierString(arg->name);
             htmlEncode(name);
-            o << "    <span class='functionArgumentName' > " << name << "</span>";
+            o << "    <span class='functionArgumentName' > " << name
+              << "</span>";
         }
         if (!!arg->type) {
             std::string type = arg->type->asString();
@@ -95,14 +104,15 @@ static void emitHtmlOverload(std::ostream &o, DocState *state, DocObject *item) 
     o << "</div>" << endl;
 }
 
-static void emitHtmlProcedure(std::ostream &o, DocState *state, DocObject *item) {
+static void emitHtmlProcedure(std::ostream &o, DocState *state,
+                              DocObject *item) {
     std::string htmlName(item->name);
     htmlEncode(htmlName);
     o << "<div class='definition'> "
-            << "<h3>"
-            << "<a name='" << htmlName << "'>"
-            << "<span class='keyword'> public </span>"
-            << "<span class='identifier'>" << htmlName << "</span>  </a> </h3>";
+      << "<h3>"
+      << "<a name='" << htmlName << "'>"
+      << "<span class='keyword'> public </span>"
+      << "<span class='identifier'>" << htmlName << "</span>  </a> </h3>";
     emitInlineDoc(o, item->description);
     o << "</div>" << endl;
 }
@@ -111,30 +121,30 @@ static void emitHtmlRecord(std::ostream &o, DocState *state, DocObject *item) {
     std::string htmlName(item->name);
     htmlEncode(htmlName);
     o << "<div class='record'> "
-            << "<h3>"
-            << "<a name='" << htmlName << "'>"
-            << "<span class='keyword'> record </span>"
-            << "<span class='identifier'>" << htmlName << "</span>  </a> </h3>";
+      << "<h3>"
+      << "<a name='" << htmlName << "'>"
+      << "<span class='keyword'> record </span>"
+      << "<span class='identifier'>" << htmlName << "</span>  </a> </h3>";
     emitInlineDoc(o, item->description);
     o << "</div>" << endl;
 }
 
 static void emitHtmlHeader(std::ostream &o, std::string title) {
     o << "<!doctype html>\n"
-            << "<html lang='en'>\n"
-            << "<head>\n"
-            << "<title>" << title << "</title>\n"
-            << "<link rel='stylesheet' href='style.css'>\n"
-            << "</head><body>"
-            << "<div id='navigation'><ul>\n"
-            << "  <li><a href='index.html'> Module Index </a> </li>\n"
-            << "</ul><div class='post-ul'></div></div> \n"
-            << "<div id='main'> \n";
+      << "<html lang='en'>\n"
+      << "<head>\n"
+      << "<title>" << title << "</title>\n"
+      << "<link rel='stylesheet' href='style.css'>\n"
+      << "</head><body>"
+      << "<div id='navigation'><ul>\n"
+      << "  <li><a href='index.html'> Module Index </a> </li>\n"
+      << "</ul><div class='post-ul'></div></div> \n"
+      << "<div id='main'> \n";
 }
 
 static void emitHtmlFooter(std::ostream &o) {
     o << "\n</div>\n"
-            << "\n</body>\n</html>\n";
+      << "\n</body>\n</html>\n";
 }
 
 void emitHtmlModule(std::string outpath, DocState *state, DocModule *mod) {
@@ -146,7 +156,8 @@ void emitHtmlModule(std::string outpath, DocState *state, DocModule *mod) {
         exit(errno);
     }
     emitHtmlHeader(o, mod->fqn);
-    o << "<div id='mainContentOuter'> <div id='mainContentHeader'>   \n<h1>" << mod->fqn << "</h1> \n";
+    o << "<div id='mainContentOuter'> <div id='mainContentHeader'>   \n<h1>"
+      << mod->fqn << "</h1> \n";
     emitInlineDoc(o, mod->description);
     o << "</div><div id='mainContentInner'>";
 
@@ -159,17 +170,17 @@ void emitHtmlModule(std::string outpath, DocState *state, DocModule *mod) {
         for (std::vector<DocObject *>::iterator i2 = (*it)->objects.begin();
              i2 != (*it)->objects.end(); i2++) {
             switch ((*i2)->item->objKind) {
-                case clay::PROCEDURE:
-                    emitHtmlProcedure(o, state, *i2);
-                    break;
-                case clay::RECORD_DECL:
-                    emitHtmlRecord(o, state, *i2);
-                    break;
-                case clay::OVERLOAD:
-                    emitHtmlOverload(o, state, *i2);
-                    break;
-                default: {
-                } // make compiler happy
+            case ceramic::PROCEDURE:
+                emitHtmlProcedure(o, state, *i2);
+                break;
+            case ceramic::RECORD_DECL:
+                emitHtmlRecord(o, state, *i2);
+                break;
+            case ceramic::OVERLOAD:
+                emitHtmlOverload(o, state, *i2);
+                break;
+            default: {
+            } // make compiler happy
             }
         }
         o << "</section>" << endl;
@@ -194,7 +205,8 @@ void emitHtmlIndex(std::string outpath, DocState *state) {
 
     char a = 0;
 
-    for (std::map<std::string, DocModule *>::iterator j = state->modules.begin();
+    for (std::map<std::string, DocModule *>::iterator j =
+             state->modules.begin();
          j != state->modules.end(); j++) {
         if (j->first.empty())
             continue;
@@ -203,11 +215,14 @@ void emitHtmlIndex(std::string outpath, DocState *state) {
             if (a != 0)
                 index << "</ul></section>";
             a = j->first.at(0);
-            index << "<section class='moduleIndexSection' ><h2 class='moduleIndexSectionHeader'>" << a << "</h2> <ul>";
+            index << "<section class='moduleIndexSection' ><h2 "
+                     "class='moduleIndexSectionHeader'>"
+                  << a << "</h2> <ul>";
         }
 
-        index << "<li class='moduleIndexItem'> <a href='" << string(j->first) + ".html" << "'> " << string(j->first) <<
-                " </a> </li>\n";
+        index << "<li class='moduleIndexItem'> <a href='"
+              << string(j->first) + ".html" << "'> " << string(j->first)
+              << " </a> </li>\n";
         emitHtmlModule(outpath, state, j->second);
     }
 

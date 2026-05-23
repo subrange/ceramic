@@ -1,42 +1,41 @@
+#include <iostream>
 #include <vector>
 
-#include "ut.hpp"
 #include "parachute.hpp"
+#include "ut.hpp"
 
-using namespace std;
+namespace ceramic {
+struct Test {
+    const char *name;
+    TestFunc func;
+};
 
-namespace clay {
-    struct Test {
-        const char *name;
-        TestFunc func;
-    };
+static std::vector<Test> *tests;
 
-    static vector<Test> *tests;
-
-    void register_test(const char *name, const TestFunc func) {
-        if (tests == nullptr) {
-            tests = new vector<Test>;
-        }
-        tests->push_back(Test());
-        tests->back().name = name;
-        tests->back().func = func;
+void register_test(const char *name, const TestFunc func) {
+    if (tests == nullptr) {
+        tests = new std::vector<Test>;
     }
-
-    int real_main(int argc, char **argv, char const *const *envp) {
-        for (const auto test : *tests) {
-            printf("%s...\n", test.name);
-            try {
-                test.func();
-
-                printf("%s OK\n", test.name);
-            } catch (const AssertionError &) {
-                printf("%s FAILED\n", test.name);
-            }
-        }
-        return 0;
-    }
+    tests->emplace_back();
+    tests->back().name = name;
+    tests->back().func = func;
 }
 
+int real_main(int argc, char **argv, char const *const *envp) {
+    for (const auto test : *tests) {
+        std::cout << test.name << "...\n";
+        try {
+            test.func();
+
+            std::cout << test.name << " OK\n";
+        } catch (const AssertionError &) {
+            std::cout << test.name << " FAILED\n";
+        }
+    }
+    return 0;
+}
+} // namespace ceramic
+
 int main(const int argc, char **argv, char const *const *envp) {
-    return clay::parachute(&clay::real_main, argc, argv, envp);
+    return ceramic::parachute(&ceramic::real_main, argc, argv, envp);
 }

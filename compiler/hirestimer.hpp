@@ -1,15 +1,15 @@
 #pragma once
 
-namespace clay {
-    struct HiResTimer {
-        unsigned long long elapsedTicks;
-        unsigned long long startTicks;
-        int running;
+namespace ceramic {
+struct HiResTimer {
+    unsigned long long elapsedTicks;
+    unsigned long long startTicks;
+    int running;
 
-        HiResTimer();
-        void start();
-        void stop();
-        unsigned long long elapsedNanos();
-        double elapsedMillis() { return (double) elapsedNanos() / (1000 * 1000); }
-    };
-}
+    HiResTimer();
+    void start();
+    void stop();
+    unsigned long long elapsedNanos();
+    double elapsedMillis() { return (double)elapsedNanos() / (1000 * 1000); }
+};
+} // namespace ceramic

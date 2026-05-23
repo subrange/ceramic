@@ -1,7 +1,7 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
-    MultiPValuePtr analyzePrimOp(PrimOpPtr x, MultiPValuePtr args);
+namespace ceramic {
+MultiPValuePtr analyzePrimOp(PrimOpPtr x, MultiPValuePtr args);
 }

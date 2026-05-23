@@ -1,710 +1,711 @@
-#include "clay.hpp"
-#include "codegen.hpp"
-#include "operators.hpp"
 #include "lambdas.hpp"
-#include "desugar.hpp"
 #include "analyzer.hpp"
-#include "loader.hpp"
+#include "ceramic.hpp"
+#include "codegen.hpp"
+#include "desugar.hpp"
 #include "env.hpp"
 #include "error.hpp"
-
-namespace clay {
-    struct LambdaContext {
-        LambdaCapture captureBy;
-        EnvPtr nonLocalEnv;
-        llvm::StringRef closureDataName;
-        vector<string> &freeVars;
-
-        LambdaContext(LambdaCapture captureBy,
-                      EnvPtr nonLocalEnv,
-                      llvm::StringRef closureDataName,
-                      vector<string> &freeVars)
-            : captureBy(captureBy), nonLocalEnv(nonLocalEnv),
-              closureDataName(closureDataName), freeVars(freeVars) {
-        }
-    };
-
-    void convertFreeVars(LambdaPtr x, EnvPtr env,
-                         llvm::StringRef closureDataName,
-                         vector<string> &freeVars);
-
-    void convertFreeVars(StatementPtr x, EnvPtr env, LambdaContext &ctx);
-
-    void convertFreeVars(ExprPtr &x, EnvPtr env, LambdaContext &ctx);
-
-    void convertFreeVars(ExprList *x, EnvPtr env, LambdaContext &ctx);
-    
-    //
-    // initializeLambda
-    //
-
-    static TypePtr typeOfValue(ObjectPtr obj) {
-        switch (obj->objKind) {
-            case PVALUE: return ((PValue *) obj.ptr())->data.type;
-            case CVALUE: return ((CValue *) obj.ptr())->type;
-            default: assert(false);
-                return nullptr;
-        }
-    }
-
-    static vector<TypePtr> typesOfValues(ObjectPtr obj) {
-        vector<TypePtr> types;
-        switch (obj->objKind) {
-            case MULTI_PVALUE: {
-                MultiPValue *mpv = (MultiPValue *) obj.ptr();
-                for (unsigned i = 0; i < mpv->size(); ++i)
-                    types.push_back(mpv->values[i].type);
-                break;
-            }
-            case MULTI_CVALUE: {
-                MultiCValue *mcv = (MultiCValue *) obj.ptr();
-                for (unsigned i = 0; i < mcv->size(); ++i)
-                    types.push_back(mcv->values[i]->type);
-                break;
-            }
-            default:
-                assert(false);
-        }
-        return types;
-    }
-
-    static void initializeLambdaWithFreeVars(LambdaPtr x, EnvPtr env,
-                                             llvm::StringRef closureDataName, llvm::StringRef lname);
-
-    static void initializeLambdaWithoutFreeVars(LambdaPtr x, EnvPtr env,
-                                                llvm::StringRef lname);
-
-    static string lambdaName(LambdaPtr x) {
-        string fullName = shortString(x->asString());
-
-        if (fullName.size() <= 80)
-            return "(" + fullName + ")";
-        else {
-            llvm::SmallString<128> shortNameBuf;
-            llvm::raw_svector_ostream shortName(shortNameBuf);
-            shortName << "<lambda ";
-            printFileLineCol(shortName, x->location);
-            shortName << ">";
-
-            return shortName.str();
-        }
-    }
-
-    void initializeLambda(LambdaPtr x, EnvPtr env) {
-        assert(!x->initialized);
-        x->initialized = true;
-
-        string lname = lambdaName(x);
-
-        llvm::SmallString<128> buf;
-        llvm::raw_svector_ostream ostr(buf);
-        ostr << "%closureData:" << lname;
-        string closureDataName = ostr.str();
-
-        convertFreeVars(x, env, closureDataName, x->freeVars);
-        getProcedureMonoTypes(x->mono, env, x->formalArgs, x->hasVarArg);
-
-        switch (x->captureBy) {
-            case REF_CAPTURE:
-            case VALUE_CAPTURE: {
-                if (x->freeVars.empty()) {
-                    initializeLambdaWithoutFreeVars(x, env, lname);
-                } else {
-                    initializeLambdaWithFreeVars(x, env, closureDataName, lname);
-                }
-                break;
-            }
-            case STATELESS: {
-                assert(x->freeVars.empty());
-                initializeLambdaWithoutFreeVars(x, env, lname);
-                break;
-            }
-            default:
-                assert(false);
-        }
-    }
-
-    static void checkForeignExpr(ObjectPtr &obj, EnvPtr env) {
-        if (obj->objKind == EXPRESSION) {
-            ExprPtr expr = (Expr *) obj.ptr();
-            if (expr->exprKind == FOREIGN_EXPR) {
-                MultiPValuePtr mpv = safeAnalyzeMulti(new ExprList(expr), env, 0);
-                obj = mpv.ptr();
-            }
-        } else if (obj->objKind == EXPR_LIST) {
-            ExprListPtr expr = (ExprList *) obj.ptr();
-            switch (expr->exprs[0]->exprKind) {
-                case FOREIGN_EXPR:
-                case UNPACK: {
-                    MultiPValuePtr mpv = safeAnalyzeMulti(
-                        new ExprList(foreignExpr(env, expr->exprs[0])), env, 0);
-                    obj = mpv.ptr();
-                }
-                default: {
-                } // make compiler happy
-            }
-        }
-    }
-
-    static void initializeLambdaWithFreeVars(LambdaPtr x, EnvPtr env,
-                                             llvm::StringRef closureDataName, llvm::StringRef lname) {
-        RecordDeclPtr r = new RecordDecl(nullptr, PRIVATE);
-        r->location = x->location;
-        r->name = Identifier::get(lname);
-        r->env = env;
-        x->lambdaRecord = r;
-        r->lambda = x;
-        vector<RecordFieldPtr> fields;
-
-        CallPtr converted = new Call(nullptr, new ExprList());
-        for (size_t i = 0; i < x->freeVars.size(); ++i) {
-            IdentifierPtr ident = Identifier::get(x->freeVars[i]);
-            NameRefPtr nameRef = new NameRef(ident);
-
-            TypePtr type;
-            ObjectPtr obj = safeLookupEnv(env, ident);
-            checkForeignExpr(obj, env);
-            switch (obj->objKind) {
-                case PVALUE:
-                case CVALUE: {
-                    type = typeOfValue(obj);
-                    if (x->captureBy == REF_CAPTURE) {
-                        type = pointerType(type);
-                        ExprPtr addr = new VariadicOp(ADDRESS_OF, new ExprList(nameRef.ptr()));
-                        converted->parenArgs->add(addr);
-                    } else {
-                        converted->parenArgs->add(nameRef.ptr());
-                    }
-                    break;
-                }
-                case MULTI_PVALUE:
-                case MULTI_CVALUE: {
-                    vector<TypePtr> types = typesOfValues(obj);
-                    vector<TypePtr> elementTypes;
-                    for (size_t j = 0; j < types.size(); ++j) {
-                        TypePtr t = types[j];
-                        if (x->captureBy == REF_CAPTURE)
-                            t = pointerType(t);
-                        elementTypes.push_back(t);
-                    }
-                    type = tupleType(elementTypes);
-                    if (x->captureBy == REF_CAPTURE) {
-                        ExprPtr e = operator_expr_packMultiValuedFreeVarByRef();
-                        CallPtr call = new Call(e, new ExprList());
-                        call->parenArgs->add(new Unpack(nameRef.ptr()));
-                        converted->parenArgs->add(call.ptr());
-                    } else {
-                        ExprPtr e = operator_expr_packMultiValuedFreeVar();
-                        CallPtr call = new Call(e, new ExprList());
-                        call->parenArgs->add(new Unpack(nameRef.ptr()));
-                        converted->parenArgs->add(call.ptr());
-                    }
-                    break;
-                }
-                default:
-                    assert(false);
-            }
-
-            ExprPtr fieldType = new ObjectExpr(type.ptr());
-            RecordFieldPtr field = new RecordField(ident, fieldType);
-            fields.push_back(field);
-        }
-        r->body = new RecordBody(fields);
-
-        TypePtr t = recordType(r, vector<ObjectPtr>());
-        x->lambdaType = t;
-        ExprPtr typeExpr = new ObjectExpr(t.ptr());
-        converted->expr = typeExpr;
-        x->converted = converted.ptr();
-
-        CodePtr code = new Code();
-        code->location = x->location;
-        IdentifierPtr closureDataIdent = Identifier::get(closureDataName);
-        FormalArgPtr closureDataArg = new FormalArg(closureDataIdent, typeExpr);
-        code->formalArgs.push_back(closureDataArg.ptr());
-        for (size_t i = 0; i < x->formalArgs.size(); ++i) {
-            code->formalArgs.push_back(x->formalArgs[i]);
-        }
-        code->hasVarArg = x->hasVarArg;
-        code->body = x->body;
-
-        OverloadPtr overload = new Overload(
-            nullptr, operator_expr_call(), code, false, IGNORE, x->hasAsConversion
-        );
-        overload->env = env;
-        overload->location = x->location;
-        ObjectPtr obj = operator_call();
-        if (obj->objKind != PROCEDURE)
-            error("'call' operator not found!");
-        Procedure *callObj = (Procedure *) obj.ptr();
-        addOverload(callObj->overloads, overload);
-    }
-
-    static void initializeLambdaWithoutFreeVars(LambdaPtr x, EnvPtr env,
-                                                llvm::StringRef lname) {
-        IdentifierPtr name = Identifier::get(lname, x->location);
-        x->lambdaProc = new Procedure(nullptr, name, PRIVATE, false);
-        x->lambdaProc->lambda = x;
-
-        CodePtr code = new Code();
-        code->location = x->location;
-        for (size_t i = 0; i < x->formalArgs.size(); ++i) {
-            code->formalArgs.push_back(x->formalArgs[i]);
-        }
-        code->hasVarArg = x->hasVarArg;
-        code->body = x->body;
-
-        ExprPtr procRef = new ObjectExpr(x->lambdaProc.ptr());
-        procRef->location = x->location;
-        OverloadPtr overload = new Overload(nullptr, procRef, code, false, IGNORE, x->hasAsConversion);
-        overload->env = env;
-        overload->location = x->location;
-        addProcedureOverload(x->lambdaProc, env, overload);
-
-        x->converted = procRef;
-    }
-
-    //
-    // addFreeVar, typeOfValue, typesOfValues
-    //
-
-    static void addFreeVar(LambdaContext &ctx, llvm::StringRef str) {
-        vector<string>::iterator i;
-        i = std::find(ctx.freeVars.begin(), ctx.freeVars.end(), str);
-        if (i == ctx.freeVars.end()) {
-            ctx.freeVars.push_back(str);
-        }
-    }
-
-    //
-    // convertFreeVars
-    //
-
-    void convertFreeVars(LambdaPtr x, EnvPtr env,
-                         llvm::StringRef closureDataName,
-                         vector<string> &freeVars) {
-        EnvPtr env2 = new Env(env);
-        for (size_t i = 0; i < x->formalArgs.size(); ++i) {
-            FormalArgPtr arg = x->formalArgs[i];
-            addLocal(env2, arg->name, arg->name.ptr());
-        }
-        LambdaContext ctx(x->captureBy, env, closureDataName, freeVars);
-        convertFreeVars(x->body, env2, ctx);
-    }
-
-    static EnvPtr convertFreeVarsFromBinding(BindingPtr binding, EnvPtr env, LambdaContext &ctx) {
-        convertFreeVars(binding->values.ptr(), env, ctx);
-        EnvPtr env2 = new Env(env);
-        for (size_t j = 0; j < binding->args.size(); ++j)
-            addLocal(env2, binding->args[j]->name, binding->args[j]->name.ptr());
-        return env2;
-    }
-
-    static EnvPtr convertFreeVarsFromStatementExpressionStatements(
-        llvm::ArrayRef<StatementPtr> stmts,
-        EnvPtr env,
-        LambdaContext &ctx) {
-        EnvPtr env2 = env;
-        for (StatementPtr const *i = stmts.begin(), *end = stmts.end();
-             i != end;
-             ++i) {
-            switch ((*i)->stmtKind) {
-                case BINDING:
-                    env2 = convertFreeVarsFromBinding((Binding *) i->ptr(), env2, ctx);
-                    break;
-
-                case ASSIGNMENT:
-                case VARIADIC_ASSIGNMENT:
-                case INIT_ASSIGNMENT:
-                case EXPR_STATEMENT:
-                    convertFreeVars(*i, env2, ctx);
-                    break;
-
-                default:
-                    assert(false);
-                    return nullptr;
-            }
-        }
-        return env2;
-    }
-
-    void convertFreeVars(StatementPtr x, EnvPtr env, LambdaContext &ctx) {
-        switch (x->stmtKind) {
-            case BLOCK: {
-                Block *y = (Block *) x.ptr();
-                for (size_t i = 0; i < y->statements.size(); ++i) {
-                    StatementPtr z = y->statements[i];
-                    if (z->stmtKind == BINDING)
-                        env = convertFreeVarsFromBinding((Binding *) z.ptr(), env, ctx);
-                    else
-                        convertFreeVars(z, env, ctx);
-                }
-                break;
-            }
-
-            case LABEL:
-            case BINDING: {
-                break;
-            }
-
-            case ASSIGNMENT: {
-                Assignment *y = (Assignment *) x.ptr();
-                convertFreeVars(y->left.ptr(), env, ctx);
-                convertFreeVars(y->right.ptr(), env, ctx);
-                break;
-            }
-
-            case INIT_ASSIGNMENT: {
-                InitAssignment *y = (InitAssignment *) x.ptr();
-                convertFreeVars(y->left.ptr(), env, ctx);
-                convertFreeVars(y->right.ptr(), env, ctx);
-                break;
-            }
-
-            case VARIADIC_ASSIGNMENT: {
-                VariadicAssignment *y = (VariadicAssignment *) x.ptr();
-                convertFreeVars(y->exprs.ptr(), env, ctx);
-                break;
-            }
-
-            case GOTO: {
-                break;
-            }
-
-            case RETURN: {
-                Return *y = (Return *) x.ptr();
-                convertFreeVars(y->values.ptr(), env, ctx);
-                break;
-            }
-
-            case IF: {
-                If *y = (If *) x.ptr();
-                env = convertFreeVarsFromStatementExpressionStatements(y->conditionStatements, env, ctx);
-                convertFreeVars(y->condition, env, ctx);
-                convertFreeVars(y->thenPart, env, ctx);
-                if (y->elsePart.ptr())
-                    convertFreeVars(y->elsePart, env, ctx);
-                break;
-            }
-
-            case SWITCH: {
-                Switch *y = (Switch *) x.ptr();
-                env = convertFreeVarsFromStatementExpressionStatements(y->exprStatements, env, ctx);
-                convertFreeVars(y->expr, env, ctx);
-                for (size_t i = 0; i < y->caseBlocks.size(); ++i) {
-                    CaseBlockPtr z = y->caseBlocks[i];
-                    convertFreeVars(z->caseLabels.ptr(), env, ctx);
-                    convertFreeVars(z->body, env, ctx);
-                }
-                if (y->defaultCase.ptr())
-                    convertFreeVars(y->defaultCase, env, ctx);
-                break;
-            }
-
-            case EVAL_STATEMENT: {
-                EvalStatement *eval = (EvalStatement *) x.ptr();
-                convertFreeVars(eval->args.ptr(), env, ctx);
-                break;
-            }
-
-            case EXPR_STATEMENT: {
-                ExprStatement *y = (ExprStatement *) x.ptr();
-                convertFreeVars(y->expr, env, ctx);
-                break;
-            }
-
-            case WHILE: {
-                While *y = (While *) x.ptr();
-                env = convertFreeVarsFromStatementExpressionStatements(y->conditionStatements, env, ctx);
-                convertFreeVars(y->condition, env, ctx);
-                convertFreeVars(y->body, env, ctx);
-                break;
-            }
-
-            case BREAK:
-            case CONTINUE: {
-                break;
-            }
-
-            case FOR: {
-                For *y = (For *) x.ptr();
-                convertFreeVars(y->expr, env, ctx);
-                EnvPtr env2 = new Env(env);
-                for (size_t j = 0; j < y->variables.size(); ++j)
-                    addLocal(env2, y->variables[j], y->variables[j].ptr());
-                convertFreeVars(y->body, env2, ctx);
-                break;
-            }
-
-            case FOREIGN_STATEMENT: {
-                break;
-            }
-
-            case TRY: {
-                Try *y = (Try *) x.ptr();
-                convertFreeVars(y->tryBlock, env, ctx);
-                for (size_t i = 0; i < y->catchBlocks.size(); ++i) {
-                    EnvPtr env2 = new Env(env);
-                    addLocal(env2,
-                             y->catchBlocks[i]->exceptionVar,
-                             y->catchBlocks[i]->exceptionVar.ptr()
-                    );
-                    if (y->catchBlocks[i]->exceptionType.ptr())
-                        convertFreeVars(y->catchBlocks[i]->exceptionType, env, ctx);
-                    convertFreeVars(y->catchBlocks[i]->body, env2, ctx);
-                }
-
-                break;
-            }
-
-            case THROW: {
-                Throw *y = (Throw *) x.ptr();
-                desugarThrow(y);
-                convertFreeVars(y->desugaredExpr, env, ctx);
-                if (y->desugaredContext != nullptr)
-                    convertFreeVars(y->desugaredContext, env, ctx);
-                break;
-            }
-
-            case STATIC_FOR: {
-                StaticFor *y = (StaticFor *) x.ptr();
-                convertFreeVars(y->values.ptr(), env, ctx);
-                EnvPtr env2 = new Env(env);
-                addLocal(env2, y->variable, y->variable.ptr());
-                convertFreeVars(y->body, env2, ctx);
-                break;
-            }
-
-            case FINALLY: {
-                Finally *y = (Finally *) x.ptr();
-                convertFreeVars(y->body, env, ctx);
-                break;
-            }
-
-            case ONERROR: {
-                OnError *y = (OnError *) x.ptr();
-                convertFreeVars(y->body, env, ctx);
-                break;
-            }
-
-            case UNREACHABLE:
-                break;
-
-            case STATIC_ASSERT_STATEMENT:
-                break;
-
-            default:
-                assert(false);
-        }
-    }
-
-    void convertFreeVars(ExprPtr &x, EnvPtr env, LambdaContext &ctx) {
-        switch (x->exprKind) {
-            case BOOL_LITERAL:
-            case INT_LITERAL:
-            case FLOAT_LITERAL:
-            case CHAR_LITERAL:
-            case STRING_LITERAL:
-                break;
-
-            case NAME_REF: {
-                NameRef *y = (NameRef *) x.ptr();
-                bool isNonLocal = false;
-                bool isGlobal = false;
-                ObjectPtr z = lookupEnvEx(env, y->name, ctx.nonLocalEnv,
-                                          isNonLocal, isGlobal);
-                if (isNonLocal && !isGlobal) {
-                    checkForeignExpr(z, env);
-                    if ((z->objKind == PVALUE) || (z->objKind == CVALUE)) {
-                        TypePtr t = typeOfValue(z);
-                        if (isStaticOrTupleOfStatics(t)) {
-                            ExprListPtr args = new ExprList();
-                            args->add(new ObjectExpr(t.ptr()));
-                            CallPtr call = new Call(operator_expr_typeToRValue(), args);
-                            call->location = y->location;
-                            x = call.ptr();
-                        } else {
-                            addFreeVar(ctx, y->name->str);
-                            IdentifierPtr a = Identifier::get(ctx.closureDataName, y->location);
-                            NameRefPtr b = new NameRef(a);
-                            b->location = y->location;
-                            FieldRefPtr c = new FieldRef(b.ptr(), y->name);
-                            c->location = y->location;
-                            switch (ctx.captureBy) {
-                                case REF_CAPTURE: {
-                                    ExprPtr d = new VariadicOp(DEREFERENCE, new ExprList(c.ptr()));
-                                    d->location = y->location;
-                                    x = d.ptr();
-                                    break;
-                                }
-                                case VALUE_CAPTURE: {
-                                    x = c.ptr();
-                                    break;
-                                }
-                                case STATELESS:
-                                    error(c->location,
-                                          "cannot capture free variable in stateless lambda function");
-                                default:
-                                    assert(false);
-                            }
-                        }
-                    } else if ((z->objKind == MULTI_PVALUE) || (z->objKind == MULTI_CVALUE)) {
-                        vector<TypePtr> types = typesOfValues(z);
-                        bool allStatic = true;
-                        for (size_t i = 0; i < types.size(); ++i) {
-                            if (!isStaticOrTupleOfStatics(types[i])) {
-                                allStatic = false;
-                                break;
-                            }
-                        }
-                        if (allStatic) {
-                            ExprListPtr args = new ExprList();
-                            for (size_t i = 0; i < types.size(); ++i)
-                                args->add(new ObjectExpr(types[i].ptr()));
-                            CallPtr call = new Call(operator_expr_typesToRValues(), args);
-                            call->location = y->location;
-                            x = call.ptr();
-                        } else {
-                            addFreeVar(ctx, y->name->str);
-                            IdentifierPtr a = Identifier::get(ctx.closureDataName, y->location);
-                            NameRefPtr b = new NameRef(a);
-                            b->location = y->location;
-                            FieldRefPtr c = new FieldRef(b.ptr(), y->name);
-                            c->location = y->location;
-                            switch (ctx.captureBy) {
-                                case REF_CAPTURE: {
-                                    ExprPtr f =
-                                            operator_expr_unpackMultiValuedFreeVarAndDereference();
-                                    CallPtr d = new Call(f, new ExprList());
-                                    d->parenArgs->add(c.ptr());
-                                    x = d.ptr();
-                                    break;
-                                }
-                                case VALUE_CAPTURE: {
-                                    ExprPtr f = operator_expr_unpackMultiValuedFreeVar();
-                                    CallPtr d = new Call(f, new ExprList());
-                                    d->parenArgs->add(c.ptr());
-                                    x = d.ptr();
-                                    break;
-                                }
-                                case STATELESS:
-                                    error(c->location,
-                                          "cannot capture free variable in stateless lambda function");
-                                default:
-                                    assert(false);
-                            }
-                        }
-                    }
-                }
-                break;
-            }
-
-            case TUPLE: {
-                Tuple *y = (Tuple *) x.ptr();
-                convertFreeVars(y->args.ptr(), env, ctx);
-                break;
-            }
-
-            case PAREN: {
-                Paren *y = (Paren *) x.ptr();
-                convertFreeVars(y->args.ptr(), env, ctx);
-                break;
-            }
-
-            case INDEXING: {
-                Indexing *y = (Indexing *) x.ptr();
-                convertFreeVars(y->expr, env, ctx);
-                convertFreeVars(y->args.ptr(), env, ctx);
-                break;
-            }
-
-            case CALL: {
-                Call *y = (Call *) x.ptr();
-                convertFreeVars(y->expr, env, ctx);
-                convertFreeVars(y->parenArgs.ptr(), env, ctx);
-                break;
-            }
-
-            case FIELD_REF: {
-                FieldRef *y = (FieldRef *) x.ptr();
-                if (y->desugared == nullptr)
-                    desugarFieldRef(y, safeLookupModule(env));
-                if (!y->isDottedModuleName)
-                    convertFreeVars(y->expr, env, ctx);
-                break;
-            }
-
-            case STATIC_INDEXING: {
-                StaticIndexing *y = (StaticIndexing *) x.ptr();
-                convertFreeVars(y->expr, env, ctx);
-                break;
-            }
-
-            case VARIADIC_OP: {
-                VariadicOp *y = (VariadicOp *) x.ptr();
-                convertFreeVars(y->exprs.ptr(), env, ctx);
-                break;
-            }
-
-            case AND: {
-                And *y = (And *) x.ptr();
-                convertFreeVars(y->expr1, env, ctx);
-                convertFreeVars(y->expr2, env, ctx);
-                break;
-            }
-
-            case OR: {
-                Or *y = (Or *) x.ptr();
-                convertFreeVars(y->expr1, env, ctx);
-                convertFreeVars(y->expr2, env, ctx);
-                break;
-            }
-
-            case LAMBDA: {
-                Lambda *y = (Lambda *) x.ptr();
-                EnvPtr env2 = new Env(env);
-                for (size_t i = 0; i < y->formalArgs.size(); ++i)
-                    addLocal(env2, y->formalArgs[i]->name, y->formalArgs[i]->name.ptr());
-                convertFreeVars(y->body, env2, ctx);
-                break;
-            }
-
-            case UNPACK: {
-                Unpack *y = (Unpack *) x.ptr();
-                convertFreeVars(y->expr, env, ctx);
-                break;
-            }
-
-            case STATIC_EXPR: {
-                StaticExpr *y = (StaticExpr *) x.ptr();
-                convertFreeVars(y->expr, env, ctx);
-                break;
-            }
-
-            case DISPATCH_EXPR: {
-                DispatchExpr *y = (DispatchExpr *) x.ptr();
-                convertFreeVars(y->expr, env, ctx);
-                break;
-            }
-
-            case EVAL_EXPR: {
-                EvalExpr *eval = (EvalExpr *) x.ptr();
-                convertFreeVars(eval->args, env, ctx);
-                break;
-            }
-
-            case FOREIGN_EXPR:
-            case OBJECT_EXPR:
-            case FILE_EXPR:
-            case LINE_EXPR:
-            case COLUMN_EXPR:
-            case ARG_EXPR:
-                break;
-        }
-    }
-
-    void convertFreeVars(ExprList *x, EnvPtr env, LambdaContext &ctx) {
-        for (unsigned i = 0; i < x->size(); ++i)
-            convertFreeVars(x->exprs[i], env, ctx);
+#include "loader.hpp"
+#include "operators.hpp"
+
+namespace ceramic {
+struct LambdaContext {
+    LambdaCapture captureBy;
+    EnvPtr nonLocalEnv;
+    llvm::StringRef closureDataName;
+    vector<string> &freeVars;
+
+    LambdaContext(LambdaCapture captureBy, const EnvPtr &nonLocalEnv,
+                  llvm::StringRef closureDataName, vector<string> &freeVars)
+        : captureBy(captureBy), nonLocalEnv(nonLocalEnv),
+          closureDataName(closureDataName), freeVars(freeVars) {}
+};
+
+void convertFreeVars(const LambdaPtr &x, const EnvPtr &env,
+                     llvm::StringRef closureDataName, vector<string> &freeVars);
+
+void convertFreeVars(const StatementPtr &x, EnvPtr env, LambdaContext &ctx);
+
+void convertFreeVars(ExprPtr &x, const EnvPtr &env, LambdaContext &ctx);
+
+void convertFreeVars(ExprList *x, const EnvPtr &env, LambdaContext &ctx);
+
+//
+// initializeLambda
+//
+
+static TypePtr typeOfValue(const ObjectPtr &obj) {
+    switch (obj->objKind) {
+    case PVALUE:
+        return dynamic_cast<PValue *>(obj.ptr())->data.type;
+    case CVALUE:
+        return dynamic_cast<CValue *>(obj.ptr())->type;
+    default:
+        assert(false);
     }
 }
+
+static vector<TypePtr> typesOfValues(const ObjectPtr &obj) {
+    vector<TypePtr> types;
+    switch (obj->objKind) {
+    case MULTI_PVALUE: {
+        auto mpv = dynamic_cast<MultiPValue *>(obj.ptr());
+        for (unsigned i = 0; i < mpv->size(); ++i)
+            types.push_back(mpv->values[i].type);
+        break;
+    }
+    case MULTI_CVALUE: {
+        auto mcv = dynamic_cast<MultiCValue *>(obj.ptr());
+        for (unsigned i = 0; i < mcv->size(); ++i)
+            types.push_back(mcv->values[i]->type);
+        break;
+    }
+    default:
+        assert(false);
+    }
+    return types;
+}
+
+static void initializeLambdaWithFreeVars(const LambdaPtr &x, const EnvPtr &env,
+                                         llvm::StringRef closureDataName,
+                                         llvm::StringRef lname);
+
+static void initializeLambdaWithoutFreeVars(const LambdaPtr &x,
+                                            const EnvPtr &env,
+                                            llvm::StringRef lname);
+
+static string lambdaName(const LambdaPtr &x) {
+    string fullName = shortString(x->asString());
+
+    if (fullName.size() <= 80)
+        return "(" + fullName + ")";
+    else {
+        llvm::SmallString<128> shortNameBuf;
+        llvm::raw_svector_ostream shortName(shortNameBuf);
+        shortName << "<lambda ";
+        printFileLineCol(shortName, x->location);
+        shortName << ">";
+
+        return shortName.str().str(); // what is this abomination
+    }
+}
+
+void initializeLambda(const LambdaPtr &x, const EnvPtr &env) {
+    assert(!x->initialized);
+    x->initialized = true;
+
+    string lname = lambdaName(x);
+
+    llvm::SmallString<128> buf;
+    llvm::raw_svector_ostream ostr(buf);
+    ostr << "%closureData:" << lname;
+    string closureDataName = ostr.str().str(); // again
+
+    convertFreeVars(x, env, closureDataName, x->freeVars);
+    getProcedureMonoTypes(x->mono, env, x->formalArgs, x->hasVarArg);
+
+    switch (x->captureBy) {
+    case REF_CAPTURE:
+    case VALUE_CAPTURE: {
+        if (x->freeVars.empty()) {
+            initializeLambdaWithoutFreeVars(x, env, lname);
+        } else {
+            initializeLambdaWithFreeVars(x, env, closureDataName, lname);
+        }
+        break;
+    }
+    case STATELESS: {
+        assert(x->freeVars.empty());
+        initializeLambdaWithoutFreeVars(x, env, lname);
+        break;
+    }
+    default:
+        assert(false);
+    }
+}
+
+static void checkForeignExpr(ObjectPtr &obj, const EnvPtr &env) {
+    if (obj->objKind == EXPRESSION) {
+        ExprPtr expr = dynamic_cast<Expr *>(obj.ptr());
+        if (expr->exprKind == FOREIGN_EXPR) {
+            MultiPValuePtr mpv = safeAnalyzeMulti(new ExprList(expr), env, 0);
+            obj = mpv.ptr();
+        }
+    } else if (obj->objKind == EXPR_LIST) {
+        ExprListPtr expr = dynamic_cast<ExprList *>(obj.ptr());
+        switch (expr->exprs[0]->exprKind) {
+        case FOREIGN_EXPR:
+        case UNPACK: {
+            MultiPValuePtr mpv = safeAnalyzeMulti(
+                new ExprList(foreignExpr(env, expr->exprs[0])), env, 0);
+            obj = mpv.ptr();
+        }
+        default: {
+        } // make compiler happy
+        }
+    }
+}
+
+static void initializeLambdaWithFreeVars(const LambdaPtr &x, const EnvPtr &env,
+                                         llvm::StringRef closureDataName,
+                                         llvm::StringRef lname) {
+    RecordDeclPtr r = new RecordDecl(nullptr, PRIVATE);
+    r->location = x->location;
+    r->name = Identifier::get(lname);
+    r->env = env;
+    x->lambdaRecord = r;
+    r->lambda = x;
+    vector<RecordFieldPtr> fields;
+
+    CallPtr converted = new Call(nullptr, new ExprList());
+    for (size_t i = 0; i < x->freeVars.size(); ++i) {
+        IdentifierPtr ident = Identifier::get(x->freeVars[i]);
+        NameRefPtr nameRef = new NameRef(ident);
+
+        TypePtr type;
+        ObjectPtr obj = safeLookupEnv(env, ident);
+        checkForeignExpr(obj, env);
+        switch (obj->objKind) {
+        case PVALUE:
+        case CVALUE: {
+            type = typeOfValue(obj);
+            if (x->captureBy == REF_CAPTURE) {
+                type = pointerType(type);
+                ExprPtr addr =
+                    new VariadicOp(ADDRESS_OF, new ExprList(nameRef.ptr()));
+                converted->parenArgs->add(addr);
+            } else {
+                converted->parenArgs->add(nameRef.ptr());
+            }
+            break;
+        }
+        case MULTI_PVALUE:
+        case MULTI_CVALUE: {
+            vector<TypePtr> types = typesOfValues(obj);
+            vector<TypePtr> elementTypes;
+            for (auto t : types) {
+                if (x->captureBy == REF_CAPTURE)
+                    t = pointerType(t);
+                elementTypes.push_back(t);
+            }
+            type = tupleType(elementTypes);
+            if (x->captureBy == REF_CAPTURE) {
+                ExprPtr e = operator_expr_packMultiValuedFreeVarByRef();
+                CallPtr call = new Call(e, new ExprList());
+                call->parenArgs->add(new Unpack(nameRef.ptr()));
+                converted->parenArgs->add(call.ptr());
+            } else {
+                ExprPtr e = operator_expr_packMultiValuedFreeVar();
+                CallPtr call = new Call(e, new ExprList());
+                call->parenArgs->add(new Unpack(nameRef.ptr()));
+                converted->parenArgs->add(call.ptr());
+            }
+            break;
+        }
+        default:
+            assert(false);
+        }
+
+        ExprPtr fieldType = new ObjectExpr(type.ptr());
+        RecordFieldPtr field = new RecordField(ident, fieldType);
+        fields.push_back(field);
+    }
+    r->body = new RecordBody(fields);
+
+    TypePtr t = recordType(r, vector<ObjectPtr>());
+    x->lambdaType = t;
+    ExprPtr typeExpr = new ObjectExpr(t.ptr());
+    converted->expr = typeExpr;
+    x->converted = converted.ptr();
+
+    CodePtr code = new Code();
+    code->location = x->location;
+    IdentifierPtr closureDataIdent = Identifier::get(closureDataName);
+    FormalArgPtr closureDataArg = new FormalArg(closureDataIdent, typeExpr);
+    code->formalArgs.emplace_back(closureDataArg.ptr());
+    for (const auto &formalArg : x->formalArgs) {
+        code->formalArgs.push_back(formalArg);
+    }
+    code->hasVarArg = x->hasVarArg;
+    code->body = x->body;
+
+    OverloadPtr overload = new Overload(nullptr, operator_expr_call(), code,
+                                        false, IGNORE, x->hasAsConversion);
+    overload->env = env;
+    overload->location = x->location;
+    ObjectPtr obj = operator_call();
+    if (obj->objKind != PROCEDURE)
+        error("'call' operator not found!");
+    auto *callObj = dynamic_cast<Procedure *>(obj.ptr());
+    addOverload(callObj->overloads, overload);
+}
+
+static void initializeLambdaWithoutFreeVars(const LambdaPtr &x,
+                                            const EnvPtr &env,
+                                            llvm::StringRef lname) {
+    IdentifierPtr name = Identifier::get(lname, x->location);
+    x->lambdaProc = new Procedure(nullptr, name, PRIVATE, false);
+    x->lambdaProc->lambda = x;
+
+    CodePtr code = new Code();
+    code->location = x->location;
+    for (const auto &formalArg : x->formalArgs) {
+        code->formalArgs.push_back(formalArg);
+    }
+    code->hasVarArg = x->hasVarArg;
+    code->body = x->body;
+
+    ExprPtr procRef = new ObjectExpr(x->lambdaProc.ptr());
+    procRef->location = x->location;
+    OverloadPtr overload =
+        new Overload(nullptr, procRef, code, false, IGNORE, x->hasAsConversion);
+    overload->env = env;
+    overload->location = x->location;
+    addProcedureOverload(x->lambdaProc, env, overload);
+
+    x->converted = procRef;
+}
+
+//
+// addFreeVar, typeOfValue, typesOfValues
+//
+
+static void addFreeVar(const LambdaContext &ctx, llvm::StringRef str) {
+    auto i = std::find(ctx.freeVars.begin(), ctx.freeVars.end(), str);
+    if (i == ctx.freeVars.end()) {
+        ctx.freeVars.push_back(str.str());
+    }
+}
+
+//
+// convertFreeVars
+//
+
+void convertFreeVars(const LambdaPtr &x, const EnvPtr &env,
+                     llvm::StringRef closureDataName,
+                     vector<string> &freeVars) {
+    EnvPtr env2 = new Env(env);
+    for (const auto &arg : x->formalArgs) {
+        addLocal(env2, arg->name, arg->name.ptr());
+    }
+    LambdaContext ctx(x->captureBy, env, closureDataName, freeVars);
+    convertFreeVars(x->body, env2, ctx);
+}
+
+static EnvPtr convertFreeVarsFromBinding(const BindingPtr &binding,
+                                         const EnvPtr &env,
+                                         LambdaContext &ctx) {
+    convertFreeVars(binding->values.ptr(), env, ctx);
+    EnvPtr env2 = new Env(env);
+    for (const auto &arg : binding->args)
+        addLocal(env2, arg->name, arg->name.ptr());
+    return env2;
+}
+
+static EnvPtr convertFreeVarsFromStatementExpressionStatements(
+    llvm::ArrayRef<StatementPtr> stmts, const EnvPtr &env, LambdaContext &ctx) {
+    EnvPtr env2 = env;
+    for (const auto &stmt : stmts) {
+        switch (stmt->stmtKind) {
+        case BINDING:
+            env2 = convertFreeVarsFromBinding(
+                dynamic_cast<Binding *>(stmt.ptr()), env2, ctx);
+            break;
+
+        case ASSIGNMENT:
+        case VARIADIC_ASSIGNMENT:
+        case INIT_ASSIGNMENT:
+        case EXPR_STATEMENT:
+            convertFreeVars(stmt, env2, ctx);
+            break;
+
+        default:
+            assert(false);
+        }
+    }
+    return env2;
+}
+
+void convertFreeVars(const StatementPtr &x, EnvPtr env, LambdaContext &ctx) {
+    switch (x->stmtKind) {
+    case BLOCK: {
+        auto y = dynamic_cast<Block *>(x.ptr());
+        for (const auto &z : y->statements) {
+            if (z->stmtKind == BINDING)
+                env = convertFreeVarsFromBinding(
+                    dynamic_cast<Binding *>(z.ptr()), env, ctx);
+            else
+                convertFreeVars(z, env, ctx);
+        }
+        break;
+    }
+
+    case LABEL:
+    case BINDING: {
+        break;
+    }
+
+    case ASSIGNMENT: {
+        auto y = dynamic_cast<Assignment *>(x.ptr());
+        convertFreeVars(y->left.ptr(), env, ctx);
+        convertFreeVars(y->right.ptr(), env, ctx);
+        break;
+    }
+
+    case INIT_ASSIGNMENT: {
+        auto y = dynamic_cast<InitAssignment *>(x.ptr());
+        convertFreeVars(y->left.ptr(), env, ctx);
+        convertFreeVars(y->right.ptr(), env, ctx);
+        break;
+    }
+
+    case VARIADIC_ASSIGNMENT: {
+        auto y = dynamic_cast<VariadicAssignment *>(x.ptr());
+        convertFreeVars(y->exprs.ptr(), env, ctx);
+        break;
+    }
+
+    case GOTO: {
+        break;
+    }
+
+    case RETURN: {
+        auto y = dynamic_cast<Return *>(x.ptr());
+        convertFreeVars(y->values.ptr(), env, ctx);
+        break;
+    }
+
+    case IF: {
+        auto y = dynamic_cast<If *>(x.ptr());
+        env = convertFreeVarsFromStatementExpressionStatements(
+            y->conditionStatements, env, ctx);
+        convertFreeVars(y->condition, env, ctx);
+        convertFreeVars(y->thenPart, env, ctx);
+        if (y->elsePart.ptr())
+            convertFreeVars(y->elsePart, env, ctx);
+        break;
+    }
+
+    case SWITCH: {
+        auto y = dynamic_cast<Switch *>(x.ptr());
+        env = convertFreeVarsFromStatementExpressionStatements(
+            y->exprStatements, env, ctx);
+        convertFreeVars(y->expr, env, ctx);
+        for (const auto &z : y->caseBlocks) {
+            convertFreeVars(z->caseLabels.ptr(), env, ctx);
+            convertFreeVars(z->body, env, ctx);
+        }
+        if (y->defaultCase.ptr())
+            convertFreeVars(y->defaultCase, env, ctx);
+        break;
+    }
+
+    case EVAL_STATEMENT: {
+        auto eval = dynamic_cast<EvalStatement *>(x.ptr());
+        convertFreeVars(eval->args.ptr(), env, ctx);
+        break;
+    }
+
+    case EXPR_STATEMENT: {
+        auto y = dynamic_cast<ExprStatement *>(x.ptr());
+        convertFreeVars(y->expr, env, ctx);
+        break;
+    }
+
+    case WHILE: {
+        auto y = dynamic_cast<While *>(x.ptr());
+        env = convertFreeVarsFromStatementExpressionStatements(
+            y->conditionStatements, env, ctx);
+        convertFreeVars(y->condition, env, ctx);
+        convertFreeVars(y->body, env, ctx);
+        break;
+    }
+
+    case BREAK:
+    case CONTINUE: {
+        break;
+    }
+
+    case FOR: {
+        auto y = dynamic_cast<For *>(x.ptr());
+        convertFreeVars(y->expr, env, ctx);
+        EnvPtr env2 = new Env(env);
+        for (const auto &variable : y->variables)
+            addLocal(env2, variable, variable.ptr());
+        convertFreeVars(y->body, env2, ctx);
+        break;
+    }
+
+    case FOREIGN_STATEMENT: {
+        break;
+    }
+
+    case TRY: {
+        auto y = dynamic_cast<Try *>(x.ptr());
+        convertFreeVars(y->tryBlock, env, ctx);
+        for (const auto &catchBlock : y->catchBlocks) {
+            EnvPtr env2 = new Env(env);
+            addLocal(env2, catchBlock->exceptionVar,
+                     catchBlock->exceptionVar.ptr());
+            if (catchBlock->exceptionType.ptr())
+                convertFreeVars(catchBlock->exceptionType, env, ctx);
+            convertFreeVars(catchBlock->body, env2, ctx);
+        }
+
+        break;
+    }
+
+    case THROW: {
+        auto y = dynamic_cast<Throw *>(x.ptr());
+        desugarThrow(y);
+        convertFreeVars(y->desugaredExpr, env, ctx);
+        if (y->desugaredContext != nullptr)
+            convertFreeVars(y->desugaredContext, env, ctx);
+        break;
+    }
+
+    case STATIC_FOR: {
+        auto y = dynamic_cast<StaticFor *>(x.ptr());
+        convertFreeVars(y->values.ptr(), env, ctx);
+        EnvPtr env2 = new Env(env);
+        addLocal(env2, y->variable, y->variable.ptr());
+        convertFreeVars(y->body, env2, ctx);
+        break;
+    }
+
+    case FINALLY: {
+        auto y = dynamic_cast<Finally *>(x.ptr());
+        convertFreeVars(y->body, env, ctx);
+        break;
+    }
+
+    case ONERROR: {
+        auto y = dynamic_cast<OnError *>(x.ptr());
+        convertFreeVars(y->body, env, ctx);
+        break;
+    }
+
+    case UNREACHABLE:
+    case STATIC_ASSERT_STATEMENT:
+        break;
+
+    default:
+        assert(false);
+    }
+}
+
+void convertFreeVars(ExprPtr &x, const EnvPtr &env, LambdaContext &ctx) {
+    switch (x->exprKind) {
+    case BOOL_LITERAL:
+    case INT_LITERAL:
+    case FLOAT_LITERAL:
+    case CHAR_LITERAL:
+    case STRING_LITERAL:
+        break;
+
+    case NAME_REF: {
+        auto y = dynamic_cast<NameRef *>(x.ptr());
+        bool isNonLocal = false;
+        bool isGlobal = false;
+        ObjectPtr z =
+            lookupEnvEx(env, y->name, ctx.nonLocalEnv, isNonLocal, isGlobal);
+        if (isNonLocal && !isGlobal) {
+            checkForeignExpr(z, env);
+            if ((z->objKind == PVALUE) || (z->objKind == CVALUE)) {
+                TypePtr t = typeOfValue(z);
+                if (isStaticOrTupleOfStatics(t)) {
+                    ExprListPtr args = new ExprList();
+                    args->add(new ObjectExpr(t.ptr()));
+                    CallPtr call = new Call(operator_expr_typeToRValue(), args);
+                    call->location = y->location;
+                    x = call.ptr();
+                } else {
+                    addFreeVar(ctx, y->name->str);
+                    IdentifierPtr a =
+                        Identifier::get(ctx.closureDataName, y->location);
+                    NameRefPtr b = new NameRef(a);
+                    b->location = y->location;
+                    FieldRefPtr c = new FieldRef(b.ptr(), y->name);
+                    c->location = y->location;
+                    switch (ctx.captureBy) {
+                    case REF_CAPTURE: {
+                        ExprPtr d =
+                            new VariadicOp(DEREFERENCE, new ExprList(c.ptr()));
+                        d->location = y->location;
+                        x = d.ptr();
+                        break;
+                    }
+                    case VALUE_CAPTURE: {
+                        x = c.ptr();
+                        break;
+                    }
+                    case STATELESS:
+                        error(c->location, "cannot capture free variable in "
+                                           "stateless lambda function");
+                    default:
+                        assert(false);
+                    }
+                }
+            } else if ((z->objKind == MULTI_PVALUE) ||
+                       (z->objKind == MULTI_CVALUE)) {
+                vector<TypePtr> types = typesOfValues(z);
+                bool allStatic = true;
+                for (const auto &type : types) {
+                    if (!isStaticOrTupleOfStatics(type)) {
+                        allStatic = false;
+                        break;
+                    }
+                }
+                if (allStatic) {
+                    ExprListPtr args = new ExprList();
+                    for (const auto &type : types)
+                        args->add(new ObjectExpr(type.ptr()));
+                    CallPtr call =
+                        new Call(operator_expr_typesToRValues(), args);
+                    call->location = y->location;
+                    x = call.ptr();
+                } else {
+                    addFreeVar(ctx, y->name->str);
+                    IdentifierPtr a =
+                        Identifier::get(ctx.closureDataName, y->location);
+                    NameRefPtr b = new NameRef(a);
+                    b->location = y->location;
+                    FieldRefPtr c = new FieldRef(b.ptr(), y->name);
+                    c->location = y->location;
+                    switch (ctx.captureBy) {
+                    case REF_CAPTURE: {
+                        ExprPtr f =
+                            operator_expr_unpackMultiValuedFreeVarAndDereference();
+                        CallPtr d = new Call(f, new ExprList());
+                        d->parenArgs->add(c.ptr());
+                        x = d.ptr();
+                        break;
+                    }
+                    case VALUE_CAPTURE: {
+                        ExprPtr f = operator_expr_unpackMultiValuedFreeVar();
+                        CallPtr d = new Call(f, new ExprList());
+                        d->parenArgs->add(c.ptr());
+                        x = d.ptr();
+                        break;
+                    }
+                    case STATELESS:
+                        error(c->location, "cannot capture free variable in "
+                                           "stateless lambda function");
+                    default:
+                        assert(false);
+                    }
+                }
+            }
+        }
+        break;
+    }
+
+    case TUPLE: {
+        auto y = dynamic_cast<Tuple *>(x.ptr());
+        convertFreeVars(y->args.ptr(), env, ctx);
+        break;
+    }
+
+    case PAREN: {
+        auto y = dynamic_cast<Paren *>(x.ptr());
+        convertFreeVars(y->args.ptr(), env, ctx);
+        break;
+    }
+
+    case INDEXING: {
+        auto y = dynamic_cast<Indexing *>(x.ptr());
+        convertFreeVars(y->expr, env, ctx);
+        convertFreeVars(y->args.ptr(), env, ctx);
+        break;
+    }
+
+    case CALL: {
+        auto y = dynamic_cast<Call *>(x.ptr());
+        convertFreeVars(y->expr, env, ctx);
+        convertFreeVars(y->parenArgs.ptr(), env, ctx);
+        break;
+    }
+
+    case FIELD_REF: {
+        auto y = dynamic_cast<FieldRef *>(x.ptr());
+        if (y->desugared == nullptr)
+            desugarFieldRef(y, safeLookupModule(env));
+        if (!y->isDottedModuleName)
+            convertFreeVars(y->expr, env, ctx);
+        break;
+    }
+
+    case STATIC_INDEXING: {
+        auto y = dynamic_cast<StaticIndexing *>(x.ptr());
+        convertFreeVars(y->expr, env, ctx);
+        break;
+    }
+
+    case VARIADIC_OP: {
+        auto y = dynamic_cast<VariadicOp *>(x.ptr());
+        convertFreeVars(y->exprs.ptr(), env, ctx);
+        break;
+    }
+
+    case AND: {
+        auto y = dynamic_cast<And *>(x.ptr());
+        convertFreeVars(y->expr1, env, ctx);
+        convertFreeVars(y->expr2, env, ctx);
+        break;
+    }
+
+    case OR: {
+        auto y = dynamic_cast<Or *>(x.ptr());
+        convertFreeVars(y->expr1, env, ctx);
+        convertFreeVars(y->expr2, env, ctx);
+        break;
+    }
+
+    case LAMBDA: {
+        auto y = dynamic_cast<Lambda *>(x.ptr());
+        EnvPtr env2 = new Env(env);
+        for (const auto &formalArg : y->formalArgs)
+            addLocal(env2, formalArg->name, formalArg->name.ptr());
+        convertFreeVars(y->body, env2, ctx);
+        break;
+    }
+
+    case UNPACK: {
+        auto y = dynamic_cast<Unpack *>(x.ptr());
+        convertFreeVars(y->expr, env, ctx);
+        break;
+    }
+
+    case STATIC_EXPR: {
+        auto y = dynamic_cast<StaticExpr *>(x.ptr());
+        convertFreeVars(y->expr, env, ctx);
+        break;
+    }
+
+    case DISPATCH_EXPR: {
+        auto y = dynamic_cast<DispatchExpr *>(x.ptr());
+        convertFreeVars(y->expr, env, ctx);
+        break;
+    }
+
+    case EVAL_EXPR: {
+        auto eval = dynamic_cast<EvalExpr *>(x.ptr());
+        convertFreeVars(eval->args, env, ctx);
+        break;
+    }
+
+    case FOREIGN_EXPR:
+    case OBJECT_EXPR:
+    case FILE_EXPR:
+    case LINE_EXPR:
+    case COLUMN_EXPR:
+    case ARG_EXPR:
+        break;
+    }
+}
+
+void convertFreeVars(ExprList *x, const EnvPtr &env, LambdaContext &ctx) {
+    for (unsigned i = 0; i < x->size(); ++i)
+        convertFreeVars(x->exprs[i], env, ctx);
+}
+} // namespace ceramic

@@ -1,9 +1,7 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 
-namespace clay {
-
-void initializeLambda(LambdaPtr x, EnvPtr env);
-
+namespace ceramic {
+void initializeLambda(const LambdaPtr &x, const EnvPtr &env);
 }

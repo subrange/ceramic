@@ -43,7 +43,7 @@ Language changes:
 * Static string literals and string constant literals have been combined.
   String literals now always behave like static strings and evaluate to
   singleton Static["string"] values. These static strings can now be
-  iterated and indexed like StringConstants. lib-clay provides a
+  iterated and indexed like StringConstants. lib-ceramic provides a
   StringLiteralRef type in order to reference constant strings at runtime.
   A string literal may now also be used as a postfix operator; `foo"bar"` is
   equivalent to `foo("bar")`.
@@ -234,7 +234,7 @@ Library changes:
         var l2 = Function((x:Int, y:Int) -> x + y);
     }
 
-* External code pointers can now be constructed from Clay functions for all
+* External code pointers can now be constructed from Ceramic functions for all
   supported calling conventions, not just CCodePointer.
 
     // 0.2
@@ -331,11 +331,11 @@ Compiler frontend changes:
 
 Tool changes:
 -------------
-* A "clay-fix" program is provided to update code written for Clay 0.0 to
+* A "ceramic-fix" program is provided to update code written for Ceramic 0.0 to
   compile in 0.1. It is fairly simple at this point, but most converted code
   should just work. Changes that can't be fixed are noted in this
   changelog.
-* "clay-bindgen" has been rewritten in Clay, using the libclang C library.
+* "ceramic-bindgen" has been rewritten in Ceramic, using the libclang C library.
 
 Language changes:
 -----------------
@@ -540,7 +540,7 @@ Language changes:
     CodePointer[[Int, Float], [String]]
     CodePointer[[Int], [String, Char]]
 
-  clay-fix's logic for fixing CodePointer types is pretty rudimentary and may
+  ceramic-fix's logic for fixing CodePointer types is pretty rudimentary and may
   break code that tries to be fancy. It will add a tuple around any single
   expression in the input or output field that isn't already in parentheses.
 
@@ -591,7 +591,7 @@ Language changes:
 
 * "ref x = y;" will now only bind references to lvalues. The old behavior of
   implicitly capturing rvalues or referencing lvalues is provided by
-  'forward x = y;" now. clay-fix will convert all "ref" bindings to "forward"
+  'forward x = y;" now. ceramic-fix will convert all "ref" bindings to "forward"
   bindings. Statement forms that implicitly created "ref" bindings, such as
   "for" and "..for" loops, now create "forward" bindings and continue to work
   as before.
@@ -679,7 +679,7 @@ Library changes:
   (formerly known as '\v') a space character.
 
 * The format of the output from the printRepr function has been changed to give
-  more accurate parseable representations of Clay objects.
+  more accurate parseable representations of Ceramic objects.
 
 * printTo() now prints identifiers as their string contents without a
   leading "#".
@@ -698,27 +698,27 @@ Library changes:
     arrayLiteral ==> array
 
 * A new 'math' module provides type-generic floating-point and complex math
-  functions implemented in Clay. (Standard C99 math is still available from the
+  functions implemented in Ceramic. (Standard C99 math is still available from the
   libc module.) Thanks to Jeremy Clifford.
 
-* Assertions can be disabled with the '-Dclay.DisableAssertions' flag.
+* Assertions can be disabled with the '-Dceramic.DisableAssertions' flag.
   assert[] can also be parameterized with one or more static string tags,
-  to be selectively disabled with '-Dclay.DisableAssertions.<tag>'.
+  to be selectively disabled with '-Dceramic.DisableAssertions.<tag>'.
 
-    assert(false); // disable with -Dclay.DisableAssertions
-    assert[#foo](false); // disable with -Dclay.DisableAssertions
-                         // or -Dclay.DisableAssertions.foo
-    assert[#foo,#bar](false); // disable with -Dclay.DisableAssertions
-                              // or -Dclay.DisableAssertions.foo
-                              // or -Dclay.DisableAssertions.bar
+    assert(false); // disable with -Dceramic.DisableAssertions
+    assert[#foo](false); // disable with -Dceramic.DisableAssertions
+                         // or -Dceramic.DisableAssertions.foo
+    assert[#foo,#bar](false); // disable with -Dceramic.DisableAssertions
+                              // or -Dceramic.DisableAssertions.foo
+                              // or -Dceramic.DisableAssertions.bar
 
 * In-memory containers now have bounds check assertions on operations such
   as indexing, front, and back. These assertions are tagged #boundsChecks
-  and can be disabled with '-Dclay.DisableAssertions.boundsChecks'.
+  and can be disabled with '-Dceramic.DisableAssertions.boundsChecks'.
 
 * The standard integer math operators now have overflow and division-by-zero
   checking. These checks can be disabled with
-  '-Dclay.DisableAssertions.overflowChecks' (or '-Dclay.DisableAssertions').
+  '-Dceramic.DisableAssertions.overflowChecks' (or '-Dceramic.DisableAssertions').
   This flag affects addition, subtraction, multiplication, division, remainder,
   left shift, negation and conversion for all standard integer types.
 
@@ -764,7 +764,7 @@ Library changes:
         ...
     }
 
-  clay-fix conservatively converts calls to "match" to "matchByType", which
+  ceramic-fix conservatively converts calls to "match" to "matchByType", which
   retains the previous interface.
 
 Compiler frontend changes:
@@ -786,20 +786,20 @@ Compiler frontend changes:
 * External entry points for the main module are also now always compiled;
   '-shared' now only affects the type of file output by the compiler.
 * The default output filename for executables and dynamic libraries is now the
-  basename of the input file instead of 'a.out'. For instance, 'clay hello.clay'
+  basename of the input file instead of 'a.out'. For instance, 'ceramic hello.crm'
   will output an executable named 'hello' (or 'hello.exe' if compiling for a
   Windows target).
 * FreeBSD is now supported. Thanks to Daniel Kolesa.
 * A new '-D' flag sets compiler flags, which may be queried by the 'Flag?' or
   'Flag' primitives.
-    $ cat foo.clay
+    $ cat foo.crm
     main() { println(Flag?(#"FOO")); println(Flag(#"BAR")); }
-    $ clay -DFOO -DBAR=bar -run foo.clay
+    $ ceramic -DFOO -DBAR=bar -run foo.crm
     true
     bar
-    $ clay -DBAR -run foo.clay
+    $ ceramic -DBAR -run foo.crm
     false
 
     $
-* Clay will now generate debug information on platforms for which LLVM supports
+* Ceramic will now generate debug information on platforms for which LLVM supports
   debug information when given the '-g' flag.

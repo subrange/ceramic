@@ -1,4 +1,4 @@
-Clay was originally written by KS Sreeram <ks@claylabs.com> and Tachyon Technologies.
+Ceramic was originally written by KS Sreeram <ks@ceramiclabs.com> and Tachyon Technologies.
 This fork is maintained by Joe Groff <joe@duriansoftware.com>. The following people
 have made contributions (in no particular order):
 

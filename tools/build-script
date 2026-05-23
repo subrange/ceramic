@@ -17,8 +17,8 @@ parser.add_argument(
     "target",
     nargs="?",
     default="all",
-    choices=["all", "clay", "compiler", "clay-bindgen", "ut"],
-    help="target (clay, compiler, clay-bindgen, ut, or all)",
+    choices=["all", "ceramic", "compiler", "ceramic-bindgen", "ut"],
+    help="target (ceramic, compiler, ceramic-bindgen, ut, or all)",
 )
 parser.add_argument(
     "-t", "--type", default="Release", choices=["Release", "Debug"], help="build type"

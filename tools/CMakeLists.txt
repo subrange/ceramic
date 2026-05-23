@@ -1,5 +1,5 @@
 set(BINDGEN_SOURCES
-    bindgen.clay
+    bindgen.crm
 )
 
 if (WIN32)
@@ -13,19 +13,19 @@ else (WIN32)
 endif (WIN32)
 
 if(BUILD_BINDGEN)
-    add_custom_command(OUTPUT ${clay_BINARY_DIR}/tools/clay-bindgen${CMAKE_EXECUTABLE_SUFFIX}
+    add_custom_command(OUTPUT ${ceramic_BINARY_DIR}/tools/ceramic-bindgen${CMAKE_EXECUTABLE_SUFFIX}
         DEPENDS
-            clay
+            ceramic
             ${BINDGEN_SOURCES}
-        COMMAND clay
-            -I${clay_SOURCE_DIR}/lib-clay
-            -I${clay_SOURCE_DIR}/tools
-            -o ${clay_BINARY_DIR}/tools/clay-bindgen${CMAKE_EXECUTABLE_SUFFIX}
+        COMMAND ceramic
+            -I${ceramic_SOURCE_DIR}/lib-ceramic
+            -I${ceramic_SOURCE_DIR}/tools
+            -o ${ceramic_BINARY_DIR}/tools/ceramic-bindgen${CMAKE_EXECUTABLE_SUFFIX}
             ${LIBCLANG_LDFLAGS}
-            ${clay_SOURCE_DIR}/tools/bindgen.clay)
+            ${ceramic_SOURCE_DIR}/tools/bindgen.crm)
 
-    add_custom_target(clay-bindgen-target ALL
-        DEPENDS ${clay_BINARY_DIR}/tools/clay-bindgen${CMAKE_EXECUTABLE_SUFFIX})
-    install(PROGRAMS ${clay_BINARY_DIR}/tools/clay-bindgen${CMAKE_EXECUTABLE_SUFFIX}
+    add_custom_target(ceramic-bindgen-target ALL
+        DEPENDS ${ceramic_BINARY_DIR}/tools/ceramic-bindgen${CMAKE_EXECUTABLE_SUFFIX})
+    install(PROGRAMS ${ceramic_BINARY_DIR}/tools/ceramic-bindgen${CMAKE_EXECUTABLE_SUFFIX}
         DESTINATION bin)
 endif(BUILD_BINDGEN)

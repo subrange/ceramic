@@ -1,4 +1,4 @@
-GtkSourceView language definition for the Clay language.
+GtkSourceView language definition for the Ceramic language.
 
 Installing
 ----------

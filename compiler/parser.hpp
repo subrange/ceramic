@@ -1,37 +1,37 @@
 #pragma once
 
-#include "clay.hpp"
+#include "ceramic.hpp"
 #include "lexer.hpp"
 
-namespace clay {
-    enum ParserFlags {
-        NoParserFlags = 0,
-        ParserKeepDocumentation = 1
-    };
+namespace ceramic {
+enum ParserFlags { NoParserFlags = 0, ParserKeepDocumentation = 1 };
 
-    struct ReplItem {
-        bool isExprSet;
-        ExprPtr expr;
-        vector<TopLevelItemPtr> toplevels;
-        vector<ImportPtr> imports;
-        vector<StatementPtr> stmts;
-    };
+struct ReplItem {
+    bool isExprSet;
+    ExprPtr expr;
+    vector<TopLevelItemPtr> toplevels;
+    vector<ImportPtr> imports;
+    vector<StatementPtr> stmts;
+};
 
-    ModulePtr parse(llvm::StringRef moduleName, SourcePtr source, ParserFlags flags = NoParserFlags);
+ModulePtr parse(llvm::StringRef moduleName, const SourcePtr &source,
+                ParserFlags flags = NoParserFlags);
 
-    ExprPtr parseExpr(SourcePtr source, unsigned offset, size_t length);
+ExprPtr parseExpr(const SourcePtr &source, unsigned offset, size_t length);
 
-    ExprListPtr parseExprList(SourcePtr source, unsigned offset, size_t length);
+ExprListPtr parseExprList(const SourcePtr &source, unsigned offset,
+                          size_t length);
 
-    void parseStatements(SourcePtr source, unsigned offset, size_t length,
-                         vector<StatementPtr> &statements);
+void parseStatements(const SourcePtr &source, unsigned offset, size_t length,
+                     vector<StatementPtr> &statements);
 
-    void parseTopLevelItems(SourcePtr source, unsigned offset, size_t length,
-                            vector<TopLevelItemPtr> &topLevels, Module *);
+void parseTopLevelItems(const SourcePtr &source, unsigned offset, size_t length,
+                        vector<TopLevelItemPtr> &topLevels, Module *);
 
-    ReplItem parseInteractive(SourcePtr source, unsigned offset, size_t length);
+ReplItem parseInteractive(const SourcePtr &source, unsigned offset,
+                          size_t length);
 
-    typedef vector<Token> (*AddTokensCallback)();
+typedef vector<Token> (*AddTokensCallback)();
 
-    void setAddTokens(AddTokensCallback f);
-}
+void setAddTokens(AddTokensCallback f);
+} // namespace ceramic
