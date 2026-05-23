@@ -1505,7 +1505,7 @@ struct IntrinsicAnalyzer {
                        << D.Pointer_AddressSpace << " address space, but got ";
                 Ty->print(errors);
             }
-            VerifyIntrinsicType(PT->getElementType(), Infos, errors, ai);
+            // Opaque pointers carry no pointee type to recurse into.
             return;
         }
 
@@ -1657,14 +1657,10 @@ static TypePtr intrinsicOutputType(llvm::Type *ty) {
         return float32Type;
     else if (ty == llvm::Type::getDoubleTy(ty->getContext()))
         return float64Type;
-    else if (auto *pointerTy = llvm::dyn_cast<llvm::PointerType>(ty)) {
-        TypePtr baseType =
-            intrinsicOutputType(pointerTy->getPointerElementType());
-        if (baseType != nullptr)
-            return pointerType(baseType);
-        else
-            return nullptr;
-    } else if (auto *vectorTy = llvm::dyn_cast<llvm::VectorType>(ty)) {
+    else if (llvm::isa<llvm::PointerType>(ty)) {
+        // Opaque pointers carry no pointee type; treat as a byte pointer.
+        return pointerType(uint8Type);
+    } else if (auto *vectorTy = llvm::dyn_cast<llvm::FixedVectorType>(ty)) {
         TypePtr baseType = intrinsicOutputType(vectorTy->getElementType());
         if (baseType != nullptr)
             return vecType(baseType, vectorTy->getNumElements());
@@ -1732,7 +1728,7 @@ static MultiPValuePtr analyzeIntrinsic(IntrinsicSymbol *intrin,
         ia.run();
         IntrinsicInstance &instance = intrin->instances[argsKey];
         if (ia.outError.empty()) {
-            instance.function = llvm::Intrinsic::getOrInsertDeclaration(
+            instance.function = llvm::Intrinsic::getDeclaration(
                 llvmModule, intrin->id, ia.ArgTys);
             instance.outputTypes = intrinsicOutputTypes(instance.function);
             return instance.outputTypes;

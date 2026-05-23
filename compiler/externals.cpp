@@ -139,11 +139,12 @@ void ExternalFunction::returnStatement(ArgInfo info, vector<CReturn> &returns,
             CValuePtr retVal = returns[0].value;
             llvm::Value *bitcast = ctx->builder->CreateBitCast(
                 retVal->llValue, llvm::PointerType::getUnqual(bitcastType));
-            llvm::Value *v = ctx->builder->CreateLoad(bitcast);
+            llvm::Value *v = ctx->builder->CreateLoad(bitcastType, bitcast);
             ctx->builder->CreateRet(v);
         } else {
             CValuePtr retVal = returns[0].value;
-            llvm::Value *v = ctx->builder->CreateLoad(retVal->llValue);
+            llvm::Value *v =
+                ctx->builder->CreateLoad(llvmType(info.type), retVal->llValue);
             ctx->builder->CreateRet(v);
         }
     }
@@ -171,10 +172,11 @@ void ExternalFunction::loadArgument(ArgInfo info, CValuePtr cv,
         if (bitcastType != nullptr) {
             llvm::Value *llArg = ctx->builder->CreateBitCast(
                 cv->llValue, llvm::PointerType::getUnqual(bitcastType));
-            llvm::Value *llv = ctx->builder->CreateLoad(llArg);
+            llvm::Value *llv = ctx->builder->CreateLoad(bitcastType, llArg);
             llArgs.push_back(llv);
         } else {
-            llvm::Value *llv = ctx->builder->CreateLoad(cv->llValue);
+            llvm::Value *llv =
+                ctx->builder->CreateLoad(llvmType(info.type), cv->llValue);
             if (varArg) {
                 llv = promoteCVarArg(conv, info.type, llv, ctx);
             }
@@ -243,12 +245,12 @@ struct LLVMExternalTarget : public ExternalTarget {
     virtual void computeInfo(ExternalFunction *f);
 
     ExtArgInfo pushReturnType(CallingConv conv, TypePtr type,
-                              vector<pair<unsigned, llvm::Attributes>> &llAttrs,
+                              vector<pair<unsigned, llvm::Attribute>> &llAttrs,
                               unsigned &attrPos);
 
     ExtArgInfo
     pushArgumentType(CallingConv conv, TypePtr type,
-                     vector<pair<unsigned, llvm::Attributes>> &llAttrs,
+                     vector<pair<unsigned, llvm::Attribute>> &llAttrs,
                      unsigned &argPos, bool varArg);
 
     virtual llvm::CallingConv::ID callingConvention(CallingConv conv) {
@@ -290,12 +292,12 @@ void LLVMExternalTarget::computeInfo(ExternalFunction *f) {
 
 ExtArgInfo LLVMExternalTarget::pushReturnType(
     CallingConv conv, TypePtr type,
-    vector<pair<unsigned, llvm::Attributes>> &llAttrs, unsigned &attrPos) {
+    vector<pair<unsigned, llvm::Attribute>> &llAttrs, unsigned &attrPos) {
     if (type == nullptr)
         return ExtArgInfo::getDirect();
     else if (typeReturnsBySretPointer(conv, type)) {
-        llvm::Attributes attrs =
-            llvm::Attributes::get(llvmContext, llvm::Attributes::StructRet);
+        llvm::Attribute attrs =
+            llvm::Attribute::getWithStructRetType(llvmContext, llvmType(type));
         llAttrs.push_back(make_pair(attrPos++, attrs));
         return ExtArgInfo::getIndirect();
     } else {
@@ -309,11 +311,11 @@ ExtArgInfo LLVMExternalTarget::pushReturnType(
 
 ExtArgInfo LLVMExternalTarget::pushArgumentType(
     CallingConv conv, TypePtr type,
-    vector<pair<unsigned, llvm::Attributes>> &llAttrs, unsigned &attrPos,
+    vector<pair<unsigned, llvm::Attribute>> &llAttrs, unsigned &attrPos,
     bool varArg) {
     if (typePassesByByvalPointer(conv, type, varArg)) {
-        llvm::Attributes attrs =
-            llvm::Attributes::get(llvmContext, llvm::Attributes::ByVal);
+        llvm::Attribute attrs =
+            llvm::Attribute::getWithByValType(llvmContext, llvmType(type));
         llAttrs.push_back(make_pair(attrPos++, attrs));
         return ExtArgInfo::getIndirect();
     } else {
@@ -922,8 +924,8 @@ llvm::Type *X86_64_ExternalTarget::llvmWordType(TypePtr type) {
     llvm::ArrayRef<WordClass> wordClasses = getTypeClassification(type);
     assert(!wordClasses.empty());
 
-    llvm::StructType *llType =
-        llvm::StructType::create(llvmContext, "x86-64 " + typeName(type));
+    llvm::StructType *llType = llvm::StructType::create(
+        llvmContext, ("x86-64 " + typeName(type)).str());
     vector<llvm::Type *> llWordTypes;
     WordClass const *i = wordClasses.begin();
     size_t size = typeSize(type);
@@ -951,10 +953,10 @@ llvm::Type *X86_64_ExternalTarget::llvmWordType(TypePtr type) {
             // generate a <float x n> vector for 64-bit SSE words.
             if (vectorRun == 1)
                 llWordTypes.push_back(
-                    llvm::VectorType::get(llvmFloatType(64), vectorRun));
+                    llvm::VectorType::get(llvmFloatType(64), vectorRun, false));
             else
                 llWordTypes.push_back(
-                    llvm::VectorType::get(llvmIntType(64), vectorRun));
+                    llvm::VectorType::get(llvmIntType(64), vectorRun, false));
             break;
         }
         case SSE_FLOAT_VECTOR: {
@@ -964,7 +966,7 @@ llvm::Type *X86_64_ExternalTarget::llvmWordType(TypePtr type) {
                 ++i;
             } while (i != wordClasses.end() && *i == SSEUP);
             llWordTypes.push_back(
-                llvm::VectorType::get(llvmFloatType(32), vectorRun * 2));
+                llvm::VectorType::get(llvmFloatType(32), vectorRun * 2, false));
             break;
         }
         case SSE_DOUBLE_VECTOR: {
@@ -974,7 +976,7 @@ llvm::Type *X86_64_ExternalTarget::llvmWordType(TypePtr type) {
                 ++i;
             } while (i != wordClasses.end() && *i == SSEUP);
             llWordTypes.push_back(
-                llvm::VectorType::get(llvmFloatType(64), vectorRun));
+                llvm::VectorType::get(llvmFloatType(64), vectorRun, false));
             break;
         }
         case SSE_FLOAT_SCALAR:
@@ -1079,10 +1081,16 @@ struct Mips32_ExternalTarget : public ExternalTarget {
         }
     }
 
-    void addAttrs(vector<pair<unsigned, llvm::Attributes>> &attrs,
-                  unsigned &pos, llvm::Attributes::AttrVal val) {
-        attrs.push_back(
-            make_pair(pos++, llvm::Attributes::get(llvmContext, val)));
+    void addAttrs(vector<pair<unsigned, llvm::Attribute>> &attrs, unsigned &pos,
+                  llvm::Attribute::AttrKind val, llvm::Type *typeArg) {
+        llvm::Attribute attr;
+        if (val == llvm::Attribute::StructRet)
+            attr = llvm::Attribute::getWithStructRetType(llvmContext, typeArg);
+        else if (val == llvm::Attribute::ByVal)
+            attr = llvm::Attribute::getWithByValType(llvmContext, typeArg);
+        else
+            attr = llvm::Attribute::get(llvmContext, val);
+        attrs.push_back(make_pair(pos++, attr));
     }
 
     virtual void computeInfo(ExternalFunction *f) {
@@ -1092,7 +1100,8 @@ struct Mips32_ExternalTarget : public ExternalTarget {
         unsigned attrPos = 1;
         bool sret = f->retInfo.ext.isIndirect();
         if (sret)
-            addAttrs(f->attrs, attrPos, llvm::Attributes::StructRet);
+            addAttrs(f->attrs, attrPos, llvm::Attribute::StructRet,
+                     llvmType(f->retInfo.type));
 
         size_t offset = sret ? minABIAlign : 0;
         for (vector<ExternalFunction::ArgInfo>::iterator
@@ -1101,7 +1110,8 @@ struct Mips32_ExternalTarget : public ExternalTarget {
              it != ie; ++it) {
             it->ext = classifyArgumentType(it->type, offset);
             if (it->ext.isIndirect())
-                addAttrs(f->attrs, attrPos, llvm::Attributes::ByVal);
+                addAttrs(f->attrs, attrPos, llvm::Attribute::ByVal,
+                         llvmType(it->type));
         }
     }
 };
@@ -1209,9 +1219,7 @@ static ExternalTargetPtr externalTarget;
 void initExternalTarget(string targetString) {
     llvm::Triple target(targetString);
     if (target.getArch() == llvm::Triple::x86_64 &&
-        target.getOS() != llvm::Triple::Win32 &&
-        target.getOS() != llvm::Triple::MinGW32 &&
-        target.getOS() != llvm::Triple::Cygwin) {
+        target.getOS() != llvm::Triple::Win32 && !target.isOSCygMing()) {
         externalTarget = new X86_64_ExternalTarget(target);
     } else if (target.getArch() == llvm::Triple::x86 ||
                target.getArch() == llvm::Triple::x86_64) {

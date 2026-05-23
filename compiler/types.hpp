@@ -117,7 +117,7 @@ llvm::Type *llvmType(const TypePtr &t);
 
 llvm::DIType *llvmTypeDebugInfo(const TypePtr &t);
 
-llvm::DIType llvmVoidTypeDebugInfo();
+llvm::DIType *llvmVoidTypeDebugInfo();
 
 size_t typeSize(const TypePtr &t);
 
