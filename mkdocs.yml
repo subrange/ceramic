@@ -1,0 +1,23 @@
+site_name: Ceramic
+site_url: https://subrange.github.io/ceramic/
+repo_url: https://github.com/subrange/ceramic
+repo_name: subrange/ceramic
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+  palette:
+    scheme: default
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Language Reference: language-reference.md
+  - Primitives Reference: primitives-reference.md
+
+docs_dir: doc
