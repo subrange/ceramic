@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  LLVM_DEPS: llvm-19 llvm-19-dev clang-19 python3 ninja-build cmake
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,10 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y llvm-19 llvm-19-dev clang-19 python3 ninja-build cmake
+      - name: Cache apt packages
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: ${{ env.LLVM_DEPS }}
+          version: 1.0
 
       - name: Configure
         run: |
@@ -38,11 +42,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y llvm-19 llvm-19-dev clang-19 clang-tidy-19 python3 ninja-build cmake
+      - name: Cache apt packages
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: ${{ env.LLVM_DEPS }} clang-tidy-19
+          version: 1.0
 
       - name: Configure
         run: |
@@ -54,10 +61,25 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++-19 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      - name: Run clang-tidy
+      - name: Tidy changed files (PR)
+        if: github.event_name == 'pull_request'
         run: |
-          find compiler tools -name '*.cpp' \
-            | xargs clang-tidy-19 -p build
+          git fetch origin "${{ github.base_ref }}"
+          files=$(git diff --name-only --diff-filter=ACM \
+                  "origin/${{ github.base_ref }}...HEAD" \
+                  -- 'compiler/*.cpp' 'tools/*.cpp')
+          if [ -z "$files" ]; then
+            echo "No C++ files changed; skipping tidy."
+            exit 0
+          fi
+          echo "$files" | xargs -P "$(nproc)" -n 1 clang-tidy-19 -p build
+
+      - name: Tidy all files (main)
+        if: github.event_name == 'push'
+        run: |
+          /usr/lib/llvm-19/share/clang/run-clang-tidy.py \
+            -p build -j "$(nproc)" \
+            "$(pwd)/compiler/.*\.cpp" "$(pwd)/tools/.*\.cpp"
 
   format:
     runs-on: ubuntu-latest
@@ -65,12 +87,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install clang-format
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang-format-19
+      - name: Cache apt packages
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: clang-format-19
+          version: 1.0
 
       - name: Check formatting
         run: |
-          find compiler tools -name '*.cpp' -o -name '*.hpp' \
-            | xargs clang-format-19 --dry-run --Werror
+          find compiler tools \( -name '*.cpp' -o -name '*.hpp' \) -print0 \
+            | xargs -0 clang-format-19 --dry-run --Werror
