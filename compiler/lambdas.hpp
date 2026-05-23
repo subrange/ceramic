@@ -3,5 +3,5 @@
 #include "ceramic.hpp"
 
 namespace ceramic {
-void initializeLambda(const LambdaPtr &x, EnvPtr env);
+void initializeLambda(const LambdaPtr &x, const EnvPtr &env);
 }

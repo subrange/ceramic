@@ -59,8 +59,7 @@ TypePtr vecType(const TypePtr &elementType, unsigned size);
 TypePtr tupleType(llvm::ArrayRef<TypePtr> elementTypes);
 TypePtr unionType(llvm::ArrayRef<TypePtr> memberTypes);
 
-TypePtr recordType(const RecordDeclPtr &record,
-                   llvm::ArrayRef<ObjectPtr> params);
+TypePtr recordType(RecordDeclPtr record, llvm::ArrayRef<ObjectPtr> params);
 
 TypePtr variantType(const VariantDeclPtr &variant,
                     llvm::ArrayRef<ObjectPtr> params);
@@ -83,7 +82,7 @@ llvm::ArrayRef<IdentifierPtr> recordFieldNames(const RecordTypePtr &t);
 
 llvm::ArrayRef<TypePtr> recordFieldTypes(const RecordTypePtr &t);
 
-const llvm::StringMap<size_t> &recordFieldIndexMap(const RecordTypePtr &t);
+const llvm::StringMap<size_t> &recordFieldIndexMap(RecordTypePtr t);
 
 llvm::ArrayRef<TypePtr> variantMemberTypes(const VariantTypePtr &t);
 
@@ -93,7 +92,7 @@ unsigned dispatchTagCount(TypePtr t);
 
 TypePtr newtypeReprType(const NewTypePtr &t);
 
-void initializeEnumType(const EnumTypePtr &t);
+void initializeEnumType(EnumTypePtr t);
 
 void initializeNewType(const NewTypePtr &t);
 
@@ -119,13 +118,13 @@ llvm::DIType *llvmTypeDebugInfo(const TypePtr &t);
 
 llvm::DIType *llvmVoidTypeDebugInfo();
 
-size_t typeSize(const TypePtr &t);
+size_t typeSize(TypePtr t);
 
-size_t typeAlignment(const TypePtr &t);
+size_t typeAlignment(TypePtr t);
 
 void typePrint(llvm::raw_ostream &out, TypePtr t);
 
-llvm::StringRef typeName(const TypePtr &t);
+std::string typeName(TypePtr t);
 
 inline size_t alignedUpTo(const size_t offset, const size_t align) {
     return (offset + align - 1) / align * align;

@@ -924,8 +924,8 @@ llvm::Type *X86_64_ExternalTarget::llvmWordType(TypePtr type) {
     llvm::ArrayRef<WordClass> wordClasses = getTypeClassification(type);
     assert(!wordClasses.empty());
 
-    llvm::StructType *llType = llvm::StructType::create(
-        llvmContext, ("x86-64 " + typeName(type)).str());
+    llvm::StructType *llType =
+        llvm::StructType::create(llvmContext, "x86-64 " + typeName(type));
     vector<llvm::Type *> llWordTypes;
     WordClass const *i = wordClasses.begin();
     size_t size = typeSize(type);

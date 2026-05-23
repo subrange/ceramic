@@ -624,9 +624,9 @@ struct CompileContextEntry {
           hasParams(true) {}
 };
 
-void pushCompileContext(ObjectPtr obj);
+void pushCompileContext(const ObjectPtr &obj);
 
-void pushCompileContext(ObjectPtr obj, llvm::ArrayRef<ObjectPtr> params);
+void pushCompileContext(const ObjectPtr &obj, llvm::ArrayRef<ObjectPtr> params);
 
 void pushCompileContext(ObjectPtr obj, llvm::ArrayRef<ObjectPtr> params,
                         llvm::ArrayRef<unsigned> dispatchIndices);
@@ -687,9 +687,9 @@ llvm::DIFile *getDebugLineCol(Location const &location, unsigned &line,
 
 void printFileLineCol(llvm::raw_ostream &out, Location const &location);
 
-void invalidStaticObjectError(ObjectPtr obj);
+void invalidStaticObjectError(const ObjectPtr &obj);
 
-void argumentInvalidStaticObjectError(unsigned index, ObjectPtr obj);
+void argumentInvalidStaticObjectError(unsigned index, const ObjectPtr &obj);
 
 struct DebugPrinter {
     static int indent;
