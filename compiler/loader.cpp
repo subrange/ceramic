@@ -80,7 +80,8 @@ static llvm::StringRef getOSGroup(llvm::Triple const &triple) {
     case llvm::Triple::OpenBSD:
     case llvm::Triple::Solaris:
     case llvm::Triple::Haiku:
-    // case llvm::Triple::Minix: return "unix";
+        // case llvm::Triple::Minix:
+        return "unix";
     default:
         return "";
     }
