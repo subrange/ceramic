@@ -414,7 +414,7 @@ static llvm::Constant *codegenStringTableConstant(llvm::StringRef s) {
     };
 
     llvm::Constant *theConstant =
-        llvm::ConstantExpr::getGetElementPtr(gvar, idxs);
+        llvm::ConstantExpr::getGetElementPtr(gvar->getValueType(), gvar, idxs);
     stringTableConstants[s] = theConstant;
     return theConstant;
 }
@@ -465,17 +465,8 @@ static void codegenCWrapper(InvokeEntry *entry, CallingConv cc) {
         llvm::Function::Create(llFuncType, llvm::Function::InternalLinkage,
                                ccName + callableName, llvmModule);
 
-    // #include <llvm/IR/Function.h>
-    // #include <llvm/IR/Attributes.h>
-    // std::vector<std::pair<unsigned, llvm::Attribute>> attrs;
-    // for (const auto &attr : extFunc->attrs)
-    //     llCWrapper->addAttribute(attr.first, attr.second);
-
-    // for (vector<pair<unsigned, llvm::Attributes> >::const_iterator
-    //      attr = extFunc->attrs.begin();
-    //      attr != extFunc->attrs.end();
-    //      ++attr)
-    //     llCWrapper->addAttribute(attr->first, attr->second);
+    for (const auto &attr : extFunc->attrs)
+        llCWrapper->addParamAttr(attr.first - 1, attr.second);
 
     llCWrapper->setCallingConv(extFunc->llConv);
 
@@ -556,14 +547,15 @@ static void codegenCallCCode(CCodePointerTypePtr t, llvm::Value *llCallable,
         t->callingConv == CC_LLVM
             ? llCallable
             : ctx->builder->CreateBitCast(llCallable, t->getCallType());
-    llvm::CallInst *callInst =
-        ctx->builder->CreateCall(llCastCallable, llvm::ArrayRef(llArgs));
+    llvm::FunctionType *llFuncType = extFunc->getLLVMFunctionType();
+    llvm::CallInst *callInst = ctx->builder->CreateCall(
+        llFuncType, llCastCallable, llvm::ArrayRef(llArgs));
     llvm::CallingConv::ID callingConv = extFunc->llConv;
     callInst->setCallingConv(callingConv);
     for (vector<pair<unsigned, llvm::Attribute>>::iterator attr =
              extFunc->attrs.begin();
          attr != extFunc->attrs.end(); ++attr)
-        callInst->addAttribute(attr->first, attr->second);
+        callInst->addParamAttr(attr->first - 1, attr->second);
 
     llvm::Value *llRet = callInst;
     extFunc->storeReturnValue(extFunc->retInfo, llRet, ctx, out);
@@ -1269,8 +1261,8 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
             v1 = ctx->builder->CreateZExt(v1, llvmType(cSizeTType));
         vector<llvm::Value *> indices;
         indices.push_back(v1);
-        llvm::Value *result =
-            ctx->builder->CreateGEP(v0, llvm::ArrayRef(indices));
+        llvm::Value *result = ctx->builder->CreateGEP(
+            llvmType(t->pointeeType), v0, llvm::ArrayRef(indices));
         assert(out->size() == 1);
         CValuePtr out0 = out->values[0];
         assert(out0->type == t.ptr());
@@ -2022,8 +2014,8 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         if (ptrT->pointeeType != argT)
             argumentTypeError(3, ptrT->pointeeType, argT);
 
-        llvm::Value *result =
-            ctx->builder->CreateAtomicRMW(op, ptr, arg, order);
+        llvm::Value *result = ctx->builder->CreateAtomicRMW(
+            op, ptr, arg, llvm::MaybeAlign(), order);
 
         assert(out->size() == 1);
         CValuePtr out0 = out->values[0];
@@ -2068,7 +2060,7 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
             argumentTypeError(2, ptrT->pointeeType, argT);
 
         ctx->builder->Insert(new llvm::StoreInst(
-            arg, ptr, false, unsigned(typeAlignment(argT)), order));
+            arg, ptr, false, llvm::Align(typeAlignment(argT)), order));
 
         assert(out->size() == 0);
         break;
@@ -2094,8 +2086,9 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
         if (ptrT->pointeeType != newvT)
             argumentTypeError(3, ptrT->pointeeType, newvT);
 
-        llvm::Value *result =
-            ctx->builder->CreateAtomicCmpXchg(ptr, oldv, newv, order);
+        llvm::Value *cmpxchg = ctx->builder->CreateAtomicCmpXchg(
+            ptr, oldv, newv, llvm::MaybeAlign(), order, order);
+        llvm::Value *result = ctx->builder->CreateExtractValue(cmpxchg, 0);
 
         assert(out->size() == 1);
         CValuePtr out0 = out->values[0];
@@ -2143,9 +2136,13 @@ void codegenPrimOp(PrimOpPtr x, MultiCValuePtr args, CodegenContext *ctx,
                               typeAlignment(frompt->pointeeType)));
 
         if (x->primOpCode == PRIM_memcpy)
-            ctx->builder->CreateMemCpy(toptr, fromptr, count, alignment);
+            ctx->builder->CreateMemCpy(toptr, llvm::MaybeAlign(alignment),
+                                       fromptr, llvm::MaybeAlign(alignment),
+                                       count);
         else
-            ctx->builder->CreateMemMove(toptr, fromptr, count, alignment);
+            ctx->builder->CreateMemMove(toptr, llvm::MaybeAlign(alignment),
+                                        fromptr, llvm::MaybeAlign(alignment),
+                                        count);
 
         break;
     }
