@@ -1,7 +1,7 @@
 #include "evaluator.hpp"
 #include "analyzer.hpp"
-#include "checkedcast.hpp"
 #include "ceramic.hpp"
+#include "checkedcast.hpp"
 #include "codegen.hpp"
 #include "constructors.hpp"
 #include "desugar.hpp"

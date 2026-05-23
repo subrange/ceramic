@@ -7,11 +7,11 @@ typedef void (*TestFunc)();
 
 void register_test(const char *name, TestFunc);
 
-#define CERAMIC_UNITTEST(NAME)                                                    \
+#define CERAMIC_UNITTEST(NAME)                                                 \
     void NAME##_testImpl();                                                    \
     struct TestRegistrator_##NAME {                                            \
         TestRegistrator_##NAME() {                                             \
-            ::ceramic::register_test(#NAME, &NAME##_testImpl);                    \
+            ::ceramic::register_test(#NAME, &NAME##_testImpl);                 \
         }                                                                      \
     };                                                                         \
     static TestRegistrator_##NAME testRegistrator_##NAME;                      \

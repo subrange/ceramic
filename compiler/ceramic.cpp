@@ -786,7 +786,8 @@ int main2(int argc, char **argv, char const *const *envp) {
             } else {
                 if (i != argc) {
                     llvm::errs()
-                        << "error: ceramic file already specified: " << ceramicFile
+                        << "error: ceramic file already specified: "
+                        << ceramicFile
                         << ", unrecognized parameter: " << argv[i] << '\n';
                     return 1;
                 }
@@ -927,8 +928,10 @@ int main2(int argc, char **argv, char const *const *envp) {
     setSearchPath(searchPath);
 
     if (outputFile.empty()) {
-        llvm::StringRef ceramicFileBasename = llvm::sys::path::stem(ceramicFile);
-        outputFile = string(ceramicFileBasename.begin(), ceramicFileBasename.end());
+        llvm::StringRef ceramicFileBasename =
+            llvm::sys::path::stem(ceramicFile);
+        outputFile =
+            string(ceramicFileBasename.begin(), ceramicFileBasename.end());
 
         if (emitLLVM && emitAsm)
             outputFile += ".ll";

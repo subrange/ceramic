@@ -918,7 +918,8 @@ static void op_numericConvert2(EValuePtr dest, EValuePtr src) {
                 op_numericConvert3<D, long long, CHECK>::perform(dest, src);
                 break;
             case 128:
-                op_numericConvert3<D, ceramic_int128, CHECK>::perform(dest, src);
+                op_numericConvert3<D, ceramic_int128, CHECK>::perform(dest,
+                                                                      src);
                 break;
             default:
                 assert(false);
@@ -940,7 +941,8 @@ static void op_numericConvert2(EValuePtr dest, EValuePtr src) {
                                                                           src);
                 break;
             case 128:
-                op_numericConvert3<D, ceramic_uint128, CHECK>::perform(dest, src);
+                op_numericConvert3<D, ceramic_uint128, CHECK>::perform(dest,
+                                                                       src);
                 break;
             default:
                 assert(false);

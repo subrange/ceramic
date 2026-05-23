@@ -169,14 +169,16 @@ static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out, ceramic_cfloat x) {
     return out << buf;
 }
 
-static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out, ceramic_cdouble x) {
+static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out,
+                                     ceramic_cdouble x) {
     char buf[128];
     snprintf(buf, 127, "%.16g%+.16gj", ceramic_creal(x), ceramic_cimag(x));
     buf[127] = 0;
     return out << buf;
 }
 
-static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out, ceramic_cldouble x) {
+static llvm::raw_ostream &writeFloat(llvm::raw_ostream &out,
+                                     ceramic_cldouble x) {
     char buf[128];
     snprintf(buf, 127, "%.19Lg%+.19Lgj", ceramic_creal(x), ceramic_cimag(x));
     buf[127] = 0;
