@@ -2173,18 +2173,25 @@ static void skipOptPatternVar() {
     unsigned p = save();
     if (!symbol("[")) {
         restore(p);
-    } else {
-        int bracket = 1;
-        while (bracket) {
-            unsigned i = save();
-            if (symbol("[")) {
-                ++bracket;
-                continue;
-            }
-            restore(i);
-            if (symbol("]"))
-                --bracket;
+        return;
+    }
+    // `[[` belongs to a different grammar rule.
+    unsigned q = save();
+    if (symbol("[")) {
+        restore(p);
+        return;
+    }
+    restore(q);
+    int bracket = 1;
+    while (bracket) {
+        unsigned i = save();
+        if (symbol("[")) {
+            ++bracket;
+            continue;
         }
+        restore(i);
+        if (symbol("]"))
+            --bracket;
     }
 }
 
@@ -2669,6 +2676,43 @@ static bool isOverload(bool &isDefault) {
     return true;
 }
 
+// `[[name, ...]]` attribute list. Unknown names warn.
+static bool optAttributeList(bool &isDiagnosticTransparent) {
+    isDiagnosticTransparent = false;
+    unsigned p = save();
+    if (!symbol("[")) {
+        restore(p);
+        return true;
+    }
+    if (!symbol("[")) {
+        restore(p);
+        return true;
+    }
+    while (true) {
+        Location attrLoc = currentLocation();
+        IdentifierPtr name;
+        if (!identifier(name))
+            return false;
+        if (name->str == "transparent") {
+            isDiagnosticTransparent = true;
+        } else {
+            pushLocation(attrLoc);
+            warning("unknown attribute '" + name->str + "'");
+            popLocation();
+        }
+        unsigned q = save();
+        if (symbol(","))
+            continue;
+        restore(q);
+        break;
+    }
+    if (!symbol("]"))
+        return false;
+    if (!symbol("]"))
+        return false;
+    return true;
+}
+
 static bool optInline(InlineAttribute &isInline) {
     unsigned p = save();
     if (keyword("inline"))
@@ -2816,6 +2860,9 @@ static bool procedureWithInterface(vector<TopLevelItemPtr> &x, Module *module,
 
 static bool procedureWithBody(vector<TopLevelItemPtr> &x, Module *module,
                               unsigned s) {
+    bool isDiagnosticTransparent = false;
+    if (!optAttributeList(isDiagnosticTransparent))
+        return false;
     Visibility vis;
     if (!topLevelVisibility(vis))
         return false;
@@ -2865,6 +2912,7 @@ static bool procedureWithBody(vector<TopLevelItemPtr> &x, Module *module,
     OverloadPtr oload = new Overload(module, target, code, callByName, isInline,
                                      hasAsConversion);
     oload->location = location;
+    oload->isDiagnosticTransparent = isDiagnosticTransparent;
     x.emplace_back(oload.ptr());
 
     proc->singleOverload = oload;
@@ -2893,6 +2941,9 @@ static bool procedure(TopLevelItemPtr &x, Module *module) {
 }
 
 static bool overload(TopLevelItemPtr &x, Module *module, unsigned s) {
+    bool isDiagnosticTransparent = false;
+    if (!optAttributeList(isDiagnosticTransparent))
+        return false;
     InlineAttribute isInline;
     if (!optInline(isInline))
         return false;
@@ -2943,6 +2994,7 @@ static bool overload(TopLevelItemPtr &x, Module *module, unsigned s) {
                                      hasAsConversion);
     oload->location = location;
     oload->isDefault = isDefault;
+    oload->isDiagnosticTransparent = isDiagnosticTransparent;
     x = oload.ptr();
     return true;
 }

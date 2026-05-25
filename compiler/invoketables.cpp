@@ -281,6 +281,7 @@ static InvokeEntry *newInvokeEntry(InvokeSet *parent, MatchSuccessPtr match,
                                    MatchSuccessPtr interfaceMatch) {
     InvokeEntry *entry =
         new InvokeEntry(parent, match->callable, match->argsKey);
+    entry->matchedOverload = match->overload;
     entry->origCode = match->overload->code;
     entry->code = clone(match->overload->code);
     entry->env = match->env;
