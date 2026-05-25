@@ -16,6 +16,7 @@ compile_commands.json
 *.mshark
 bin/
 build*/
+site/
 *.o
 *.out
 *.exe
