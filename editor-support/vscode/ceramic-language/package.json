@@ -1,0 +1,25 @@
+{
+  "name": "ceramic-language",
+  "displayName": "ceramic-language",
+  "description": "Syntax highlighting for the Ceramic programming language",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.120.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "ceramic",
+      "aliases": ["Ceramic", "ceramic"],
+      "extensions": [".crm"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "ceramic",
+      "scopeName": "source.ceramic",
+      "path": "./syntaxes/ceramic.tmLanguage.json"
+    }]
+  }
+}

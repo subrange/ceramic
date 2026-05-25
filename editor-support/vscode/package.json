@@ -1,0 +1,34 @@
+{
+  "name": "ceramic-language",
+  "displayName": "Ceramic Language",
+  "description": "Syntax highlighting for the Ceramic programming language (.crm files)",
+  "version": "0.1.0",
+  "publisher": "ceramic",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jckarter/clay"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "ceramic",
+        "aliases": ["Ceramic", "ceramic"],
+        "extensions": [".crm"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ceramic",
+        "scopeName": "source.ceramic",
+        "path": "./syntaxes/ceramic.tmLanguage.json"
+      }
+    ]
+  }
+}
