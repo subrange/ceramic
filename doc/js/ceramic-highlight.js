@@ -14,7 +14,6 @@ const [grammar, themeLight] = await Promise.all([
 grammar.name = "ceramic";
 
 const shiki = await import("https://esm.sh/shiki@1.22.0");
-N;
 const highlighter = await shiki.createHighlighter({
   themes: [themeLight],
   langs: [grammar],
