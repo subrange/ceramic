@@ -1,8 +1,8 @@
 import printer.(println);
 import simd.*;
 import libc.(printf);
-import __intrinsics__.(x86_sse2_sqrt_pd as x86_sqrtpd);
+import __intrinsics__.(sqrt as llvm_sqrt);
 
 main() {
-    println(x86_sqrtpd(Vec[Double,2](4.0)));
+    println(llvm_sqrt(Vec[Double,2](4.0)));
 }

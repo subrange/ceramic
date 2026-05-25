@@ -121,11 +121,13 @@ forceinline overload assign(ref dest:T, ref src:T) : {
 forceinline default resetUnsafe(src:T) { src <-- T(); }
 
 [F when Operator?(F)]
+[[transparent]]
 forceinline default updateAssign(#F, ref dest, forward ..src) : {
     dest = infixOperator(dest,F, ..src);
 }
 
 [F when Operator?(F)]
+[[transparent]]
 forceinline overload prefixUpdateAssign(#F, ref dest, forward ..src) : {
     dest = prefixOperator(F, dest, ..src);
 }
@@ -148,31 +150,37 @@ forceinline overload (|)(a, b, c, ..rest) = (|)((|)(a, b), c, ..rest);
 forceinline overload (~)(a, b, c, ..rest) = (~)((~)(a, b), c, ..rest);
 
 [FIELD]
+[[transparent]]
 forceinline overload fieldRefAssign(dest, #FIELD, forward src) : {
     assign(fieldRef(dest, #FIELD), src);
 }
 
 [F, FIELD when Operator?(F)]
+[[transparent]]
 forceinline overload fieldRefUpdateAssign(#F, dest, #FIELD, forward ..src) : {
     updateAssign(#F, fieldRef(dest, #FIELD), ..src);
 }
 
 [F, FIELD, T when RValue?(fieldRef(typeToLValue(T), #FIELD)) and Operator?(F)]
+[[transparent]]
 forceinline overload fieldRefUpdateAssign(#F, dest:T, #FIELD, forward src) : {
     fieldRefAssign(dest, #FIELD, F(fieldRef(dest, #FIELD), src));
 }
 
 [i]
+[[transparent]]
 forceinline overload staticIndexAssign(dest, #i, forward src) : {
     assign(staticIndex(dest, #i), src);
 }
 
 [F, i when Operator?(F)]
+[[transparent]]
 forceinline overload staticIndexUpdateAssign(#F, dest, #i, forward ..src) : {
     updateAssign(#F, staticIndex(dest, #i), ..src);
 }
 
 [F, i, T when RValue?(staticIndex(typeToLValue(T), #i)) and Operator?(F)]
+[[transparent]]
 forceinline overload staticIndexUpdateAssign(#F, dest:T, #i, forward src) : {
     staticIndexAssign(dest, #i, F(staticIndex(dest, #i), src));
 }
@@ -249,9 +257,9 @@ BinaryOpDefined?(OP,T,U) : Bool = Operator?(OP) and not Variant?(OP) and not Rec
 CompareOpDefined?(OP,T,U) : Bool = Operator?(OP) and not Variant?(OP) and not Record?(OP) 
     and CallDefined?(OP,T,U) and staticEquals?(CallOutputTypes(OP,T,U),Bool); 
 
-[OP when Operator?(OP)] forceinline default prefixOperator(#OP, forward ..xs)
+[OP when Operator?(OP)] [[transparent]] forceinline default prefixOperator(#OP, forward ..xs)
     = forward OP(..prefixOperator(..xs));
-[OP when Operator?(OP)] forceinline overload prefixOperator(#OP, forward x) 
+[OP when Operator?(OP)] [[transparent]] forceinline overload prefixOperator(#OP, forward x)
     = forward ..OP(x);
 
 alias LEFT = 0;
@@ -423,12 +431,14 @@ forceinline overload evalBool(#OP, y, #OP2, z, ..x) : Bool
 forceinline overload evalBool(#OP, x, y) : Bool = OP(x, y);
 
 [..T]
-forceinline default infixOperator(forward ..args:T) 
+[[transparent]]
+forceinline default infixOperator(forward ..args:T)
     = forward ..evalBool(..evalPolish(
         ..infixToPolish(#countValues(..T), #0, #0, ..reverseValues(..args))));
 
 [OP when Operator?(OP)]
-forceinline default infixOperator(forward a, #OP, forward b) 
+[[transparent]]
+forceinline default infixOperator(forward a, #OP, forward b)
     = forward ..OP(a,b);
 
 
@@ -510,8 +520,8 @@ alias overload ifExpression(condition, ref consequent:T, ref alternate:T) : ByRe
         return ref alternate;
 }
 
-alias overload ifExpression(#true, consequent, alternate) = forward consequent;
-alias overload ifExpression(#false, consequent, alternate) = forward alternate;
+[[transparent]] alias overload ifExpression(#true, consequent, alternate) = forward consequent;
+[[transparent]] alias overload ifExpression(#false, consequent, alternate) = forward alternate;
 
 
 [consequent, alternate when StringLiteral?(consequent) and StringLiteral?(alternate)]

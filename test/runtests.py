@@ -360,6 +360,7 @@ class TestCase(object):
             self.cmdline(self.opt.ceramicCompiler),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            text=True,
         )
         compilerout, compilererr = process.communicate()
         if process.returncode != 0:
@@ -374,7 +375,7 @@ class TestCase(object):
             ] + self.opt.testBuildFlags
 
         process = subprocess.Popen(
-            commandline, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            commandline, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
         resultout, resulterr = process.communicate()
         self.removefile(outfilename)
@@ -426,10 +427,10 @@ class TestDisabledCase(TestCase):
 
 
 def findTestCase(opt, folder, base=None):
-    testPath = fileForPlatform(opt, folder, "test", "ceramic")
-    mainPath = fileForPlatform(opt, folder, "main", "ceramic")
-    testDisabledPath = fileForPlatform(opt, folder, "test-disabled", "ceramic")
-    mainDisabledPath = fileForPlatform(opt, folder, "main-disabled", "ceramic")
+    testPath = fileForPlatform(opt, folder, "test", "crm")
+    mainPath = fileForPlatform(opt, folder, "main", "crm")
+    testDisabledPath = fileForPlatform(opt, folder, "test-disabled", "crm")
+    mainDisabledPath = fileForPlatform(opt, folder, "main-disabled", "crm")
     if os.path.isfile(testPath):
         TestModuleCase(opt, folder, testPath, base)
     elif os.path.isfile(testDisabledPath):
