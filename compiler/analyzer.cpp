@@ -2008,6 +2008,8 @@ InvokeEntry *analyzeCallable(ObjectPtr x, llvm::ArrayRef<PVData> args) {
         matchFailureError(failures);
     }
 
+    setCurrentOverload(entry->matchedOverload);
+
     if (entry->parent->shouldLog)
         matchFailureLog(failures);
 

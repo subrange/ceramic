@@ -609,6 +609,7 @@ struct CompileContextEntry {
     Location location;
 
     ObjectPtr callable;
+    OverloadPtr overload;
 
     bool hasParams : 1;
 
@@ -632,6 +633,8 @@ void pushCompileContext(ObjectPtr obj, llvm::ArrayRef<ObjectPtr> params,
                         llvm::ArrayRef<unsigned> dispatchIndices);
 
 void popCompileContext();
+
+void setCurrentOverload(OverloadPtr overload);
 
 vector<CompileContextEntry> getCompileContext();
 
@@ -1190,7 +1193,15 @@ enum BindingKind { BINDING_KIND_MAP(BINDING_KIND_GEN) };
 
 llvm::raw_ostream &operator<<(llvm::raw_ostream &os, BindingKind);
 
-struct PatternVar;
+struct PatternVar {
+    IdentifierPtr name;
+    bool isMulti : 1;
+
+    PatternVar(bool isMulti, IdentifierPtr name)
+        : name(name), isMulti(isMulti) {}
+
+    PatternVar() : isMulti(false) {}
+};
 
 struct Binding : public Statement {
     const BindingKind bindingKind;
@@ -1506,16 +1517,6 @@ struct ReturnSpec : public ANode {
         : ANode(RETURN_SPEC), type(type), name(name) {}
 };
 
-struct PatternVar {
-    IdentifierPtr name;
-    bool isMulti : 1;
-
-    PatternVar(bool isMulti, IdentifierPtr name)
-        : name(name), isMulti(isMulti) {}
-
-    PatternVar() : isMulti(false) {}
-};
-
 struct LLVMCode : ANode {
     const string body;
 
@@ -1696,26 +1697,24 @@ struct Overload : public TopLevelItem {
     PatternPtr callablePattern;
     vector<PatternPtr> argPatterns;
     MultiPatternPtr varArgPattern;
-    InlineAttribute isInline : 3;
-    int patternsInitializedState : 2; // 0:notinit, -1:initing, +1:inited
-    bool callByName : 1;
-    bool nameIsPattern : 1;
-    bool hasAsConversion : 1;
-    bool isDefault : 1;
+    InlineAttribute isInline : 3 = IGNORE;
+    int patternsInitializedState : 2 = 0; // 0:notinit, -1:initing, +1:inited
+    bool callByName : 1 = false;
+    bool nameIsPattern : 1 = false;
+    bool hasAsConversion : 1 = false;
+    bool isDefault : 1 = false;
+    bool isDiagnosticTransparent : 1 = false;
 
     Overload(Module *module, ExprPtr target, CodePtr code, bool callByName,
              InlineAttribute isInline)
         : TopLevelItem(OVERLOAD, module), target(target), code(code),
-          isInline(isInline), patternsInitializedState(0),
-          callByName(callByName), nameIsPattern(false), hasAsConversion(false),
-          isDefault(false) {}
+          isInline(isInline), callByName(callByName) {}
 
     Overload(Module *module, ExprPtr target, CodePtr code, bool callByName,
              InlineAttribute isInline, bool hasAsConversion)
         : TopLevelItem(OVERLOAD, module), target(target), code(code),
-          isInline(isInline), patternsInitializedState(0),
-          callByName(callByName), nameIsPattern(false),
-          hasAsConversion(hasAsConversion), isDefault(false) {}
+          isInline(isInline), callByName(callByName),
+          hasAsConversion(hasAsConversion) {}
 };
 
 struct Procedure : public TopLevelItem {

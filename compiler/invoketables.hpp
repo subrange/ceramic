@@ -17,6 +17,7 @@ struct InvokeEntry {
 
     InvokeSet *parent;
     ObjectPtr callable;
+    OverloadPtr matchedOverload;
     vector<TypePtr> argsKey;
     vector<uint8_t> forwardedRValueFlags;
 
