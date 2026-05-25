@@ -29,4 +29,6 @@ core.*
 tags
 cscope.out
 .gdb_history
+site/
+__pycache__/
 

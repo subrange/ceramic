@@ -4,8 +4,8 @@ Ceramic is a programming language based on Clay designed for Generic Programming
 
 ## Documentation
 
-- [Language Reference](language-reference.md): syntax, types, statements, expressions
-- [Primitives Reference](primitives-reference.md): the `__primitives__` module
+- [Language Reference](language-reference/index.md): syntax, types, statements, expressions
+- [Primitives Reference](primitives-reference/index.md): the `__primitives__` module
 
 ## License
 

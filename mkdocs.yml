@@ -5,6 +5,10 @@ repo_name: subrange/ceramic
 
 theme:
   name: material
+  favicon: assets/favicon.svg
+  font:
+    text: Inter
+    code: JetBrains Mono
   features:
     - navigation.sections
     - navigation.top
@@ -15,9 +19,39 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
+extra_javascript:
+  - path: js/ceramic-highlight.js
+    type: module
+
+markdown_extensions:
+  - pymdownx.highlight:
+      use_pygments: false
+  - pymdownx.superfences
+
 nav:
   - Home: index.md
-  - Language Reference: language-reference.md
-  - Primitives Reference: primitives-reference.md
+  - Language Reference:
+    - Overview: language-reference/index.md
+    - Tokenization: language-reference/tokenization.md
+    - Compilation Strategy: language-reference/compilation.md
+    - Modules & Source Layout: language-reference/modules.md
+    - Type Definitions: language-reference/types.md
+    - Function Definitions: language-reference/functions.md
+    - Statements: language-reference/statements.md
+    - Expressions: language-reference/expressions.md
+    - Grammar Reference: language-reference/grammar.md
+  - Primitives Reference:
+    - Overview: primitives-reference/index.md
+    - Primitive Types: primitives-reference/types.md
+    - Data Access: primitives-reference/data-access.md
+    - Numeric Operations: primitives-reference/numeric.md
+    - Pointer Operations: primitives-reference/pointers.md
+    - Atomic Operations: primitives-reference/atomic.md
+    - Exceptions: primitives-reference/exceptions.md
+    - Introspection: primitives-reference/introspection.md
+    - Compiler Interface: primitives-reference/compiler.md
 
 docs_dir: doc
+
+exclude_docs: |
+  _archive/
