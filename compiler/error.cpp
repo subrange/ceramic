@@ -6,6 +6,7 @@
 #include "matchinvoke.hpp"
 #include "printer.hpp"
 
+#include <algorithm>
 #include <cstdarg>
 
 namespace ceramic {
@@ -47,6 +48,11 @@ void pushCompileContext(ObjectPtr obj, llvm::ArrayRef<ObjectPtr> params,
 }
 
 void popCompileContext() { contextStack.pop_back(); }
+
+void setCurrentOverload(OverloadPtr overload) {
+    if (!contextStack.empty())
+        contextStack.back().overload = overload;
+}
 
 vector<CompileContextEntry> getCompileContext() { return contextStack; }
 
@@ -433,42 +439,130 @@ void matchBindingError(MatchResultPtr const &result) {
     error(sout.str());
 }
 
+// Rank a match-failure kind by how informative it is to the user.
+// Higher = more useful (predicate names, type-pattern mismatches).
+// Lower = noise (this overload was just for an unrelated callable name).
+static int failureScore(MatchCode code) {
+    switch (code) {
+    case MATCH_PREDICATE_ERROR:
+        return 4;
+    case MATCH_ARGUMENT_ERROR:
+    case MATCH_MULTI_ARGUMENT_ERROR:
+    case MATCH_BINDING_ERROR:
+    case MATCH_MULTI_BINDING_ERROR:
+        return 3;
+    case MATCH_ARITY_ERROR:
+        return 2;
+    case MATCH_CALLABLE_ERROR:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static void printFailureLine(llvm::raw_ostream &sout,
+                             const pair<OverloadPtr, MatchResultPtr> &failure) {
+    sout << "\n    ";
+    Location location = failure.first->location;
+    unsigned line, column, tabColumn;
+    getLineCol(location, line, column, tabColumn);
+    sout << location.source->fileName.c_str() << "(" << line + 1 << ","
+         << column << ")"
+         << "\n        ";
+    printMatchError(sout, failure.second);
+}
+
 static void matchFailureMessage(MatchFailureError const &err, string &outBuf) {
     llvm::raw_string_ostream sout(outBuf);
-    int hiddenPatternOverloads = 0;
 
+    // -full-match-errors preserves the original verbatim dump.
+    if (shouldPrintFullMatchErrors) {
+        for (const auto &failure : err.failures)
+            printFailureLine(sout, failure);
+        sout.flush();
+        return;
+    }
+
+    // Default path: hide universal pattern overloads, then rank what's left.
+    int hiddenPatternOverloads = 0;
+    vector<pair<OverloadPtr, MatchResultPtr>> visible;
     for (const auto &failure : err.failures) {
-        OverloadPtr overload = failure.first;
-        if (!shouldPrintFullMatchErrors && overload->nameIsPattern) {
+        if (failure.first->nameIsPattern) {
             ++hiddenPatternOverloads;
             continue;
         }
-        sout << "\n    ";
-        Location location = overload->location;
-        unsigned line, column, tabColumn;
-        getLineCol(location, line, column, tabColumn);
-        sout << location.source->fileName.c_str() << "(" << line + 1 << ","
-             << column << ")"
-             << "\n        ";
-        printMatchError(sout, failure.second);
+        visible.push_back(failure);
     }
-    if (hiddenPatternOverloads > 0)
+
+    std::stable_sort(visible.begin(), visible.end(),
+                     [](const pair<OverloadPtr, MatchResultPtr> &a,
+                        const pair<OverloadPtr, MatchResultPtr> &b) {
+                         return failureScore(a.second->matchCode) >
+                                failureScore(b.second->matchCode);
+                     });
+
+    const size_t MAX_SHOW = 5;
+    size_t shown = std::min(visible.size(), MAX_SHOW);
+    size_t lessSpecific = visible.size() - shown;
+
+    for (size_t i = 0; i < shown; ++i)
+        printFailureLine(sout, visible[i]);
+
+    if (lessSpecific > 0) {
+        sout << "\n    " << lessSpecific
+             << " other less-specific overloads not shown";
+        if (hiddenPatternOverloads > 0)
+            sout << " (plus " << hiddenPatternOverloads
+                 << " universal overloads)";
+        sout << " (use -full-match-errors for all)";
+    } else if (hiddenPatternOverloads > 0) {
         sout << "\n    " << hiddenPatternOverloads
-             << " universal overloads not shown (show with -full-match-errors "
-                "option)";
+             << " universal overloads not shown (use -full-match-errors for "
+                "all)";
+    }
     sout.flush();
 }
 
 void matchFailureError(MatchFailureError const &err) {
     string buf;
-    if (err.failedInterface)
-        buf = "call does not conform to function interface";
-    else if (err.ambiguousMatch)
-        buf = "call matches ambiguous overloads";
-    else
-        buf = "no matching overload found";
+    {
+        llvm::raw_string_ostream sout(buf);
+        if (err.failedInterface)
+            sout << "call does not conform to function interface";
+        else if (err.ambiguousMatch)
+            sout << "call matches ambiguous overloads";
+        else {
+            sout << "no matching overload found";
+            // Append the callable + arg types from the deepest context frame,
+            // e.g. "no matching overload found for +(Foo, Foo)"
+            if (!contextStack.empty()) {
+                const auto &top = contextStack.back();
+                sout << " for ";
+                printName(sout, top.callable);
+                if (top.hasParams) {
+                    sout << "(";
+                    printNameList(sout, top.params, top.dispatchIndices);
+                    sout << ")";
+                }
+            }
+        }
+        sout.flush();
+    }
 
     matchFailureMessage(err, buf);
+
+    // Pick the deepest blameable frame.
+    for (auto it = contextStack.rbegin(); it != contextStack.rend(); ++it) {
+        if (!it->location.ok() || !it->location.source)
+            continue;
+        if (it->overload.ptr() == nullptr)
+            continue;
+        if (it->overload->isDiagnosticTransparent)
+            continue;
+        pushLocation(it->location);
+        break;
+    }
+
     error(buf);
 }
 
