@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(ceramic)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -15,80 +15,33 @@ include(CheckSymbolExists)
 include(CPack)
 
 if(UNIX)
-    if(DEFINED LLVM_DIR)
-        set(LLVM_CONFIG "${LLVM_DIR}/bin/llvm-config")
+    if(DEFINED LLVM_DIR AND EXISTS "${LLVM_DIR}/lib/cmake/llvm/LLVMConfig.cmake")
+        set(LLVM_DIR "${LLVM_DIR}/lib/cmake/llvm")
+    endif()
+
+    find_package(LLVM REQUIRED CONFIG)
+
+    if(LLVM_PACKAGE_VERSION VERSION_LESS 19.0)
+        message(FATAL_ERROR "LLVM 19 or newer is required. Found ${LLVM_PACKAGE_VERSION}")
+    endif()
+
+    message("-- Using LLVM ${LLVM_PACKAGE_VERSION}: ${LLVM_INSTALL_PREFIX}")
+    message("-- LLVM include dir: ${LLVM_INCLUDE_DIRS}")
+
+    if(LLVM_LINK_LLVM_DYLIB)
+        set(LLVM_LIBS LLVM)
     else()
-        find_program(LLVM_CONFIG llvm-config /usr/local/bin DOC "path to llvm-config")
+        llvm_map_components_to_libnames(LLVM_LIBS all)
     endif()
 
-    message("-- Using llvm-config: ${LLVM_CONFIG}")
-
-    if(NOT LLVM_CONFIG)
-        message(FATAL_ERROR "llvm-config not found. Install LLVM.")
-    endif()
-
-    execute_process(
-        COMMAND ${LLVM_CONFIG} --version
-        OUTPUT_VARIABLE LLVM_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        RESULT_VARIABLE LLVM_CONFIG_VERSION_RESULT
-    )
-    if (NOT ${LLVM_CONFIG_VERSION_RESULT} EQUAL 0)
-        message(FATAL_ERROR "${LLVM_CONFIG} failed")
-    endif()
-    if(LLVM_VERSION VERSION_LESS 18.0)
-        message(FATAL_ERROR "LLVM 18 or newer is required. Found ${LLVM_VERSION}")
-    endif()
-
-    execute_process(
-        COMMAND ${LLVM_CONFIG} --cxxflags
-        OUTPUT_VARIABLE LLVM_CXXFLAGS
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    separate_arguments(LLVM_CXXFLAGS)
+    set(LLVM_INCLUDEDIR "${LLVM_INCLUDE_DIRS}")
+    set(LLVM_LIBDIR     "${LLVM_LIBRARY_DIRS}")
+    separate_arguments(LLVM_CXXFLAGS UNIX_COMMAND "${LLVM_DEFINITIONS}")
+    set(LLVM_LDFLAGS "")
 
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         list(APPEND LLVM_CXXFLAGS -O0)
     endif()
-
-    execute_process(
-        COMMAND ${LLVM_CONFIG} --ldflags
-        OUTPUT_VARIABLE LLVM_LDFLAGS
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    separate_arguments(LLVM_LDFLAGS)
-
-    execute_process(
-        COMMAND ${LLVM_CONFIG} --libs all
-        OUTPUT_VARIABLE LLVM_LIBS
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    separate_arguments(LLVM_LIBS)
-
-    execute_process(
-        COMMAND ${LLVM_CONFIG} --libdir
-        OUTPUT_VARIABLE LLVM_LIBDIR
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    execute_process(
-        COMMAND ${LLVM_CONFIG} --prefix
-        OUTPUT_VARIABLE LLVM_DIR
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    execute_process(
-        COMMAND ${LLVM_CONFIG} --includedir
-        OUTPUT_VARIABLE LLVM_INCLUDEDIR
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    message("-- Using LLVM: ${LLVM_DIR}")
-    message("-- LLVM include dir: ${LLVM_INCLUDEDIR}")
-
-    set(CMAKE_REQUIRED_INCLUDES ${LLVM_DIR}/include)
-    set(CMAKE_REQUIRED_LIBRARIES clang)
-    set(CMAKE_REQUIRED_FLAGS "-L${LLVM_LIBDIR}")
 
 elseif(WIN32)
 
@@ -118,9 +71,9 @@ elseif(WIN32)
 
 endif()
 
-install(DIRECTORY doc/        DESTINATION share/doc/ceramic)
-install(DIRECTORY examples/   DESTINATION share/doc/ceramic/examples)
-install(DIRECTORY lib-ceramic    DESTINATION lib)
+install(DIRECTORY doc/         DESTINATION share/doc/ceramic)
+install(DIRECTORY examples/    DESTINATION share/doc/ceramic/examples)
+install(DIRECTORY lib-ceramic  DESTINATION lib)
 
 add_subdirectory(compiler)
 
