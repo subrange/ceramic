@@ -4,12 +4,12 @@ import math.native.protocol.*;
 import complex.*;
 import numbers.floats.(nan,infinity,infinity?,nan?,signbit);
 
-import __intrinsics__.(x86_sse2_sqrt_sd as x86_sqrtsd);
+import __intrinsics__.(sqrt as llvm_sqrt);
 
 [T when Float?(T) ]
-forceinline overload sqrt(x:T) = T(x86_sqrtsd(Vec[Double,2](Double(x),0.))[0]);
+forceinline overload sqrt(x:T) = T(llvm_sqrt(Double(x)));
 
-forceinline overload sqrt(x:Double) = x86_sqrtsd(Vec[Double,2](x,0.))[0];
+forceinline overload sqrt(x:Double) = llvm_sqrt(x);
 
 [I when Imaginary?(I) ]
 forceinline overload sqrt(z:I) = sqrt(Complex(z));

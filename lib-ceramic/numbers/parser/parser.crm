@@ -35,6 +35,9 @@ overload ConvFuncForType(#T) = ConvFuncForType(ImagBaseType(T));
 [T, S when Numeric?(T) and String?(S)]
 define parse(#T, s:S): T;
 
+[N, S when Numeric?(N) and String?(S)]
+forceinline overload N(s:S) = parse(N, s);
+
 
 [S, IntType when String?(S) and Integer?(IntType)]
 overload parse(#IntType, s:S) {
