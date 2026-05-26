@@ -510,6 +510,7 @@ def runTests(opt):
         print("Failed: %d" % len(failed))
     logfile.flush()
     print("\n# Test log written to " + opt.testLogFile)
+    return len(failed)
 
 
 def main():
@@ -593,7 +594,7 @@ def main():
 
     startTime = time.time()
     opt.ceramicPlatform = getCeramicPlatform(opt)
-    runTests(opt)
+    failures = runTests(opt)
     for f in opt.cleanUpLater:
         try:
             os.unlink(f)
@@ -602,6 +603,7 @@ def main():
     endTime = time.time()
     print()
     print("time-taken-seconds: %f" % (endTime - startTime))
+    sys.exit(failures > 0)
 
 
 if __name__ == "__main__":
