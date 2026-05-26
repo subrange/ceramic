@@ -220,7 +220,7 @@ ArgumentList       -> variadic_list(Argument, VarArgument)
 Argument           -> NamedArgument | StaticArgument
 NamedArgument      -> ReferenceQualifier? Identifier TypeSpec?
 VarArgument        -> ReferenceQualifier? ".." Identifier TypeSpec?
-StaticArgument     -> "static" Pattern
+StaticArgument     -> "#" Pattern
 ReferenceQualifier -> "ref" | "rvalue" | "forward"
 ```
 

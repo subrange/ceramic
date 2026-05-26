@@ -30,7 +30,7 @@ Every atomic operation takes one of these as a `static` parameter. They correspo
 
 ```ceramic
 [Order, T | Order?(Order)]
-atomicLoad(static Order, p:Pointer[T]) : T;
+atomicLoad(#Order, p:Pointer[T]) : T;
 ```
 
 Atomically loads the value at `p`. Bitwise-copied. Errors if the target does not support atomic loads of `T`. Lowers to LLVM `load atomic`.
@@ -39,7 +39,7 @@ Atomically loads the value at `p`. Bitwise-copied. Errors if the target does not
 
 ```ceramic
 [Order, T | Order?(Order)]
-atomicStore(static Order, p:Pointer[T], value:T) :;
+atomicStore(#Order, p:Pointer[T], value:T) :;
 ```
 
 Atomically stores `value` at `p`. Bitwise-copied. Errors if the target does not support atomic stores of `T`. Lowers to LLVM `store atomic`.
@@ -55,7 +55,7 @@ define RMWMin;     define RMWMax;
 define RMWUMin;    define RMWUMax;
 
 [Order, Op, T | Order?(Order) and RMWOp?(Op)]
-atomicRMW(static Order, static Op, p:Pointer[T], operand:T) : T;
+atomicRMW(#Order, #Op, p:Pointer[T], operand:T) : T;
 ```
 
 Atomic read-modify-write. Returns the value at `p` **before** the update. Errors if the target does not atomically support `Op` for `T`. Lowers to LLVM `atomicrmw`.
@@ -75,7 +75,7 @@ The update semantics for each `Op`:
 
 ```ceramic
 [Order, T | Order?(Order)]
-atomicCompareExchange(static Order, p:Pointer[T], old:T, new:T) : T;
+atomicCompareExchange(#Order, p:Pointer[T], old:T, new:T) : T;
 ```
 
 Atomic compare-and-swap. If `p^` is bitwise equal to `old`, `new` is written to `p` and `old` is returned. Otherwise, `p^` is unchanged and its current value is returned. Errors if the target does not support CAS for `T`. Lowers to LLVM `cmpxchg`.
@@ -84,7 +84,7 @@ Atomic compare-and-swap. If `p^` is bitwise equal to `old`, `new` is written to 
 
 ```ceramic
 [Order | Order?(Order)]
-atomicFence(static Order);
+atomicFence(#Order);
 ```
 
 Introduces a happens-before edge without an associated memory operation. `Order` must be `OrderAcquire`, `OrderRelease`, `OrderAcqRel`, or `OrderSeqCst`. Lowers to LLVM `fence`.

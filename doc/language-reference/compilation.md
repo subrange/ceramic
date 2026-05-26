@@ -9,7 +9,7 @@ Ceramic uses **whole-program compilation**. Starting from an entry-point source 
 
 ### Entry Points
 
-If the entry-point module contains a public symbol named `main`, it is passed to the `callMain` operator function. `callMain` is responsible for calling `main` with its command-line arguments. The instantiated `callMain(static main)` becomes the program's entry point and corresponds to the C ABI `main` symbol.
+If the entry-point module contains a public symbol named `main`, it is passed to the `callMain` operator function. `callMain` is responsible for calling `main` with its command-line arguments. The instantiated `callMain(#main)` becomes the program's entry point and corresponds to the C ABI `main` symbol.
 
 For a `main` entry point, the `setArgcArgv(argc:Int32, argv:Pointer[Pointer[Int8]])` operator function is also instantiated. It is called with the `argc` and `argv` parameters from the C `main` function before `callMain` runs.
 
@@ -38,8 +38,8 @@ define bar;
 
 define pattern;
 [T]
-overload pattern(static T) { println("a"); }
-overload pattern(static bar) { println("b"); }
+overload pattern(#T) { println("a"); }
+overload pattern(#bar) { println("b"); }
 
 testPattern() {
     pattern(foo); // prints a

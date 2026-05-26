@@ -19,7 +19,7 @@ A global alias set to `true` when exceptions are enabled for the current compila
 
 ```ceramic
 [name | Identifier?(name)]
-Flag?(static name) : Bool;
+Flag?(#name) : Bool;
 ```
 
 `true` if the compiler was invoked with a `-D<name>` or `-D<name>=value` matching `name`.
@@ -28,7 +28,7 @@ Flag?(static name) : Bool;
 
 ```ceramic
 [name | Identifier?(name)]
-Flag(static name);
+Flag(#name);
 ```
 
 Returns the value of the compiler flag `-D<name>=value` as a static string. If no such flag was given, or the flag was given without a value, returns the empty static string `#""`.
@@ -60,7 +60,7 @@ These symbols may be used as attributes on external function declarations.
 
 ```ceramic
 [n | n >= 0]
-staticIntegers(static n);
+staticIntegers(#n);
 ```
 
-Returns a multiple-value list of `static` integers from `static 0` up to `static n - 1`. `staticIntegers(static 0)` returns no values.
+Returns a multiple-value list of static integers from `#0` up to `#(n - 1)`. `staticIntegers(#0)` returns no values.

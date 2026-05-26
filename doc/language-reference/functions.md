@@ -196,31 +196,31 @@ trace(f, forward ..args) {
 
 #### Static Arguments
 
-`static` arguments match values computed at compile time. The `static` keyword at the call site evaluates an expression at compile time and passes the result as the argument.
+Static arguments match values computed at compile time. The `#` prefix at the call site evaluates an expression at compile time and passes the result as the argument.
 
 ```ceramic
 define beetlejuice;
 
 [n]
-overload beetlejuice(static n) {
+overload beetlejuice(#n) {
     for (i in range(n))
         println("Beetlejuice!");
 }
 
 // Unrolled specialization for the common case
-overload beetlejuice(static 3) {
+overload beetlejuice(#3) {
     println("Beetlejuice!");
     println("Beetlejuice!");
     println("Beetlejuice!");
 }
 
 main() {
-    beetlejuice(static 3);
+    beetlejuice(#3);
 }
 ```
-Symbols and static strings are inherently static and match `static` arguments without an explicit `static` at the call site.
+Symbols and static strings are inherently static and match static arguments without an explicit `#` at the call site.
 
-`static T` is syntactic sugar for an unnamed argument of primitive type `Static[T]`.
+`#T` is syntactic sugar for an unnamed argument of primitive type `Static[T]`.
 
 ### Return Types
 

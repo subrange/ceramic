@@ -121,7 +121,7 @@ Bitwise complement. Lowers to LLVM `xor %T %a, -1`.
 
 ```ceramic
 [T, U | Numeric?(T) and Numeric?(U)]
-numericConvert(static T, a:U) : T;
+numericConvert(#T, a:U) : T;
 ```
 
 Converts `a` to type `T` while preserving its numeric value. If `T == U`, the value is copied. Otherwise, the conversion depends on the kinds of `T` and `U`:
@@ -165,5 +165,5 @@ integerRemainderChecked(a:T, b:T): T, Bool;
 integerShiftLeftChecked(a:T, b:T): T, Bool;
 
 [T, U | Integer?(T) and Integer?(U)]
-integerConvertChecked(static T, a:U) : T, Bool;
+integerConvertChecked(#T, a:U) : T, Bool;
 ```

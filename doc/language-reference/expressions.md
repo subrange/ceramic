@@ -12,7 +12,7 @@ Ceramic's expression hierarchy, from highest to lowest precedence:
 | Ordered comparison | `<=` `<` `>` `>=` | `lesserEquals?` `lesser?` `greater?` `greaterEquals?` |
 | Equality | `==` `!=` | `equals?` `notEquals?` |
 | Boolean | `not a` `a and b` `a or b` | primitive, not overloadable |
-| Low-precedence prefix | `if (a) b else c`, `name: a`, `static a`, `..a`, `a -> b` | (none) |
+| Low-precedence prefix | `if (a) b else c`, `name: a`, `#a`, `..a`, `a -> b` | (none) |
 | Multiple value | `a, b, c` | (none) |
 
 ### Atomic Expressions
@@ -229,10 +229,10 @@ Both branches must have the same type. Unlike `if` statements, the `else` clause
 
 #### Static Expressions
 
-`static expr` evaluates `expr` at compile time and wraps the result in `Static[result]`. Used to pass compile-time values to [static arguments](functions.md#static-arguments). Applied to a symbol or static string, it is a no-op.
+`#expr` evaluates `expr` at compile time and wraps the result in `Static[result]`. Used to pass compile-time values to [static arguments](functions.md#static-arguments). Applied to a symbol or static string, it is a no-op.
 
 ```ceramic
-log(static LOG, "starting program");
+log(#LOG, "starting program");
 ```
 
 #### Unpack (`..a`)
