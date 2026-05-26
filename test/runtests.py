@@ -498,7 +498,7 @@ def runTests(opt):
 
     if failed:
         print()
-        print("[Failed]\n", end=" ")
+        print("[Failed]")
         print("\n".join(failed))
 
     print()
