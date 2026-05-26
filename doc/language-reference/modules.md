@@ -161,7 +161,7 @@ declare void @llvm.trap()
 
 trap() __llvm__ {
     call void @llvm.trap()
-    ret i8* null
+    ret ptr null
 }
 ```
 Ceramic static values can be [interpolated](functions.md#inline-llvm-functions) into LLVM blocks.
