@@ -326,7 +326,8 @@ BindingKind -> "var" | "ref" | "forward" | "alias"
 
 ```text
 Assignment   -> ExprList AssignmentOp ExprList ";"
-AssignmentOp -> "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "<--"
+AssignmentOp -> "=" | OpChars ":" | "<--"
+OpChars      -> /[=!<>+\-*\/\\%~|&]+/
 ```
 
 ### `switch`
@@ -390,5 +391,16 @@ Lambda          -> LambdaArguments LambdaArrow LambdaBody
 LambdaArguments -> ".."? Identifier | Arguments
 LambdaArrow     -> "=>" | "->"
 LambdaBody      -> Block | ReturnExpression
+```
+
+### User-Defined Operators
+
+[→ context in expressions.md](expressions.md#user-defined-operators)
+
+```text
+InfixExpr  -> Expr UserOp Expr
+PrefixExpr -> UserOp Expr
+UserOp     -> !("<--" | "-->" | "=>" | "->" | "~>" | "="), OpChars
+OpChars    -> /[=!<>+\-*\/\\%~|&]+/
 ```
 

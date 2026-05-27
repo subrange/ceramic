@@ -204,6 +204,35 @@ All arithmetic operators are left-associative within their precedence group.
 
 All comparison operators are left-associative within their precedence group.
 
+### User-Defined Operators
+
+Any sequence of the characters `= ! < > + - * / \ % ~ | &` forms a valid operator token. The sequences `<--`, `-->`, `=>`, `->`, `~>`, and `=` are reserved and cannot be used as operator names.
+
+`a op b` desugars to `infixOperator(a, #op, b)`, which calls `op(a, b)` by default. `op a` desugars to `prefixOperator(#op, a)`, which calls `op(a)` by default. Declare the operator with `define` and provide an implementation with `overload`:
+
+```ceramic
+define (**);
+overload (**)(base:Int32, exp:Int32) : Int32 {
+    var result = 1;
+    for (i in range(exp))
+        result *: base;
+    return result;
+}
+
+println(2 ** 10);  // 1024
+```
+
+To support the update-assignment form `a op: b`, overload `updateAssign` with a static operator argument:
+
+```ceramic
+overload updateAssign(#(**), ref x:Int32, exp:Int32) {
+    x = x ** exp;
+}
+
+var x = 3;
+x **: 3;   // updateAssign(**, x, 3) → x = 27
+```
+
 ### Boolean Operators
 
 | Operator | Behavior |
