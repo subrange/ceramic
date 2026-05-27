@@ -1,16 +1,16 @@
 import printer.(println);
 
 myadd(x:Int32, y:Int32) --> returned:Int32 __llvm__ {
-    %1 = load i32* %x
-    %2 = load i32* %y
+    %1 = load i32, ptr %x
+    %2 = load i32, ptr %y
     %3 = add i32 %1, %2
     store i32 %3, i32* %returned
     ret i8* null
 }
 
 inline myadd2(x:Int32, y:Int32) --> returned:Int32 __llvm__ {
-    %1 = load i32* %x
-    %2 = load i32* %y
+    %1 = load i32, ptr %x
+    %2 = load i32, ptr %y
     %3 = add i32 %1, %2
     store i32 %3, i32* %returned
     ret i8* null
