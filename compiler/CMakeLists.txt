@@ -8,6 +8,7 @@ set(COMPILER_SOURCES
     codegen_op.cpp
     constructors.cpp
     desugar.cpp
+    diagnostic.cpp
     env.cpp
     error.cpp
     evaluator.cpp

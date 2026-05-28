@@ -3237,6 +3237,7 @@ static void codegenEndScope(size_t marker, bool terminated,
 }
 
 bool codegenStatement(StatementPtr stmt, EnvPtr env, CodegenContext *ctx) {
+    LocationContext loc(stmt->location);
     if (llvmDIBuilder != nullptr)
         DebugLocationContext loc(stmt->location, ctx);
 

@@ -1,6 +1,7 @@
 #include "error.hpp"
 #include "ceramic.hpp"
 #include "codegen.hpp"
+#include "diagnostic.hpp"
 #include "evaluator.hpp"
 #include "invoketables.hpp"
 #include "matchinvoke.hpp"
@@ -75,6 +76,7 @@ CompileContextPusher::CompileContextPusher(
 //
 
 static vector<Location> errorLocations;
+static vector<Span> errorSpans;
 
 void pushLocation(Location const &location) {
     errorLocations.push_back(location);
@@ -92,6 +94,28 @@ Location topLocation() {
     }
     return {};
 }
+
+static Span topSpan() {
+    for (auto i = errorSpans.rbegin(); i != errorSpans.rend(); ++i) {
+        if (i->ok())
+            return *i;
+    }
+    return {};
+}
+
+namespace {
+struct SpanHint {
+    bool active;
+    SpanHint(Span const &s) : active(s.ok()) {
+        if (active)
+            errorSpans.push_back(s);
+    }
+    ~SpanHint() {
+        if (active)
+            errorSpans.pop_back();
+    }
+};
+} // namespace
 
 //
 // DebugPrinter
@@ -262,23 +286,74 @@ static void displayDebugStack() {
     }
 }
 
-void displayError(llvm::Twine const &msg, llvm::StringRef kind) {
-    string msgString = msg.str();
-    if (msgString.empty() || msgString[msgString.length() - 1] != '\n')
-        msgString += '\n';
+static string stripTrailingNewline(llvm::Twine const &msg) {
+    string s = msg.str();
+    if (!s.empty() && s.back() == '\n')
+        s.pop_back();
+    return s;
+}
 
-    Location location = topLocation();
-    if (location.ok()) {
-        unsigned line, column;
-        displayLocation(location, line, column);
-        llvm::errs() << location.source->fileName << '(' << line + 1 << ','
-                     << column << "): " << kind << ": " << msgString;
-        llvm::errs().flush();
-        displayCompileContext();
-        displayDebugStack();
+static Severity severityFromKind(llvm::StringRef kind) {
+    if (kind == "warning")
+        return Severity::Warning;
+    if (kind == "note")
+        return Severity::Note;
+    if (kind == "help")
+        return Severity::Help;
+    return Severity::Error;
+}
+
+static string compileFrameHeadline(CompileContextEntry const &frame) {
+    string buf;
+    llvm::raw_string_ostream sout(buf);
+    sout << "while compiling ";
+    ObjectPtr obj = frame.callable;
+    if (obj->objKind == GLOBAL_VARIABLE) {
+        sout << "global ";
+        printName(sout, obj);
+        if (!frame.params.empty()) {
+            sout << "[";
+            printNameList(sout, llvm::ArrayRef<ObjectPtr>(frame.params));
+            sout << "]";
+        }
     } else {
-        llvm::errs() << kind << ": " << msgString;
+        printName(sout, obj);
+        if (frame.hasParams) {
+            sout << "(";
+            printNameList(sout, llvm::ArrayRef<ObjectPtr>(frame.params),
+                          llvm::ArrayRef<unsigned>(frame.dispatchIndices));
+            sout << ")";
+        }
     }
+    sout.flush();
+    return buf;
+}
+
+static void appendContextNotes(Diagnostic &diag, Location primaryLocation) {
+    for (size_t i = 0; i < contextStack.size(); ++i) {
+        CompileContextEntry const &frame = contextStack[i];
+        if (!frame.location.ok())
+            continue;
+        if (frame.overload.ptr() != nullptr &&
+            frame.overload->isDiagnosticTransparent)
+            continue;
+        if (primaryLocation.ok() &&
+            frame.location.source == primaryLocation.source &&
+            frame.location.offset == primaryLocation.offset)
+            continue;
+        diag.notes.emplace_back(Severity::Note, compileFrameHeadline(frame),
+                                Span(frame.location));
+    }
+}
+
+void displayError(llvm::Twine const &msg, llvm::StringRef kind) {
+    Location location = topLocation();
+    Span span = topSpan();
+    if (!span.ok())
+        span = Span(location);
+    Diagnostic diag(severityFromKind(kind), stripTrailingNewline(msg), span);
+    appendContextNotes(diag, location);
+    displayDiagnostic(diag);
 }
 
 void warning(llvm::Twine const &msg) { displayError(msg, "warning"); }
@@ -294,6 +369,27 @@ void error(Location const &location, llvm::Twine const &msg) {
     if (location.ok())
         pushLocation(location);
     error(msg);
+}
+
+static Span exprSpan(Expr const *e) {
+    if (e == nullptr)
+        return {};
+    if (e->startLocation.ok() && e->endLocation.ok() &&
+        e->startLocation.source == e->endLocation.source)
+        return Span(e->startLocation.source, e->startLocation.offset,
+                    e->endLocation.offset);
+    return {};
+}
+
+void error(Expr const *context, llvm::Twine const &msg) {
+    SpanHint hint(exprSpan(context));
+    if (context != nullptr && context->location.ok())
+        pushLocation(context->location);
+    error(msg);
+}
+
+void error(Pointer<Expr> context, llvm::Twine const &msg) {
+    error(context.ptr(), msg);
 }
 
 void fmtError(const char *fmt, ...) {
@@ -318,7 +414,7 @@ void arityError(size_t expected, size_t received) {
     string buf;
     llvm::raw_string_ostream sout(buf);
     sout << "expected " << expected << " " << valuesStr(expected);
-    sout << ", but received " << received << " " << valuesStr(received);
+    sout << ", found " << received;
     error(sout.str());
 }
 
@@ -327,7 +423,7 @@ void arityError2(size_t minExpected, size_t received) {
     llvm::raw_string_ostream sout(buf);
     sout << "expected at least " << minExpected << " "
          << valuesStr(minExpected);
-    sout << ", but received " << received << " " << valuesStr(received);
+    sout << ", found " << received;
     error(sout.str());
 }
 
@@ -359,8 +455,7 @@ void arityMismatchError(size_t leftArity, size_t rightArity, bool hasVarArg) {
              << valuesStr(leftArity);
     else
         sout << "left side has " << leftArity << " " << valuesStr(leftArity);
-    sout << ", but right side has " << rightArity << " "
-         << valuesStr(rightArity);
+    sout << ", right side has " << rightArity << " " << valuesStr(rightArity);
     error(sout.str());
 }
 
@@ -368,8 +463,7 @@ static string typeErrorMessage(llvm::StringRef expected,
                                const TypePtr &receivedType) {
     string buf;
     llvm::raw_string_ostream sout(buf);
-    sout << "expected " << expected << ", "
-         << "but received " << receivedType->toString() << " type";
+    sout << "expected " << expected << ", found " << receivedType->toString();
     return sout.str();
 }
 
@@ -403,8 +497,8 @@ void indexRangeError(const llvm::StringRef kind, const size_t value,
                      const size_t maxValue) {
     string buf;
     llvm::raw_string_ostream sout(buf);
-    sout << kind << " " << value << " is out of range. ";
-    sout << "it should be less than " << maxValue;
+    sout << kind << " " << value << " out of range, must be less than "
+         << maxValue;
     error(sout.str());
 }
 
@@ -412,8 +506,8 @@ void argumentIndexRangeError(const unsigned index, const llvm::StringRef kind,
                              const size_t value, const size_t maxValue) {
     string buf;
     llvm::raw_string_ostream sout(buf);
-    sout << kind << " " << value << " is out of range. ";
-    sout << "it should be less than " << maxValue;
+    sout << kind << " " << value << " out of range, must be less than "
+         << maxValue;
     argumentError(index, sout.str());
 }
 
@@ -552,6 +646,7 @@ void matchFailureError(MatchFailureError const &err) {
     matchFailureMessage(err, buf);
 
     // Pick the deepest blameable frame.
+    Location blame;
     for (auto it = contextStack.rbegin(); it != contextStack.rend(); ++it) {
         if (!it->location.ok() || !it->location.source)
             continue;
@@ -559,11 +654,16 @@ void matchFailureError(MatchFailureError const &err) {
             continue;
         if (it->overload->isDiagnosticTransparent)
             continue;
-        pushLocation(it->location);
+        blame = it->location;
         break;
     }
 
-    error(buf);
+    if (blame.ok()) {
+        LocationContext lc(blame);
+        error(buf);
+    } else {
+        error(buf);
+    }
 }
 
 void matchFailureLog(MatchFailureError const &err) {

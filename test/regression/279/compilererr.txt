@@ -1,1 +1,1 @@
-main\.crm\(2,27\): error: expected 2 values, but received 1 value
+error: expected 2 values, found 1\n  at .*main\.crm:2:28
