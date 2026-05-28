@@ -1,0 +1,44 @@
+{
+  "name": "ceramic-light",
+  "type": "light",
+  "colors": {
+    "editor.foreground": "#2d2520"
+  },
+  "tokenColors": [
+    {
+      "scope": [
+        "comment",
+        "comment.block.ceramic",
+        "comment.line.double-slash.ceramic",
+        "punctuation.definition.comment.ceramic"
+      ],
+      "settings": { "foreground": "#a09080", "fontStyle": "italic" }
+    },
+    {
+      "scope": [
+        "string",
+        "string.quoted.double.ceramic",
+        "string.quoted.single.ceramic",
+        "string.quoted.triple.ceramic",
+        "punctuation.definition.string.begin.ceramic",
+        "punctuation.definition.string.end.ceramic",
+        "constant.character.escape.ceramic"
+      ],
+      "settings": { "foreground": "#2a6e2a" }
+    },
+    {
+      "scope": [
+        "keyword",
+        "keyword.control.ceramic",
+        "keyword.control.import.ceramic",
+        "keyword.other.ceramic",
+        "keyword.other.debug.ceramic",
+        "keyword.operator.word.ceramic",
+        "storage.type.ceramic",
+        "storage.modifier.ceramic",
+        "storage.modifier.attribute.ceramic"
+      ],
+      "settings": { "foreground": "#1a5fb4", "fontStyle": "bold" }
+    }
+  ]
+}
