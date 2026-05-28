@@ -14,11 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install LLVM and build tools
+      - name: Install LLVM 19 from apt.llvm.org
         run: |
-          sudo apt-get update
+          wget -O llvm.sh https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 19
+          sudo apt-get install -y llvm-19-dev
+
+      - name: Install build tools
+        run: |
           sudo apt-get install -y \
-            llvm-19 llvm-19-dev clang-19 \
             ninja-build cmake python3 \
             zlib1g-dev libxml2-dev libzstd-dev
 
