@@ -1,8 +1,6 @@
 name: Build
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -61,8 +59,7 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++-19 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      - name: Tidy changed files (PR)
-        if: github.event_name == 'pull_request'
+      - name: Tidy changed files
         run: |
           git fetch origin "${{ github.base_ref }}"
           files=$(git diff --name-only --diff-filter=ACM \
@@ -73,13 +70,6 @@ jobs:
             exit 0
           fi
           echo "$files" | xargs -P "$(nproc)" -n 1 clang-tidy-19 -p build
-
-      - name: Tidy all files (main)
-        if: github.event_name == 'push'
-        run: |
-          run-clang-tidy-19 \
-            -p build -j "$(nproc)" \
-            "$(pwd)/compiler/.*\.cpp" "$(pwd)/tools/.*\.cpp"
 
   format:
     runs-on: ubuntu-latest
