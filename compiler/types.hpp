@@ -118,6 +118,8 @@ llvm::DIType *llvmTypeDebugInfo(const TypePtr &t);
 
 llvm::DIType *llvmVoidTypeDebugInfo();
 
+void materializeDebugInfoForTypes();
+
 size_t typeSize(TypePtr t);
 
 size_t typeAlignment(TypePtr t);
