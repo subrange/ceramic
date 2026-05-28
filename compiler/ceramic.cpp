@@ -141,7 +141,18 @@ static void optimizeLLVM(llvm::Module *module, unsigned optLevel,
 
 static void generateLLVM(llvm::Module *module, bool emitAsm,
                          llvm::raw_ostream *out) {
+    llvm::LoopAnalysisManager LAM;
+    llvm::FunctionAnalysisManager FAM;
+    llvm::CGSCCAnalysisManager CGAM;
     llvm::ModuleAnalysisManager MAM;
+    llvm::PassBuilder PB;
+
+    PB.registerModuleAnalyses(MAM);
+    PB.registerCGSCCAnalyses(CGAM);
+    PB.registerFunctionAnalyses(FAM);
+    PB.registerLoopAnalyses(LAM);
+    PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
+
     llvm::ModulePassManager passes;
 
     if (emitAsm)
