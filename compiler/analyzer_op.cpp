@@ -813,14 +813,14 @@ MultiPValuePtr analyzePrimOp(PrimOpPtr x, MultiPValuePtr args) {
         ModulePtr m = staticModule(moduleObj);
         assert(m != nullptr);
 
-        MultiPValuePtr result = new MultiPValue();
+        vector<llvm::StringRef> keys;
+        for (auto const &entry : m->publicGlobals)
+            keys.push_back(entry.getKey());
+        std::sort(keys.begin(), keys.end());
 
-        for (llvm::StringMap<ObjectPtr>::const_iterator
-                 i = m->publicGlobals.begin(),
-                 end = m->publicGlobals.end();
-             i != end; ++i) {
-            result->add(staticPValue(Identifier::get(i->getKey())));
-        }
+        MultiPValuePtr result = new MultiPValue();
+        for (auto const &key : keys)
+            result->add(staticPValue(Identifier::get(key)));
         return result;
     }
 
