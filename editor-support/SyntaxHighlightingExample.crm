@@ -130,6 +130,11 @@ keywordsTest(x, ref y, rvalue z, forward w, #v) {
 labelTest:
 
     try {} catch(x) {} catch(y) {}
+    try {} catch(x) {} finally {}
+    try { onerror cleanup(); doStuff(); } catch(x) {}
+
+    eval someMacro();
+    throw someError();
 
     return x;
     return ref y;
@@ -146,6 +151,22 @@ labelTest:
 
 [X, Y, ..Z | PatternGuard?()]
 alias aliasTest(x:X, y:Y, ..z:Z);
+
+[T when CallDefined?(T)]
+alias whenAliasTest(x:T);
+
+[T, U when Foo?(T) and Bar?(U)]
+alias whenAliasTest2(x:T, y:U);
+
+define defineTest;
+define defineTest2(x, y) :;
+define defineTest3(x:Int, y:Char) : Float;
+
+newtype NewtypeTest = Int;
+newtype NewtypeTest2 = Pointer[Char];
+
+staticassert (true);
+staticassert (CallDefined?(defineTest, Int));
 
 external externalTest1(x:Int, y:Char) : Float;
 external (stdcall) externalTest2(x:Int, y:Char);
@@ -206,12 +227,25 @@ operatorsTest() {
 private overload keywordsTest() {}
 public overload keywordsTest() {}
 
+inline overload keywordsTest(x:Int) {}
+noinline overload keywordsTest(x:Char) {}
+forceinline overload keywordsTest(x:Float) {}
+
+inline inlineTest() {}
+noinline noinlineTest() {}
+forceinline forceinlineTest() {}
+
 external externalKeywordTest1();
 external externalKeywordTest2() {}
 
 valueTest() {
     true;
     false;
+
+    __FILE__;
+    __LINE__;
+    __COLUMN__;
+    __ARG__ x;
 
     'a';
     ' ';

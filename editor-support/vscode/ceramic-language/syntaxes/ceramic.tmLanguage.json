@@ -145,7 +145,7 @@
 				{
 					"comment": "Decimal float: 1.0, 3e+10, 1.5e-3f",
 					"name": "constant.numeric.float.decimal.ceramic",
-					"match": "[+-]?\\b[0-9][0-9_]*((\\.([0-9][0-9_]*)?)([eE][+-]?[0-9][0-9_]*)?|[eE][+-]?[0-9][0-9_]*)(ff?|f128|l|j|fj|ffj|lj|f128j)?\\b"
+					"match": "[+-]?\\b[0-9][0-9_]*((\\.([0-9][0-9_]*)?)([eE][+-]?[0-9][0-9_]*)?|[eE][+-]?[0-9][0-9_]*)([a-z][a-z0-9]*)?\\b"
 				},
 				{
 					"comment": "Decimal integer: 123, 1_000u",
@@ -165,26 +165,18 @@
 		},
 
 		"keywords": {
-			"patterns": [
-				{
-					"name": "keyword.control.ceramic",
-					"match": "\\b(if|else|switch|case|for|while|goto|return|break|continue|try|catch|throw|onerror|finally|eval)\\b"
-				},
-				{
-					"name": "keyword.other.ceramic",
-					"match": "\\b(define|overload|record|variant|instance|enum|external|inline|public|private|in)\\b"
-				}
-			]
+			"name": "keyword.control.ceramic",
+			"match": "\\b(if|else|switch|case|for|while|goto|return|break|continue|try|catch|throw|onerror|finally|eval|default|staticassert|define|overload|record|variant|instance|enum|external|inline|public|private|in|as|when|newtype|noinline|forceinline)\\b"
 		},
 
 		"operator-keywords": {
 			"name": "keyword.operator.word.ceramic",
-			"match": "\\b(and|or|not|as|rvalue|forward|ref|static)\\b"
+			"match": "\\b(and|or|not)\\b"
 		},
 
 		"storage-keywords": {
-			"name": "storage.type.ceramic",
-			"match": "\\b(var|alias)\\b"
+			"name": "storage.modifier.ceramic",
+			"match": "\\b(var|alias|ref|rvalue|forward)\\b"
 		},
 
 		"builtin-types": {
@@ -256,7 +248,7 @@
 			"comment": "Name introduced by var / ref / alias binding",
 			"match": "\\b(var|ref|alias)\\s+([A-Za-z_?][A-Za-z0-9_?]*)",
 			"captures": {
-				"1": { "name": "storage.type.ceramic" },
+				"1": { "name": "storage.modifier.ceramic" },
 				"2": { "name": "variable.other.ceramic" }
 			}
 		},
