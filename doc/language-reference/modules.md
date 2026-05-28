@@ -8,11 +8,11 @@ Modules are the basis of Ceramic's namespacing and encapsulation. Each module ha
 
 ### Special Modules
 
-| Module | Description |
-|--------|-------------|
+| Module           | Description                                                                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `__primitives__` | Synthesized by the compiler. Contains fundamental types (`Int`, `Pointer[T]`, `Bool`), basic operations, and compile-time introspection. See the *Primitives Reference*. |
-| `prelude` | Loaded automatically and implicitly imported by every module. The location searched for [operator functions](#operator-functions). |
-| `__main__` | Default name of the entry-point module if it declares no name of its own. |
+| `prelude`        | Loaded automatically and implicitly imported by every module. The location searched for [operator functions](#operator-functions).                                       |
+| `__main__`       | Default name of the entry-point module if it declares no name of its own.                                                                                                |
 
 ### Operator Functions
 

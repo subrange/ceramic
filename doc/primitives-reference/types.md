@@ -8,13 +8,13 @@ A boolean value: `true` or `false`. Corresponds to LLVM `i1`, C99 `_Bool`, C++ `
 
 Signed and unsigned integer types are provided at 8, 16, 32, 64, and 128 bits:
 
-| Signed | Unsigned | LLVM | C99 (`<stdint.h>`) |
-|--------|----------|------|--------------------|
-| `Int8`   | `UInt8`   | `i8`   | `int8_t`, `uint8_t`     |
-| `Int16`  | `UInt16`  | `i16`  | `int16_t`, `uint16_t`   |
-| `Int32`  | `UInt32`  | `i32`  | `int32_t`, `uint32_t`   |
-| `Int64`  | `UInt64`  | `i64`  | `int64_t`, `uint64_t`   |
-| `Int128` | `UInt128` | `i128` | (extension)             |
+| Signed   | Unsigned  | LLVM   | C99 (`<stdint.h>`)    |
+| -------- | --------- | ------ | --------------------- |
+| `Int8`   | `UInt8`   | `i8`   | `int8_t`, `uint8_t`   |
+| `Int16`  | `UInt16`  | `i16`  | `int16_t`, `uint16_t` |
+| `Int32`  | `UInt32`  | `i32`  | `int32_t`, `uint32_t` |
+| `Int64`  | `UInt64`  | `i64`  | `int64_t`, `uint64_t` |
+| `Int128` | `UInt128` | `i128` | (extension)           |
 
 LLVM itself does not distinguish signed and unsigned integer types. Ceramic enforces the distinction at the type level.
 
@@ -22,11 +22,11 @@ The unsigned integer type whose width matches a pointer is internally referred t
 
 ## Floating-Point Types
 
-| Type | LLVM | C |
-|------|------|---|
-| `Float32` | `float`     | `float` |
-| `Float64` | `double`    | `double` |
-| `Float80` | `x86_fp80`  | `long double` (Unix x86 only) |
+| Type      | LLVM       | C                             |
+| --------- | ---------- | ----------------------------- |
+| `Float32` | `float`    | `float`                       |
+| `Float64` | `double`   | `double`                      |
+| `Float80` | `x86_fp80` | `long double` (Unix x86 only) |
 
 ## Imaginary and Complex Types
 

@@ -159,12 +159,12 @@ Ceramic distinguishes **lvalues** (values with a referenceable identity: variabl
 
 An argument may be qualified to accept only one kind:
 
-| Qualifier | Accepts | Typical use |
-|-----------|---------|-------------|
-| (none) | lvalue or rvalue, bound as lvalue inside the function | general |
-| `ref` | lvalue only | returning a reference into the argument |
-| `rvalue` | rvalue only | move optimization, steal resources from a temporary |
-| `forward` | either, preserves the caller's lvalue/rvalue-ness | perfect forwarding |
+| Qualifier | Accepts                                               | Typical use                                         |
+| --------- | ----------------------------------------------------- | --------------------------------------------------- |
+| (none)    | lvalue or rvalue, bound as lvalue inside the function | general                                             |
+| `ref`     | lvalue only                                           | returning a reference into the argument             |
+| `rvalue`  | rvalue only                                           | move optimization, steal resources from a temporary |
+| `forward` | either, preserves the caller's lvalue/rvalue-ness     | perfect forwarding                                  |
 
 ```ceramic
 // rvalue: steal the string's buffer instead of copying
@@ -399,13 +399,13 @@ external ("_start") start() {
 ```
 Calling convention attributes (from `__primitives__`):
 
-| Attribute | Convention |
-|-----------|-----------|
-| `AttributeCCall` | Default C |
+| Attribute           | Convention                                                  |
+| ------------------- | ----------------------------------------------------------- |
+| `AttributeCCall`    | Default C                                                   |
 | `AttributeLLVMCall` | Native LLVM (for intrinsics and other LLVM-based languages) |
-| `AttributeStdCall` | x86 stdcall (Windows) |
-| `AttributeFastCall` | x86 fastcall (Windows) |
-| `AttributeThisCall` | x86 thiscall (Windows) |
+| `AttributeStdCall`  | x86 stdcall (Windows)                                       |
+| `AttributeFastCall` | x86 fastcall (Windows)                                      |
+| `AttributeThisCall` | x86 thiscall (Windows)                                      |
 ---
 
 ## Global Value Definitions

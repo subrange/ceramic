@@ -128,12 +128,12 @@ Converts `a` to type `T` while preserving its numeric value. If `T == U`, the va
 
 ### Integer → Integer
 
-| Direction | LLVM |
-|-----------|------|
-| Narrowing | `trunc` (bitwise truncation) |
-| Widening to signed | `sext` (sign-extend) |
-| Widening to unsigned | `zext` (zero-extend) |
-| Same width, sign change | `bitcast` |
+| Direction               | LLVM                         |
+| ----------------------- | ---------------------------- |
+| Narrowing               | `trunc` (bitwise truncation) |
+| Widening to signed      | `sext` (sign-extend)         |
+| Widening to unsigned    | `zext` (zero-extend)         |
+| Same width, sign change | `bitcast`                    |
 
 ### Float → Float
 

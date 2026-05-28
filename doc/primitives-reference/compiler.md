@@ -39,18 +39,18 @@ These symbols may be used as attributes on external function declarations.
 
 ### Calling Convention
 
-| Attribute | Effect |
-|-----------|--------|
-| `AttributeCCall`     | C calling convention |
-| `AttributeStdCall`   | `__stdcall` (Windows x86) |
-| `AttributeFastCall`  | `__fastcall` (Windows x86) |
-| `AttributeThisCall`  | `__thiscall` (Windows x86) |
-| `AttributeLLVMCall`  | LLVM `ccc` calling convention |
+| Attribute           | Effect                        |
+| ------------------- | ----------------------------- |
+| `AttributeCCall`    | C calling convention          |
+| `AttributeStdCall`  | `__stdcall` (Windows x86)     |
+| `AttributeFastCall` | `__fastcall` (Windows x86)    |
+| `AttributeThisCall` | `__thiscall` (Windows x86)    |
+| `AttributeLLVMCall` | LLVM `ccc` calling convention |
 
 ### Linkage
 
-| Attribute | Effect |
-|-----------|--------|
+| Attribute            | Effect                                   |
+| -------------------- | ---------------------------------------- |
 | `AttributeDLLImport` | `__dllimport` linkage on Windows targets |
 | `AttributeDLLExport` | `__dllexport` linkage on Windows targets |
 

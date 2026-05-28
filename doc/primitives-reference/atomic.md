@@ -17,9 +17,9 @@ define OrderSeqCst;
 
 Every atomic operation takes one of these as a `static` parameter. They correspond to LLVM orderings, which are a superset of the C11/C++11 memory model. See the [LLVM Atomic Instructions and Concurrency Guide](http://llvm.org/docs/Atomics.html).
 
-| Ceramic | LLVM | C++11 |
-|---------|------|-------|
-| `OrderUnordered` | `unordered` | (none) |
+| Ceramic          | LLVM        | C++11                  |
+| ---------------- | ----------- | ---------------------- |
+| `OrderUnordered` | `unordered` | (none)                 |
 | `OrderMonotonic` | `monotonic` | `memory_order_relaxed` |
 | `OrderAcquire`   | `acquire`   | `memory_order_acquire` |
 | `OrderRelease`   | `release`   | `memory_order_release` |
@@ -62,14 +62,14 @@ Atomic read-modify-write. Returns the value at `p` **before** the update. Errors
 
 The update semantics for each `Op`:
 
-| `Op` | Effect on `p^` | Constraints |
-|------|----------------|-------------|
-| `RMWXchg` | written to `operand` (bitwise copy) | any `T` |
-| `RMWAdd` / `RMWSubtract` | arithmetic add/subtract | integer `T` |
-| `RMWMin` / `RMWMax`      | signed min/max         | integer `T` |
-| `RMWUMin` / `RMWUMax`    | unsigned min/max       | integer `T` |
-| `RMWAnd` / `RMWOr` / `RMWXor` | bitwise and/or/xor | any `T` |
-| `RMWNAnd` | bitwise NAND (`~(p^ & operand)`) | any `T` |
+| `Op`                          | Effect on `p^`                      | Constraints |
+| ----------------------------- | ----------------------------------- | ----------- |
+| `RMWXchg`                     | written to `operand` (bitwise copy) | any `T`     |
+| `RMWAdd` / `RMWSubtract`      | arithmetic add/subtract             | integer `T` |
+| `RMWMin` / `RMWMax`           | signed min/max                      | integer `T` |
+| `RMWUMin` / `RMWUMax`         | unsigned min/max                    | integer `T` |
+| `RMWAnd` / `RMWOr` / `RMWXor` | bitwise and/or/xor                  | any `T`     |
+| `RMWNAnd`                     | bitwise NAND (`~(p^ & operand)`)    | any `T`     |
 
 ## `atomicCompareExchange`
 

@@ -2,18 +2,18 @@
 
 Ceramic's expression hierarchy, from highest to lowest precedence:
 
-| Level | Forms | Operator functions |
-|-------|-------|--------------------|
-| Atomic | names, literals, `()`, `[]`, `__FILE__` etc., `eval` | (none) |
-| Suffix | `a(b)` `a[b]` `a.0` `a.field` `a^` | `call` `index` `staticIndex` `fieldRef` `dereference` |
-| Prefix | `+a` `-a` `&a` `*a` | `plus` `minus`, address and dispatch are primitive |
-| Multiplicative | `a*b` `a/b` `a%b` | `multiply` `divide` `remainder` |
-| Additive | `a+b` `a-b` | `add` `subtract` |
-| Ordered comparison | `<=` `<` `>` `>=` | `lesserEquals?` `lesser?` `greater?` `greaterEquals?` |
-| Equality | `==` `!=` | `equals?` `notEquals?` |
-| Boolean | `not a` `a and b` `a or b` | primitive, not overloadable |
-| Low-precedence prefix | `if (a) b else c`, `name: a`, `#a`, `..a`, `a -> b` | (none) |
-| Multiple value | `a, b, c` | (none) |
+| Level                 | Forms                                                | Operator functions                                    |
+| --------------------- | ---------------------------------------------------- | ----------------------------------------------------- |
+| Atomic                | names, literals, `()`, `[]`, `__FILE__` etc., `eval` | (none)                                                |
+| Suffix                | `a(b)` `a[b]` `a.0` `a.field` `a^`                   | `call` `index` `staticIndex` `fieldRef` `dereference` |
+| Prefix                | `+a` `-a` `&a` `*a`                                  | `plus` `minus`, address and dispatch are primitive    |
+| Multiplicative        | `a*b` `a/b` `a%b`                                    | `multiply` `divide` `remainder`                       |
+| Additive              | `a+b` `a-b`                                          | `add` `subtract`                                      |
+| Ordered comparison    | `<=` `<` `>` `>=`                                    | `lesserEquals?` `lesser?` `greater?` `greaterEquals?` |
+| Equality              | `==` `!=`                                            | `equals?` `notEquals?`                                |
+| Boolean               | `not a` `a and b` `a or b`                           | primitive, not overloadable                           |
+| Low-precedence prefix | `if (a) b else c`, `name: a`, `#a`, `..a`, `a -> b`  | (none)                                                |
+| Multiple value        | `a, b, c`                                            | (none)                                                |
 
 ### Atomic Expressions
 
@@ -42,14 +42,14 @@ foo(..xs:TT) {
 
 #### Literal Expressions
 
-| Literal | Default type | Type suffix examples |
-|---------|-------------|----------------------|
-| `true` / `false` | `Bool` | (none) |
-| `1`, `0xFF` | `Int32` (or module default) | `ss` `s` `i` `l` `ll` `uss` `us` `u` `ul` `ull` |
-| `1.0`, `1e2` | `Float64` (or module default) | `f` `ff` `fl` `fj` `j` `ffj` `flj` |
-| `'x'` | via `Char` operator | (none) |
-| `"hello"` | via `StringConstant` operator | (none) |
-| `#foo`, `#"foo"` | `Static[#foo]` | (none) |
+| Literal          | Default type                  | Type suffix examples                            |
+| ---------------- | ----------------------------- | ----------------------------------------------- |
+| `true` / `false` | `Bool`                        | (none)                                          |
+| `1`, `0xFF`      | `Int32` (or module default)   | `ss` `s` `i` `l` `ll` `uss` `us` `u` `ul` `ull` |
+| `1.0`, `1e2`     | `Float64` (or module default) | `f` `ff` `fl` `fj` `j` `ffj` `flj`              |
+| `'x'`            | via `Char` operator           | (none)                                          |
+| `"hello"`        | via `StringConstant` operator | (none)                                          |
+| `#foo`, `#"foo"` | `Static[#foo]`                | (none)                                          |
 
 ```ceramic
 println(Type(1));      // Int32
@@ -72,11 +72,11 @@ Integer type suffixes may be applied to floating-point literal tokens to produce
 
 These are only valid inside **alias functions**:
 
-| Operator | Evaluates to |
-|----------|-------------|
-| `__FILE__` | Static string: the source file of the call site |
-| `__LINE__` | `Int32`: the source line |
-| `__COLUMN__` | `Int32`: the source column |
+| Operator       | Evaluates to                                                            |
+| -------------- | ----------------------------------------------------------------------- |
+| `__FILE__`     | Static string: the source file of the call site                         |
+| `__LINE__`     | `Int32`: the source line                                                |
+| `__COLUMN__`   | `Int32`: the source column                                              |
 | `__ARG__ name` | Static string. Textual representation of argument `name`, not evaluated |
 
 ```ceramic
@@ -156,12 +156,12 @@ Desugars to `dereference(a)`. Used to get a reference to the value behind a poin
 
 ### Prefix Operators
 
-| Operator | Behavior |
-|----------|----------|
-| `+a` | desugars to `plus(a)` |
-| `-a` | desugars to `minus(a)` |
-| `&a` | primitive: returns `Pointer[T]` to `a`, which must be an lvalue. Not overloadable |
-| `*a` | dispatch operator. Only valid as an argument to a call expression |
+| Operator | Behavior                                                                          |
+| -------- | --------------------------------------------------------------------------------- |
+| `+a`     | desugars to `plus(a)`                                                             |
+| `-a`     | desugars to `minus(a)`                                                            |
+| `&a`     | primitive: returns `Pointer[T]` to `a`, which must be an lvalue. Not overloadable |
+| `*a`     | dispatch operator. Only valid as an argument to a call expression                 |
 
 #### Dispatch (`*a`)
 
@@ -181,26 +181,26 @@ drawShapes(ss:Vector[Shape]) {
 
 ### Arithmetic Operators
 
-| Operator | Desugars to |
-|----------|-------------|
-| `a * b` | `multiply(a, b)` |
-| `a / b` | `divide(a, b)` |
-| `a % b` | `remainder(a, b)` |
-| `a + b` | `add(a, b)` |
-| `a - b` | `subtract(a, b)` |
+| Operator | Desugars to       |
+| -------- | ----------------- |
+| `a * b`  | `multiply(a, b)`  |
+| `a / b`  | `divide(a, b)`    |
+| `a % b`  | `remainder(a, b)` |
+| `a + b`  | `add(a, b)`       |
+| `a - b`  | `subtract(a, b)`  |
 
 All arithmetic operators are left-associative within their precedence group.
 
 ### Comparison Operators
 
-| Operator | Desugars to |
-|----------|-------------|
-| `a <= b` | `lesserEquals?(a, b)` |
-| `a < b` | `lesser?(a, b)` |
-| `a > b` | `greater?(a, b)` |
+| Operator | Desugars to            |
+| -------- | ---------------------- |
+| `a <= b` | `lesserEquals?(a, b)`  |
+| `a < b`  | `lesser?(a, b)`        |
+| `a > b`  | `greater?(a, b)`       |
 | `a >= b` | `greaterEquals?(a, b)` |
-| `a == b` | `equals?(a, b)` |
-| `a != b` | `notEquals?(a, b)` |
+| `a == b` | `equals?(a, b)`        |
+| `a != b` | `notEquals?(a, b)`     |
 
 All comparison operators are left-associative within their precedence group.
 
@@ -222,24 +222,13 @@ overload (**)(base:Int32, exp:Int32) : Int32 {
 println(2 ** 10);  // 1024
 ```
 
-To support the update-assignment form `a op: b`, overload `updateAssign` with a static operator argument:
-
-```ceramic
-overload updateAssign(#(**), ref x:Int32, exp:Int32) {
-    x = x ** exp;
-}
-
-var x = 3;
-x **: 3;   // updateAssign(**, x, 3) → x = 27
-```
-
 ### Boolean Operators
 
-| Operator | Behavior |
-|----------|----------|
-| `not a` | Complement. `a` must be `Bool`. Not overloadable |
-| `a and b` | Short-circuit conjunction. Right-associative |
-| `a or b` | Short-circuit disjunction. Right-associative |
+| Operator  | Behavior                                         |
+| --------- | ------------------------------------------------ |
+| `not a`   | Complement. `a` must be `Bool`. Not overloadable |
+| `a and b` | Short-circuit conjunction. Right-associative     |
+| `a or b`  | Short-circuit disjunction. Right-associative     |
 
 Both `and` and `or` require `Bool` operands and are not overloadable.
 

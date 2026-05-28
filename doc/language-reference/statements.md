@@ -153,6 +153,9 @@ a[..b]  +: c;   // → indexUpdateAssign(add, a, ..b, c)
 a.field +: c;   // → fieldRefUpdateAssign(add, a, #"field", c)
 ```
 
+<!-- TODO: document that updateAssign can be overloaded for user-defined ops, e.g. overload updateAssign(#(**), ref x, exp) { ... } -->
+
+
 #### Initialization Statements
 
 Use `<--` to initialize **uninitialized** storage (from a raw allocator, a named return value, etc.). Unlike `=`, it assumes the destination has no prior state.
