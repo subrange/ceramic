@@ -583,7 +583,9 @@ struct Source : public Object {
     [[nodiscard]] const char *endData() const { return buffer->getBufferEnd(); }
     [[nodiscard]] size_t size() const { return buffer->getBufferSize(); }
 
-    [[nodiscard]] llvm::DIFile *getDebugInfo() const { return nullptr; }
+    [[nodiscard]] llvm::DIFile *getDebugInfo() const {
+        return llvm::dyn_cast_or_null<llvm::DIFile>(debugInfo.get());
+    }
 };
 
 struct Location {
