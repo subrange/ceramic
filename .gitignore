@@ -32,4 +32,6 @@ cscope.out
 .gdb_history
 site/
 __pycache__/
-doc
+doc/diagnostics-style.md
+doc/doc_testing.md
+doc/peg-parser-research.md
