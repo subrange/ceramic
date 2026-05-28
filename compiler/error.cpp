@@ -414,7 +414,7 @@ void arityError(size_t expected, size_t received) {
     string buf;
     llvm::raw_string_ostream sout(buf);
     sout << "expected " << expected << " " << valuesStr(expected);
-    sout << ", but received " << received << " " << valuesStr(received);
+    sout << ", found " << received;
     error(sout.str());
 }
 
@@ -423,7 +423,7 @@ void arityError2(size_t minExpected, size_t received) {
     llvm::raw_string_ostream sout(buf);
     sout << "expected at least " << minExpected << " "
          << valuesStr(minExpected);
-    sout << ", but received " << received << " " << valuesStr(received);
+    sout << ", found " << received;
     error(sout.str());
 }
 
@@ -455,8 +455,7 @@ void arityMismatchError(size_t leftArity, size_t rightArity, bool hasVarArg) {
              << valuesStr(leftArity);
     else
         sout << "left side has " << leftArity << " " << valuesStr(leftArity);
-    sout << ", but right side has " << rightArity << " "
-         << valuesStr(rightArity);
+    sout << ", right side has " << rightArity << " " << valuesStr(rightArity);
     error(sout.str());
 }
 
@@ -464,8 +463,7 @@ static string typeErrorMessage(llvm::StringRef expected,
                                const TypePtr &receivedType) {
     string buf;
     llvm::raw_string_ostream sout(buf);
-    sout << "expected " << expected << ", "
-         << "but received " << receivedType->toString() << " type";
+    sout << "expected " << expected << ", found " << receivedType->toString();
     return sout.str();
 }
 
@@ -499,8 +497,8 @@ void indexRangeError(const llvm::StringRef kind, const size_t value,
                      const size_t maxValue) {
     string buf;
     llvm::raw_string_ostream sout(buf);
-    sout << kind << " " << value << " is out of range. ";
-    sout << "it should be less than " << maxValue;
+    sout << kind << " " << value << " out of range, must be less than "
+         << maxValue;
     error(sout.str());
 }
 
@@ -508,8 +506,8 @@ void argumentIndexRangeError(const unsigned index, const llvm::StringRef kind,
                              const size_t value, const size_t maxValue) {
     string buf;
     llvm::raw_string_ostream sout(buf);
-    sout << kind << " " << value << " is out of range. ";
-    sout << "it should be less than " << maxValue;
+    sout << kind << " " << value << " out of range, must be less than "
+         << maxValue;
     argumentError(index, sout.str());
 }
 
