@@ -15,13 +15,13 @@ This reference uses two kinds of code blocks:
 
 ## Sections
 
-| Section | Contents |
-|---------|----------|
-| [Tokenization](tokenization.md) | Source encoding, whitespace, comments, literals |
-| [Compilation Strategy](compilation.md) | Whole-program compilation, compile-time evaluation, pattern matching |
-| [Modules & Source Layout](modules.md) | Modules, imports, symbols, static strings |
-| [Type Definitions](types.md) | Records, variants, enumerations, lambda types |
-| [Function Definitions](functions.md) | Simple and overloaded functions, arguments, external functions, global values |
-| [Statements](statements.md) | Blocks, assignment, control flow, loops, exceptions |
-| [Expressions](expressions.md) | Operators, precedence, lambdas, multiple values |
-| [Grammar Reference](grammar.md) | Full BNF grammar, organized by chapter |
+| Section                                | Contents                                                                      |
+| -------------------------------------- | ----------------------------------------------------------------------------- |
+| [Tokenization](tokenization.md)        | Source encoding, whitespace, comments, literals                               |
+| [Compilation Strategy](compilation.md) | Whole-program compilation, compile-time evaluation, pattern matching          |
+| [Modules & Source Layout](modules.md)  | Modules, imports, symbols, static strings                                     |
+| [Type Definitions](types.md)           | Records, variants, enumerations, lambda types                                 |
+| [Function Definitions](functions.md)   | Simple and overloaded functions, arguments, external functions, global values |
+| [Statements](statements.md)            | Blocks, assignment, control flow, loops, exceptions                           |
+| [Expressions](expressions.md)          | Operators, precedence, lambdas, multiple values                               |
+| [Grammar Reference](grammar.md)        | Full BNF grammar, organized by chapter                                        |

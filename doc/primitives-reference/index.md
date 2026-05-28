@@ -15,13 +15,13 @@ For the language itself, see the [Language Reference](../language-reference/inde
 
 ## Sections
 
-| Section | Contents |
-|---------|----------|
-| [Primitive Types](types.md) | `Bool`, integers, floats, pointers, `Array`, `Vec`, `Tuple`, `Union`, `Static`, … |
-| [Data Access](data-access.md) | `primitiveCopy`, `arrayRef`, `tupleRef`, `recordFieldRef`, enum conversions |
-| [Numeric Operations](numeric.md) | Arithmetic, comparison, bitwise, conversion, checked integer ops |
-| [Pointer Operations](pointers.md) | Pointer arithmetic, casts, function pointers |
-| [Atomic Operations](atomic.md) | Memory orders, loads/stores, RMW, compare-exchange, fences |
-| [Exceptions](exceptions.md) | `activeException` |
-| [Introspection](introspection.md) | Symbols, types, records, variants, enums, static strings |
-| [Compiler Interface](compiler.md) | Flags, external function attributes, miscellaneous |
+| Section                           | Contents                                                                          |
+| --------------------------------- | --------------------------------------------------------------------------------- |
+| [Primitive Types](types.md)       | `Bool`, integers, floats, pointers, `Array`, `Vec`, `Tuple`, `Union`, `Static`, … |
+| [Data Access](data-access.md)     | `primitiveCopy`, `arrayRef`, `tupleRef`, `recordFieldRef`, enum conversions       |
+| [Numeric Operations](numeric.md)  | Arithmetic, comparison, bitwise, conversion, checked integer ops                  |
+| [Pointer Operations](pointers.md) | Pointer arithmetic, casts, function pointers                                      |
+| [Atomic Operations](atomic.md)    | Memory orders, loads/stores, RMW, compare-exchange, fences                        |
+| [Exceptions](exceptions.md)       | `activeException`                                                                 |
+| [Introspection](introspection.md) | Symbols, types, records, variants, enums, static strings                          |
+| [Compiler Interface](compiler.md) | Flags, external function attributes, miscellaneous                                |

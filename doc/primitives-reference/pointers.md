@@ -44,7 +44,7 @@ Returns a pointer offset from `p` by `i * TypeSize(T)` bytes. Lowers to LLVM `ge
 
 ```ceramic
 [T, I | Integer?(I)]
-pointerToInt(static I, p:Pointer[T]) : I;
+pointerToInt(#I, p:Pointer[T]) : I;
 ```
 
 Converts the address of `p` to integer type `I`. Zero-extends if `I` is wider than a pointer, truncates if narrower. Lowers to LLVM `ptrtoint`.
@@ -53,7 +53,7 @@ Converts the address of `p` to integer type `I`. Zero-extends if `I` is wider th
 
 ```ceramic
 [T, I | Integer?(I)]
-intToPointer(static T, address:I) : Pointer[T];
+intToPointer(#T, address:I) : Pointer[T];
 ```
 
 Converts `address` to a `Pointer[T]`. Truncates if `I` is wider than a pointer, zero-extends if narrower. Lowers to LLVM `inttoptr`.
@@ -62,7 +62,7 @@ Converts `address` to a `Pointer[T]`. Truncates if `I` is wider than a pointer, 
 
 ```ceramic
 [P1, P2 | Pointer?(P1) and Pointer?(P2)]
-pointerCast(static P1, p:P2) : P1;
+pointerCast(#P1, p:P2) : P1;
 ```
 
 Converts `p` to another pointer type sharing the same address. Lowers to LLVM `bitcast`.
@@ -75,7 +75,7 @@ Works between data pointers (`Pointer[T]` ↔ `Pointer[U]`), between code-pointe
 
 ```ceramic
 [F, ..T]
-makeCodePointer(static F, static ..T) : CodePointer[[..T], [..CallType(F, ..T)]];
+makeCodePointer(#F, #..T) : CodePointer[[..T], [..CallType(F, ..T)]];
 ```
 
 Resolves an overload of `F` matching input types `..T`, instantiates it, and returns a [`CodePointer`](types.md#codepointer) to that instance.
@@ -88,7 +88,7 @@ Resolves an overload of `F` matching input types `..T`, instantiates it, and ret
 
 ```ceramic
 [F, ..T]
-makeCCodePointer(static F, static ..T) : CCodePointer[[..T], [..CallType(F, ..T)]];
+makeCCodePointer(#F, #..T) : CCodePointer[[..T], [..CallType(F, ..T)]];
 ```
 
 Like `makeCodePointer`, but additionally generates a thunk that adapts the matched overload to the C calling convention, and returns a [`CCodePointer`](types.md#external-code-pointer-types).

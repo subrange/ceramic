@@ -8,7 +8,7 @@ Compile-time queries over symbols, types, records, variants, enums, and static s
 
 ```ceramic
 [T]
-Type?(static T) : Bool;
+Type?(#T) : Bool;
 ```
 
 `true` if `T` is a symbol that names a type.
@@ -22,7 +22,7 @@ main() {
     println(Type?(Int32));    // true
     println(Type?(foo));      // false
     println(Type?(bar));      // true
-    println(Type?(static 3)); // false
+    println(Type?(#3));       // false
 }
 ```
 
@@ -30,7 +30,7 @@ main() {
 
 ```ceramic
 [F, ..T]
-CallDefined?(static F, static ..T) : Bool;
+CallDefined?(#F, #..T) : Bool;
 ```
 
 `true` if `F` has an overload matching input types `..T`.
@@ -41,7 +41,7 @@ To probe a non-symbol callable type, use `CallDefined?(call, FunctionType, ..T)`
 
 ```ceramic
 [S]
-ModuleName(static S) : StringConstant;
+ModuleName(#S) : StringConstant;
 ```
 
 Generates a string literal containing the fully-qualified module name containing the symbol `S`. Evaluated via the `StringConstant` operator function. If `S` is itself a module, returns the module's own name. Errors if `S` is not a symbol.
@@ -64,7 +64,7 @@ main() {
 
 ```ceramic
 [S]
-IdentifierModuleName(static S);
+IdentifierModuleName(#S);
 ```
 
 Like `ModuleName`, but returns a static string instead of a string literal.
@@ -73,7 +73,7 @@ Like `ModuleName`, but returns a static string instead of a string literal.
 
 ```ceramic
 [x]
-StaticName(static x) : StringConstant;
+StaticName(#x) : StringConstant;
 ```
 
 Generates a string literal naming the static value `x`:
@@ -89,7 +89,7 @@ Evaluated via `StringConstant`.
 
 ```ceramic
 [x]
-IdentifierStaticName(static x);
+IdentifierStaticName(#x);
 ```
 
 Like `StaticName`, but returns a static string.
@@ -98,7 +98,7 @@ Like `StaticName`, but returns a static string.
 
 ```ceramic
 [M, name | Identifier?(name)]
-staticFieldRef(static M, static name);
+staticFieldRef(#M, #name);
 ```
 
 Looks up a public global value named `name` in module `M` and evaluates as if it were referenced by name directly. Errors if `name` is not a public member of `M`.
@@ -109,7 +109,7 @@ Looks up a public global value named `name` in module `M` and evaluates as if it
 
 ```ceramic
 [S]
-Identifier?(static S) : Bool;
+Identifier?(#S) : Bool;
 ```
 
 `true` if `S` is a static string.
@@ -118,7 +118,7 @@ Identifier?(static S) : Bool;
 
 ```ceramic
 [S | Identifier?(S)]
-IdentifierSize(static S) : SizeT;
+IdentifierSize(#S) : SizeT;
 ```
 
 Number of characters in static string `S`.
@@ -127,7 +127,7 @@ Number of characters in static string `S`.
 
 ```ceramic
 [..SS | allValues?(Identifier?, ..SS)]
-IdentifierConcat(static ..SS);
+IdentifierConcat(#..SS);
 ```
 
 Concatenation of all argument static strings.
@@ -140,7 +140,7 @@ Concatenation of all argument static strings.
     and n >= 0 and n < IdentifierSize(S)
     and m >= 0 and m < IdentifierSize(S)
 ]
-IdentifierSlice(static S, static n, static m);
+IdentifierSlice(#S, #n, #m);
 ```
 
 Substring of `S` from index `n` up to (but not including) `m`.
@@ -151,7 +151,7 @@ Substring of `S` from index `n` up to (but not including) `m`.
 
 ```ceramic
 [T | Type?(T)]
-TypeSize(static T) : SizeT;
+TypeSize(#T) : SizeT;
 ```
 
 Size in bytes of a value of type `T`.
@@ -160,7 +160,7 @@ Size in bytes of a value of type `T`.
 
 ```ceramic
 [T | Type?(T)]
-TypeAlignment(static T) : SizeT;
+TypeAlignment(#T) : SizeT;
 ```
 
 Natural alignment in bytes of a value of type `T`.
@@ -169,7 +169,7 @@ Natural alignment in bytes of a value of type `T`.
 
 ```ceramic
 [T]
-CCodePointer?(static T) : Bool;
+CCodePointer?(#T) : Bool;
 ```
 
 `true` if `T` is a symbol and an instance of one of the [external code pointer types](types.md#external-code-pointer-types) (`CCodePointer`, `LLVMCodePointer`, …).
@@ -178,7 +178,7 @@ CCodePointer?(static T) : Bool;
 
 ```ceramic
 [..T]
-TupleElementCount(static Tuple[..T]) : SizeT;
+TupleElementCount(#Tuple[..T]) : SizeT;
 ```
 
 Number of elements in the tuple type.
@@ -187,7 +187,7 @@ Number of elements in the tuple type.
 
 ```ceramic
 [..T]
-UnionMemberCount(static Union[..T]) : SizeT;
+UnionMemberCount(#Union[..T]) : SizeT;
 ```
 
 Number of member types in the union type.
@@ -196,16 +196,16 @@ Number of member types in the union type.
 
 ```ceramic
 [R]
-Record?(static R) : Bool;
+Record?(#R) : Bool;
 
 [R | Record?(R)]
-RecordFieldCount(static R) : SizeT;
+RecordFieldCount(#R) : SizeT;
 
 [R, n | Record?(R) and n >= 0 and n < RecordFieldCount(R)]
-RecordFieldName(static R, static n);                // static string
+RecordFieldName(#R, #n);                // static string
 
 [R, name | Record?(R) and Identifier?(name)]
-RecordWithField?(static R, static name) : Bool;
+RecordWithField?(#R, #name) : Bool;
 ```
 
 - `Record?`: `true` if `R` names a record type.
@@ -217,13 +217,13 @@ RecordWithField?(static R, static name) : Bool;
 
 ```ceramic
 [V]
-Variant?(static V) : Bool;
+Variant?(#V) : Bool;
 
 [V | Variant?(V)]
-VariantMemberCount(static V) : SizeT;
+VariantMemberCount(#V) : SizeT;
 
 [V, n | Variant?(V) and n >= 0 and n < VariantMemberCount(V)]
-VariantMemberIndex(static V, static n);
+VariantMemberIndex(#V, #n);
 ```
 
 - `Variant?`: `true` if `V` names a variant type.
@@ -234,13 +234,13 @@ VariantMemberIndex(static V, static n);
 
 ```ceramic
 [E]
-Enum?(static E) : Bool;
+Enum?(#E) : Bool;
 
 [E | Enum?(E)]
-EnumMemberCount(static E) : SizeT;
+EnumMemberCount(#E) : SizeT;
 
 [E, n | Enum?(E) and n >= 0 and n < EnumMemberCount(E)]
-EnumMemberName(static E, static n) : StringConstant;
+EnumMemberName(#E, #n) : StringConstant;
 ```
 
 - `Enum?`: `true` if `E` names an enum type.

@@ -139,19 +139,22 @@ a.field = c;     // → fieldRefAssign(a, #"field", c)
 
 #### Update Assignment
 
-`+=`, `-=`, `*=`, `/=`, `%=` desugar to calls to `updateAssign`:
+An operator symbol followed by `:` is an update assignment. The arithmetic forms `+:`, `-:`, `*:`, `/:`, `%:` desugar to calls to `updateAssign`:
 
 ```ceramic
-x += 1;   // updateAssign(add, x, 1)
-x -= 2;   // updateAssign(subtract, x, 2)
-x *= 4;   // updateAssign(multiply, x, 4)
+x +: 1;   // updateAssign(add, x, 1)
+x -: 2;   // updateAssign(subtract, x, 2)
+x *: 4;   // updateAssign(multiply, x, 4)
 ```
 Property update forms also exist:
 
 ```ceramic
-a[..b]  += c;   // → indexUpdateAssign(add, a, ..b, c)
-a.field += c;   // → fieldRefUpdateAssign(add, a, #"field", c)
+a[..b]  +: c;   // → indexUpdateAssign(add, a, ..b, c)
+a.field +: c;   // → fieldRefUpdateAssign(add, a, #"field", c)
 ```
+
+<!-- TODO: document that updateAssign can be overloaded for user-defined ops, e.g. overload updateAssign(#(**), ref x, exp) { ... } -->
+
 
 #### Initialization Statements
 

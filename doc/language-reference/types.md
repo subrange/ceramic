@@ -41,8 +41,8 @@ record Vec3D[T] = Vec3DBody(T);
 
 private define Vec3DBody;
 [T | T != Double]
-overload Vec3DBody(static T) = [[#"coords", Array[T, 3]]];
-overload Vec3DBody(static Float) = [[#"coords", Vec[Float, 4]]];  // SIMD path
+overload Vec3DBody(#T) = [[#"coords", Array[T, 3]]];
+overload Vec3DBody(#Float) = [[#"coords", Vec[Float, 4]]];  // SIMD path
 ```
 
 ### Variants
