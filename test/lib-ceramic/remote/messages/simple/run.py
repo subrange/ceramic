@@ -10,6 +10,6 @@ servererr = server.communicate()[1]
 clienterr = client.communicate()[1]
 
 print("-- server stderr")
-print(servererr, end=" ")
+print(servererr.decode(), end="")
 print("-- client stderr")
-print(clienterr, end=" ")
+print(clienterr.decode())

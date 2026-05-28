@@ -5,7 +5,7 @@ __llvm__ {
 }
 
 bswap(x:Int32) --> returned:Int32 __llvm__ {
-    %1 = load i32* %x
+    %1 = load i32, ptr %x
     %2 = call i32 @llvm.bswap.i32(i32 %1)
     store i32 %2, i32* %returned
     ret i8* null

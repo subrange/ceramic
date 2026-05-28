@@ -60,16 +60,16 @@ A character literal represents a single ASCII character, written between single 
 ```
 Supported escape codes:
 
-| Escape | Meaning |
-|--------|---------|
-| `\0` | Null |
-| `\t` | Tab |
-| `\n` | Newline |
-| `\f` | Form feed |
-| `\r` | Carriage return |
-| `\"` | Double quote |
-| `\'` | Single quote |
-| `\\` | Backslash |
+| Escape | Meaning                         |
+| ------ | ------------------------------- |
+| `\0`   | Null                            |
+| `\t`   | Tab                             |
+| `\n`   | Newline                         |
+| `\f`   | Form feed                       |
+| `\r`   | Carriage return                 |
+| `\"`   | Double quote                    |
+| `\'`   | Single quote                    |
+| `\\`   | Backslash                       |
 | `\xNN` | Arbitrary byte (two hex digits) |
 
 ### String Literals

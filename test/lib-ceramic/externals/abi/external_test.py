@@ -9,7 +9,7 @@ def runExternalTest(extraFlags=[]):
 
     linkFlags = []
     if platform == "linux" or platform == "linux2":
-        linkFlags += ["-lm"]
+        linkFlags += ["-lm", "-no-pie"]
 
     NULL = open(os.devnull, "w")
 

@@ -189,7 +189,7 @@ widthInBase(n:N, base:B) {
             nn = Type(nn)(nn \ base);
         }
     }
-    return ref len;
+    return len;
 }
 
 [I when Integer?(I)]

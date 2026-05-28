@@ -159,12 +159,12 @@ Ceramic distinguishes **lvalues** (values with a referenceable identity: variabl
 
 An argument may be qualified to accept only one kind:
 
-| Qualifier | Accepts | Typical use |
-|-----------|---------|-------------|
-| (none) | lvalue or rvalue, bound as lvalue inside the function | general |
-| `ref` | lvalue only | returning a reference into the argument |
-| `rvalue` | rvalue only | move optimization, steal resources from a temporary |
-| `forward` | either, preserves the caller's lvalue/rvalue-ness | perfect forwarding |
+| Qualifier | Accepts                                               | Typical use                                         |
+| --------- | ----------------------------------------------------- | --------------------------------------------------- |
+| (none)    | lvalue or rvalue, bound as lvalue inside the function | general                                             |
+| `ref`     | lvalue only                                           | returning a reference into the argument             |
+| `rvalue`  | rvalue only                                           | move optimization, steal resources from a temporary |
+| `forward` | either, preserves the caller's lvalue/rvalue-ness     | perfect forwarding                                  |
 
 ```ceramic
 // rvalue: steal the string's buffer instead of copying
@@ -196,31 +196,31 @@ trace(f, forward ..args) {
 
 #### Static Arguments
 
-`static` arguments match values computed at compile time. The `static` keyword at the call site evaluates an expression at compile time and passes the result as the argument.
+Static arguments match values computed at compile time. The `#` prefix at the call site evaluates an expression at compile time and passes the result as the argument.
 
 ```ceramic
 define beetlejuice;
 
 [n]
-overload beetlejuice(static n) {
+overload beetlejuice(#n) {
     for (i in range(n))
         println("Beetlejuice!");
 }
 
 // Unrolled specialization for the common case
-overload beetlejuice(static 3) {
+overload beetlejuice(#3) {
     println("Beetlejuice!");
     println("Beetlejuice!");
     println("Beetlejuice!");
 }
 
 main() {
-    beetlejuice(static 3);
+    beetlejuice(#3);
 }
 ```
-Symbols and static strings are inherently static and match `static` arguments without an explicit `static` at the call site.
+Symbols and static strings are inherently static and match static arguments without an explicit `#` at the call site.
 
-`static T` is syntactic sugar for an unnamed argument of primitive type `Static[T]`.
+`#T` is syntactic sugar for an unnamed argument of primitive type `Static[T]`.
 
 ### Return Types
 
@@ -289,15 +289,15 @@ overload add(x:Int32, y:Int32) --> sum:Int32 __llvm__ {
 
 #### Inline LLVM Functions
 
-A function may be implemented directly in LLVM IR with an `__llvm__` block. Arguments and named return values are available as LLVM pointers (e.g., `x:Int32` → `i32* %x`). All exit paths must end with `ret i8* null`.
+A function may be implemented directly in LLVM IR with an `__llvm__` block. Arguments and named return values are available as LLVM pointers (e.g., `x:Int32` → `ptr %x`). All exit paths must end with `ret ptr null`.
 
 ```ceramic
 overload add(x:Int32, y:Int32) --> sum:Int32 __llvm__ {
-    %xv = load i32* %x
-    %yv = load i32* %y
+    %xv = load i32, ptr %x
+    %yv = load i32, ptr %y
     %sumv = add i32 %xv, %yv
-    store i32 %sumv, i32* %sum
-    ret i8* null
+    store i32 %sumv, ptr %sum
+    ret ptr null
 }
 ```
 Ceramic static values can be interpolated with `$Name` or `${Expression}`:
@@ -309,11 +309,11 @@ Ceramic static values can be interpolated with `$Name` or `${Expression}`:
 ```ceramic
 [T | Integer?(T)]
 overload add(x:T, y:T) --> sum:T __llvm__ {
-    %xv = load $T* %x
-    %yv = load $T* %y
+    %xv = load $T, ptr %x
+    %yv = load $T, ptr %y
     %sumv = add $T %xv, %yv
-    store $T %sumv, $T* %sum
-    ret i8* null
+    store $T %sumv, ptr %sum
+    ret ptr null
 }
 ```
 Any LLVM intrinsics or globals referenced must be declared in a [top-level LLVM block](modules.md#top-level-llvm). Inline LLVM functions cannot be evaluated at compile time.
@@ -399,13 +399,13 @@ external ("_start") start() {
 ```
 Calling convention attributes (from `__primitives__`):
 
-| Attribute | Convention |
-|-----------|-----------|
-| `AttributeCCall` | Default C |
+| Attribute           | Convention                                                  |
+| ------------------- | ----------------------------------------------------------- |
+| `AttributeCCall`    | Default C                                                   |
 | `AttributeLLVMCall` | Native LLVM (for intrinsics and other LLVM-based languages) |
-| `AttributeStdCall` | x86 stdcall (Windows) |
-| `AttributeFastCall` | x86 fastcall (Windows) |
-| `AttributeThisCall` | x86 thiscall (Windows) |
+| `AttributeStdCall`  | x86 stdcall (Windows)                                       |
+| `AttributeFastCall` | x86 fastcall (Windows)                                      |
+| `AttributeThisCall` | x86 thiscall (Windows)                                      |
 ---
 
 ## Global Value Definitions

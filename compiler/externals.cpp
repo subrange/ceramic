@@ -54,8 +54,10 @@ llvm::FunctionType *ExternalFunction::getLLVMFunctionType() const {
         retType = retInfo.ext.type ? retInfo.ext.type : llvmType(retInfo.type);
     }
 
+    size_t argLimit =
+        isVarArg ? std::min(numReqArg, argInfos.size()) : argInfos.size();
     for (vector<ArgInfo>::const_iterator it = argInfos.begin(),
-                                         ie = argInfos.end();
+                                         ie = argInfos.begin() + (long)argLimit;
          it != ie; ++it) {
         llvm::Type *type;
         if (it->ext.isIndirect()) {
