@@ -371,6 +371,27 @@ void error(Location const &location, llvm::Twine const &msg) {
     error(msg);
 }
 
+static Span exprSpan(Expr const *e) {
+    if (e == nullptr)
+        return {};
+    if (e->startLocation.ok() && e->endLocation.ok() &&
+        e->startLocation.source == e->endLocation.source)
+        return Span(e->startLocation.source, e->startLocation.offset,
+                    e->endLocation.offset);
+    return {};
+}
+
+void error(Expr const *context, llvm::Twine const &msg) {
+    SpanHint hint(exprSpan(context));
+    if (context != nullptr && context->location.ok())
+        pushLocation(context->location);
+    error(msg);
+}
+
+void error(Pointer<Expr> context, llvm::Twine const &msg) {
+    error(context.ptr(), msg);
+}
+
 void fmtError(const char *fmt, ...) {
     va_list ap;
     char s[256];

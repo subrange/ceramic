@@ -14,6 +14,8 @@
 namespace ceramic {
 void error(llvm::Twine const &msg) CERAMIC_NORETURN;
 void error(Location const &location, llvm::Twine const &msg) CERAMIC_NORETURN;
+void error(Expr const *context, llvm::Twine const &msg) CERAMIC_NORETURN;
+void error(Pointer<Expr> context, llvm::Twine const &msg) CERAMIC_NORETURN;
 
 void warning(llvm::Twine const &msg);
 
