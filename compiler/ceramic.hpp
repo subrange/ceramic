@@ -598,6 +598,25 @@ struct Location {
     bool ok() const { return source != nullptr; }
 };
 
+// half-open [startOffset, endOffset) range over a source buffer.
+// zero-width spans (start == end) render as a single caret.
+struct Span {
+    SourcePtr source;
+    unsigned startOffset = 0;
+    unsigned endOffset = 0;
+
+    Span() = default;
+
+    Span(SourcePtr source, unsigned startOffset, unsigned endOffset)
+        : source(std::move(source)), startOffset(startOffset),
+          endOffset(endOffset) {}
+
+    Span(Location const &loc)
+        : source(loc.source), startOffset(loc.offset), endOffset(loc.offset) {}
+
+    bool ok() const { return source != nullptr; }
+};
+
 //
 // error module
 //
