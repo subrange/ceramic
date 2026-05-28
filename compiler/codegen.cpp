@@ -4183,6 +4183,24 @@ static CodegenContext *setUpSimpleContext(CodegenContext *ctx,
 
     ctx->llvmFunc = initGlobals;
 
+    // synthetic functions need their own DI scope so global-var initializers
+    // codegenned into this context emit DILocations with a non-null scope
+    if (llvmDIBuilder != nullptr) {
+        llvm::DIFile *file = llvmDICompileUnit->getFile();
+
+        llvm::DISubroutineType *spType = llvmDIBuilder->createSubroutineType(
+            llvmDIBuilder->getOrCreateTypeArray({}));
+
+        llvm::DISubprogram *sp = llvmDIBuilder->createFunction(
+            file, name, name, file, 0, spType, 0, llvm::DINode::FlagArtificial,
+            llvm::DISubprogram::SPFlagLocalToUnit |
+                llvm::DISubprogram::SPFlagDefinition);
+
+        initGlobals->setSubprogram(sp);
+
+        ctx->pushDebugScope(llvmDIBuilder->createLexicalBlock(sp, file, 0, 0));
+    }
+
     llvm::BasicBlock *initBlock = newBasicBlock("init", ctx);
     llvm::BasicBlock *codeBlock = newBasicBlock("code", ctx);
     llvm::BasicBlock *returnBlock = newBasicBlock("return", ctx);
@@ -4190,6 +4208,13 @@ static CodegenContext *setUpSimpleContext(CodegenContext *ctx,
 
     ctx->initBuilder.reset(new llvm::IRBuilder<>(initBlock));
     ctx->builder.reset(new llvm::IRBuilder<>(codeBlock));
+
+    if (llvmDIBuilder != nullptr) {
+        llvm::DebugLoc debugLoc =
+            llvm::DILocation::get(llvmContext, 0, 0, ctx->getDebugScope());
+        ctx->initBuilder->SetCurrentDebugLocation(debugLoc);
+        ctx->builder->SetCurrentDebugLocation(debugLoc);
+    }
 
     ctx->exceptionValue = ctx->initBuilder->CreateAlloca(exceptionReturnType(),
                                                          nullptr, "exception");
