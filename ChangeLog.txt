@@ -1,30 +1,12 @@
 ==========
-0.1 -> 0.2 WIP
+0.1 -> 0.2
 ==========
 
 Language changes:
 -----------------
-* A new 'with' statement provides syntactic sugar for monadic control flow.
-  Within a block, the subsequent statements after a 'with' statement are
-  passed as a capture-by-value lambda to the function specified as the 'with'
-  statement's operand.
-    // 0.2
-    foo(x) {
-        with y = bar(x);
-        with z = bas(y);
-        qux(z);
-    }
-
-    // desugars to
-
-    foo(x) {
-        bar(y => {
-            bas(z => {
-                qux(z);
-            }, y);
-        }, x);
-    }
-  Thanks to Arvid Picciani.
+* A new '[[transparent]]' attribute marks procedures so that diagnostics
+  reported from within them are attributed to the caller. This produces
+  better error locations for thin wrappers and helper procedures.
 
 * The 'primitiveCopy' primitive has been renamed to 'bitcopy'.
 
@@ -322,7 +304,9 @@ Library changes:
 
 Compiler frontend changes:
 --------------------------
-* LLVM and Clang 3.1 are now required.
+* LLVM 19 and Clang 19 are now required. The compiler has been ported from
+  LLVM 3.2, including the move to opaque pointers, the new pass manager,
+  updated debug info APIs, and C++20.
 * -O2 is now the default optimization level.
 
 ==========
