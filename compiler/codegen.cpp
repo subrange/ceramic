@@ -4426,8 +4426,10 @@ void codegenEntryPoints(ModulePtr module, bool importedExternals) {
 
     finalizeCtorsDtors();
 
-    if (llvmDIBuilder != nullptr)
+    if (llvmDIBuilder != nullptr) {
+        materializeDebugInfoForTypes();
         llvmDIBuilder->finalize();
+    }
 
     constructorsCtx = nullptr;
     destructorsCtx = nullptr;

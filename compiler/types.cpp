@@ -1677,4 +1677,21 @@ string typeName(TypePtr type) {
     typePrint(os, type);
     return string(os.str());
 }
+
+void materializeDebugInfoForTypes() {
+    if (llvmDIBuilder == nullptr)
+        return;
+
+    auto sweep = [](auto &registry) {
+        for (auto &bucket : registry)
+            for (auto &t : bucket)
+                if (t->llType != nullptr && !t->defined)
+                    llvmType(t.ptr());
+    };
+
+    sweep(recordTypes);
+    sweep(tupleTypes);
+    sweep(unionTypes);
+    sweep(variantTypes);
+}
 } // namespace ceramic
