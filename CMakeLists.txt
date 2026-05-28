@@ -28,9 +28,7 @@ if(UNIX)
     message("-- Using LLVM ${LLVM_PACKAGE_VERSION}: ${LLVM_INSTALL_PREFIX}")
     message("-- LLVM include dir: ${LLVM_INCLUDE_DIRS}")
 
-    option(CERAMIC_STATIC_LLVM "Link LLVM components statically" OFF)
-
-    if(LLVM_LINK_LLVM_DYLIB AND NOT CERAMIC_STATIC_LLVM)
+    if(LLVM_LINK_LLVM_DYLIB)
         set(LLVM_LIBS LLVM)
     else()
         llvm_map_components_to_libnames(LLVM_LIBS all)
