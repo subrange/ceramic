@@ -77,7 +77,7 @@ jobs:
       - name: Tidy all files (main)
         if: github.event_name == 'push'
         run: |
-          /usr/lib/llvm-19/share/clang/run-clang-tidy.py \
+          run-clang-tidy-19 \
             -p build -j "$(nproc)" \
             "$(pwd)/compiler/.*\.cpp" "$(pwd)/tools/.*\.cpp"
 
