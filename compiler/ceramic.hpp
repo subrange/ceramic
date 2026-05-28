@@ -145,8 +145,8 @@ inline long double ceramic_cimag(const ceramic_cldouble &c) { return c.imag(); }
 
 #endif
 
-#define CERAMIC_LANGUAGE_VERSION "0.2-WIP"
-#define CERAMIC_COMPILER_VERSION "0.2git"
+#define CERAMIC_LANGUAGE_VERSION "0.3-WIP"
+#define CERAMIC_COMPILER_VERSION "0.3git"
 
 namespace ceramic {
 //
