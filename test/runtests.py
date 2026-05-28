@@ -14,7 +14,6 @@ import time
 import tempfile
 import configparser
 
-
 #
 # test properties
 #
