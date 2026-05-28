@@ -1318,9 +1318,7 @@ static void declareLLVMType(TypePtr t) {
             declareLLVMType(reprType);
         t->llType = reprType->llType;
         if (llvmDIBuilder != nullptr)
-            t->debugInfo.reset(llvmDIBuilder->createReplaceableCompositeType(
-                llvm::dwarf::DW_TAG_structure_type, typeName(t),
-                /*Scope=*/nullptr, /*File=*/nullptr, /*Line=*/0));
+            t->debugInfo.reset(reprType->getDebugInfo());
         break;
     }
     default:
@@ -1633,13 +1631,8 @@ static void defineLLVMType(TypePtr t) {
             declareLLVMType(reprType);
         if (!reprType->defined)
             defineLLVMType(reprType);
-
-        if (llvmDIBuilder != nullptr) {
-            llvm::MDNode *placeholderNode = x->getDebugInfo();
-            if (placeholderNode)
-                placeholderNode->replaceAllUsesWith(
-                    llvmTypeDebugInfo(reprType));
-        }
+        if (llvmDIBuilder != nullptr)
+            t->debugInfo.reset(reprType->getDebugInfo());
         break;
     }
     default:
@@ -1682,16 +1675,33 @@ void materializeDebugInfoForTypes() {
     if (llvmDIBuilder == nullptr)
         return;
 
-    auto sweep = [](auto &registry) {
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        auto sweep = [&](auto &registry) {
+            for (auto &bucket : registry)
+                for (auto &t : bucket)
+                    if (t->llType != nullptr && !t->defined) {
+                        llvmType(t.ptr());
+                        changed = true;
+                    }
+        };
+
+        sweep(recordTypes);
+        sweep(tupleTypes);
+        sweep(unionTypes);
+        sweep(variantTypes);
+    }
+
+    auto resolveCycles = [](auto &registry) {
         for (auto &bucket : registry)
             for (auto &t : bucket)
-                if (t->llType != nullptr && !t->defined)
-                    llvmType(t.ptr());
+                if (t->debugInfo && !t->debugInfo->isResolved())
+                    t->debugInfo->resolveCycles();
     };
-
-    sweep(recordTypes);
-    sweep(tupleTypes);
-    sweep(unionTypes);
-    sweep(variantTypes);
+    resolveCycles(recordTypes);
+    resolveCycles(tupleTypes);
+    resolveCycles(unionTypes);
+    resolveCycles(variantTypes);
 }
 } // namespace ceramic

@@ -2411,6 +2411,23 @@ static void interpolateExpr(SourcePtr source, unsigned offset, unsigned length,
     }
 }
 
+static bool verifierSafeParseAssemblyInto(llvm::MemoryBufferRef buf,
+                                          llvm::SMDiagnostic &err) {
+    materializeDebugInfoForTypes();
+    vector<llvm::Instruction *> stubs;
+    for (llvm::Function &f : llvmModule->functions()) {
+        if (f.isDeclaration())
+            continue;
+        for (llvm::BasicBlock &bb : f)
+            if (bb.getTerminator() == nullptr)
+                stubs.push_back(new llvm::UnreachableInst(llvmContext, &bb));
+    }
+    bool failed = llvm::parseAssemblyInto(buf, llvmModule, nullptr, err);
+    for (llvm::Instruction *stub : stubs)
+        stub->eraseFromParent();
+    return failed;
+}
+
 static bool interpolateLLVMCode(LLVMCodePtr llvmBody, string &out, EnvPtr env) {
     SourcePtr source = llvmBody->location.source;
     unsigned startingOffset = llvmBody->location.offset;
@@ -2513,8 +2530,7 @@ void codegenLLVMBody(InvokeEntry *entry, llvm::StringRef callableName) {
     std::unique_ptr<llvm::MemoryBuffer> buf =
         llvm::MemoryBuffer::getMemBuffer(llvm::StringRef(out.str()));
 
-    if (llvm::parseAssemblyInto(buf->getMemBufferRef(), llvmModule, nullptr,
-                                err)) {
+    if (verifierSafeParseAssemblyInto(buf->getMemBufferRef(), err)) {
         llvm::errs() << out.str();
         err.print("\n", llvm::errs());
         llvm::errs() << "\n";
@@ -4157,8 +4173,7 @@ static void codegenTopLevelLLVMRecursive(ModulePtr m) {
     std::unique_ptr<llvm::MemoryBuffer> buf =
         llvm::MemoryBuffer::getMemBuffer(llvm::StringRef(code));
 
-    if (llvm::parseAssemblyInto(buf->getMemBufferRef(), llvmModule, nullptr,
-                                err)) {
+    if (verifierSafeParseAssemblyInto(buf->getMemBufferRef(), err)) {
         err.print("\n", llvm::errs());
         llvm::errs() << "\n";
         error("llvm assembly parse error");
@@ -4462,6 +4477,9 @@ llvm::TargetMachine *initLLVM(llvm::StringRef targetTriple,
                 llvm::sys::path::parent_path(absFileName)),
             "ceramic compiler " CERAMIC_COMPILER_VERSION, optLevel > 0, flags,
             0);
+        llvmModule->addModuleFlag(llvm::Module::Warning, "Debug Info Version",
+                                  llvm::DEBUG_METADATA_VERSION);
+        llvmModule->addModuleFlag(llvm::Module::Warning, "Dwarf Version", 4);
     } else {
         llvmDIBuilder = nullptr;
         llvmDICompileUnit = nullptr;
