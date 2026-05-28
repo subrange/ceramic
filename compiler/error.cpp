@@ -646,6 +646,7 @@ void matchFailureError(MatchFailureError const &err) {
     matchFailureMessage(err, buf);
 
     // Pick the deepest blameable frame.
+    Location blame;
     for (auto it = contextStack.rbegin(); it != contextStack.rend(); ++it) {
         if (!it->location.ok() || !it->location.source)
             continue;
@@ -653,11 +654,16 @@ void matchFailureError(MatchFailureError const &err) {
             continue;
         if (it->overload->isDiagnosticTransparent)
             continue;
-        pushLocation(it->location);
+        blame = it->location;
         break;
     }
 
-    error(buf);
+    if (blame.ok()) {
+        LocationContext lc(blame);
+        error(buf);
+    } else {
+        error(buf);
+    }
 }
 
 void matchFailureLog(MatchFailureError const &err) {
