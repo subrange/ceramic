@@ -1,6 +1,7 @@
 #include "parser.hpp"
 #include "ceramic.hpp"
 #include "desugar.hpp"
+#include "diagnostic.hpp"
 #include "error.hpp"
 
 namespace ceramic {
@@ -9,6 +10,14 @@ map<llvm::StringRef, IdentifierPtr> Identifier::freeIdentifiers;
 static vector<Token> *tokens;
 static unsigned position;
 static unsigned maxPosition;
+// farthest token a terminal tried to match, and what it expected there
+static unsigned failPosition;
+static vector<llvm::StringRef> failExpected;
+// diagnostics collected during recovery, rendered together at the end
+static SourcePtr parseSource;
+static vector<Diagnostic> parseErrors;
+static constexpr unsigned maxParseErrors = 20;
+static bool parseErrorOverflow;
 static bool parserOptionKeepDocumentation = false;
 
 static AddTokensCallback addTokens = nullptr;
@@ -42,6 +51,248 @@ static unsigned save() { return position; }
 
 static void restore(unsigned p) { position = p; }
 
+// remember the set of terminals expected at the farthest failure point
+static void recordExpected(unsigned p, llvm::StringRef what) {
+    if (p > failPosition) {
+        failPosition = p;
+        failExpected.clear();
+    }
+    if (p != failPosition)
+        return;
+    for (llvm::StringRef e : failExpected)
+        if (e == what)
+            return;
+    failExpected.push_back(what);
+}
+
+// turn the farthest failure into an "expected X, found Y" diagnostic
+static Diagnostic buildParseError() {
+    const vector<Token> &t = *tokens;
+    unsigned pos = failExpected.empty() ? maxPosition : failPosition;
+
+    // rank terminators first, then the expression category, then the rest
+    static const char *const terminators[] = {";", "}", ")", "]", ",", ":"};
+    vector<llvm::StringRef> ordered;
+    for (const char *p : terminators)
+        for (llvm::StringRef e : failExpected)
+            if (e == p) {
+                ordered.push_back(e);
+                break;
+            }
+    for (llvm::StringRef e : failExpected)
+        if (e == "expression") {
+            ordered.push_back(e);
+            break;
+        }
+    for (llvm::StringRef e : failExpected) {
+        bool seen = false;
+        for (llvm::StringRef o : ordered)
+            if (o == e) {
+                seen = true;
+                break;
+            }
+        if (!seen)
+            ordered.push_back(e);
+    }
+
+    llvm::StringRef lead = ordered.empty() ? llvm::StringRef() : ordered[0];
+
+    // a missing separator beats a closer when another list item follows
+    if ((lead == ")" || lead == "]") && pos < t.size()) {
+        llvm::StringRef f = t[pos].str;
+        bool isCloser =
+            f == ")" || f == "]" || f == "}" || f == ";" || f == ",";
+        bool commaExpected = false;
+        for (llvm::StringRef e : failExpected)
+            if (e == ",") {
+                commaExpected = true;
+                break;
+            }
+        if (commaExpected && !isCloser)
+            lead = ",";
+    }
+
+    bool isDelim =
+        lead == ";" || lead == "}" || lead == ")" || lead == "]" || lead == ",";
+
+    Span span;
+    string buf;
+    llvm::raw_string_ostream sout(buf);
+
+    if (isDelim && pos > 0) {
+        // a missing delimiter belongs at the gap after the previous token
+        const Token &prev = t[pos - 1];
+        unsigned gap =
+            prev.location.offset + static_cast<unsigned>(prev.str.size());
+        span = Span(parseSource, gap, gap);
+        sout << "expected `" << lead << "`";
+    } else {
+        string found;
+        if (pos >= t.size()) {
+            unsigned end = static_cast<unsigned>(parseSource->size());
+            span = Span(parseSource, end, end);
+            found = "end of input";
+        } else {
+            const Token &tok = t[pos];
+            unsigned start = tok.location.offset;
+            span = Span(parseSource, start,
+                        start + static_cast<unsigned>(tok.str.size()));
+            found = (llvm::Twine("`") + tok.str.str() + "`").str();
+        }
+        if (ordered.empty()) {
+            sout << "unexpected " << found;
+        } else {
+            // only the most relevant token, not the whole failure set
+            sout << "expected ";
+            if (lead == "identifier" || lead == "operator" ||
+                lead == "expression")
+                sout << lead;
+            else
+                sout << "`" << lead << "`";
+            sout << ", found " << found;
+        }
+    }
+
+    Diagnostic diag(Severity::Error, sout.str(), span);
+    if (lead == ";")
+        diag.suggestion = "add `;` here";
+    else if (lead == "}")
+        diag.suggestion = "add `}` here";
+    else if (lead == ")")
+        diag.suggestion = "add `)` here";
+    else if (lead == "]")
+        diag.suggestion = "add `]` here";
+    else if (lead == ",")
+        diag.suggestion = "add `,` here";
+    return diag;
+}
+
+static void recordParseError() {
+    if (parseErrors.size() >= maxParseErrors && !shouldPrintFullMatchErrors) {
+        parseErrorOverflow = true;
+        return;
+    }
+    parseErrors.push_back(buildParseError());
+}
+
+// reset failure tracking at the start of a recovered item
+static void beginItem() {
+    maxPosition = position;
+    failPosition = position;
+    failExpected.clear();
+}
+
+static bool isStmtStartKw(llvm::StringRef s) {
+    return s == "if" || s == "while" || s == "for" || s == "return" ||
+           s == "switch" || s == "break" || s == "continue" || s == "throw" ||
+           s == "var" || s == "ref" || s == "alias" || s == "forward" ||
+           s == "try" || s == "goto" || s == "eval" || s == "static";
+}
+
+static bool isTopLevelStartKw(llvm::StringRef s) {
+    return s == "record" || s == "variant" || s == "instance" || s == "enum" ||
+           s == "overload" || s == "external" || s == "alias" ||
+           s == "public" || s == "private" || s == "import" || s == "in" ||
+           s == "eval" || s == "newtype" || s == "inline" ||
+           s == "forceinline" || s == "noinline" || s == "callbyname" ||
+           s == "static";
+}
+
+// panic-mode: skip a malformed run to the next statement boundary
+static void synchronizeBlock() {
+    int depth = 0;
+    bool first = true;
+    while (position < tokens->size()) {
+        const Token &cur = (*tokens)[position];
+        bool sym = cur.tokenKind == T_SYMBOL;
+        if (sym && cur.str == "{") {
+            ++depth;
+            ++position;
+            first = false;
+            continue;
+        }
+        if (sym && cur.str == "}") {
+            if (depth == 0)
+                return;
+            --depth;
+            ++position;
+            first = false;
+            continue;
+        }
+        if (depth == 0 && !first) {
+            if (sym && cur.str == ";") {
+                ++position;
+                return;
+            }
+            if (cur.tokenKind == T_KEYWORD && isStmtStartKw(cur.str))
+                return;
+        }
+        ++position;
+        first = false;
+    }
+}
+
+// panic-mode: skip a malformed run to the next top-level item boundary
+static void synchronizeTopLevel() {
+    int depth = 0;
+    bool first = true;
+    while (position < tokens->size()) {
+        const Token &cur = (*tokens)[position];
+        bool sym = cur.tokenKind == T_SYMBOL;
+        if (sym && cur.str == "{") {
+            ++depth;
+            ++position;
+            first = false;
+            continue;
+        }
+        if (sym && cur.str == "}") {
+            ++position;
+            first = false;
+            if (depth > 0)
+                --depth;
+            if (depth == 0)
+                return;
+            continue;
+        }
+        if (depth == 0 && !first) {
+            if (sym && cur.str == ";") {
+                ++position;
+                return;
+            }
+            if (cur.tokenKind == T_KEYWORD && isTopLevelStartKw(cur.str))
+                return;
+        }
+        ++position;
+        first = false;
+    }
+}
+
+// top-level junk gets a declaration-oriented message, with a hint when it
+// looks like statement code that belongs inside a function
+static void recordTopLevelError() {
+    if (parseErrors.size() >= maxParseErrors && !shouldPrintFullMatchErrors) {
+        parseErrorOverflow = true;
+        return;
+    }
+    const Token &cur = (*tokens)[position];
+    unsigned start = cur.location.offset;
+    Span span(parseSource, start,
+              start + static_cast<unsigned>(cur.str.size()));
+    string found = (llvm::Twine("`") + cur.str.str() + "`").str();
+    Diagnostic d(Severity::Error,
+                 "expected a top-level declaration, found " + found, span);
+    bool looksLikeStmt =
+        cur.tokenKind == T_INT_LITERAL || cur.tokenKind == T_FLOAT_LITERAL ||
+        cur.tokenKind == T_STRING_LITERAL || cur.tokenKind == T_CHAR_LITERAL ||
+        (cur.tokenKind == T_KEYWORD && isStmtStartKw(cur.str) &&
+         !isTopLevelStartKw(cur.str));
+    if (looksLikeStmt) {
+        d.primaryLabel = "statements must go inside a function";
+        d.suggestion = "move it inside a function";
+    }
+    parseErrors.push_back(d);
+}
+
 static Location currentLocation() {
     if (position == tokens->size())
         return {};
@@ -53,40 +304,55 @@ static Location currentLocation() {
 //
 
 static bool opstring(llvm::StringRef &op) {
+    unsigned p = position;
     Token *t;
-    if (!next(t) || (t->tokenKind != T_OPSTRING))
+    if (!next(t) || (t->tokenKind != T_OPSTRING)) {
+        recordExpected(p, "operator");
         return false;
+    }
     op = llvm::StringRef(t->str);
     return true;
 }
 
 static bool uopstring(llvm::StringRef &op) {
+    unsigned p = position;
     Token *t;
-    if (!next(t) || (t->tokenKind != T_UOPSTRING))
+    if (!next(t) || (t->tokenKind != T_UOPSTRING)) {
+        recordExpected(p, "operator");
         return false;
+    }
     op = llvm::StringRef(t->str);
     return true;
 }
 
 static bool opsymbol(const char *s) {
+    unsigned p = position;
     Token *t;
-    if (!next(t) || (t->tokenKind != T_OPSTRING))
+    if (!next(t) || (t->tokenKind != T_OPSTRING) || (t->str != s)) {
+        recordExpected(p, s);
         return false;
-    return t->str == s;
+    }
+    return true;
 }
 
 static bool symbol(const char *s) {
+    unsigned p = position;
     Token *t;
-    if (!next(t) || (t->tokenKind != T_SYMBOL))
+    if (!next(t) || (t->tokenKind != T_SYMBOL) || (t->str != s)) {
+        recordExpected(p, s);
         return false;
-    return t->str == s;
+    }
+    return true;
 }
 
 static bool keyword(const char *s) {
+    unsigned p = position;
     Token *t;
-    if (!next(t) || (t->tokenKind != T_KEYWORD))
+    if (!next(t) || (t->tokenKind != T_KEYWORD) || (t->str != s)) {
+        recordExpected(p, s);
         return false;
-    return t->str == s;
+    }
+    return true;
 }
 
 static bool ellipsis() { return symbol(".."); }
@@ -98,10 +364,13 @@ static bool ellipsis() { return symbol(".."); }
 
 static bool identifier(IdentifierPtr &x) {
     Location location = currentLocation();
+    unsigned p = position;
     Token *t;
     if (!next(t) ||
-        (t->tokenKind != T_IDENTIFIER && t->tokenKind != T_OPIDENTIFIER))
+        (t->tokenKind != T_IDENTIFIER && t->tokenKind != T_OPIDENTIFIER)) {
+        recordExpected(p, "identifier");
         return false;
+    }
     if (t->tokenKind == T_IDENTIFIER)
         x = Identifier::get(t->str, location);
     else
@@ -422,6 +691,7 @@ static bool atomicExpr(ExprPtr &x) {
         return true;
     if (restore(p), evalExpr(x))
         return true;
+    recordExpected(p, "expression");
     return false;
 }
 
@@ -1185,13 +1455,26 @@ static bool blockItem(StatementPtr &x) {
 
 static bool blockItems(vector<StatementPtr> &stmts, bool) {
     while (true) {
+        beginItem();
         unsigned p = save();
         StatementPtr z;
-        if (!blockItem(z)) {
-            restore(p);
+        if (blockItem(z)) {
+            stmts.push_back(z);
+            continue;
+        }
+        restore(p);
+        if (position >= tokens->size())
+            break;
+        Token &cur = (*tokens)[position];
+        if (cur.tokenKind == T_SYMBOL && cur.str == "}")
+            break;
+        recordParseError();
+        synchronizeBlock();
+        if (parseErrors.size() >= maxParseErrors &&
+            !shouldPrintFullMatchErrors) {
+            parseErrorOverflow = true;
             break;
         }
-        stmts.push_back(z);
     }
     return true;
 }
@@ -1224,11 +1507,11 @@ static bool block(StatementPtr &x) {
     Location location = currentLocation();
     if (!symbol("{"))
         return false;
+    // a leading brace can only be a block, so commit and recover inside
     BlockPtr y = new Block();
-    if (!blockItems(y->statements, false))
-        return false;
+    blockItems(y->statements, false);
     if (!symbol("}"))
-        return false;
+        recordParseError();
     x = y.ptr();
     x->location = location;
     return true;
@@ -3629,9 +3912,23 @@ static bool topLevelItems(vector<TopLevelItemPtr> &x, Module *module) {
     x.clear();
 
     while (true) {
+        beginItem();
         unsigned p = save();
-        if (!topLevelItem(x, module)) {
-            restore(p);
+        if (topLevelItem(x, module))
+            continue;
+        restore(p);
+        if (position >= tokens->size())
+            break;
+        // if the item parsed partway, the farthest failure is more precise
+        // than blaming the leading token as a bad declaration
+        if (failPosition > p)
+            recordParseError();
+        else
+            recordTopLevelError();
+        synchronizeTopLevel();
+        if (parseErrors.size() >= maxParseErrors &&
+            !shouldPrintFullMatchErrors) {
+            parseErrorOverflow = true;
             break;
         }
     }
@@ -3762,21 +4059,47 @@ void applyParser(const SourcePtr &source, unsigned offset, size_t length,
     tokenize(source, offset, length, t);
 
     tokens = &t;
+    parseSource = source;
     position = maxPosition = 0;
+    failPosition = 0;
+    failExpected.clear();
+    parseErrors.clear();
+    parseErrorOverflow = false;
 
-    if (!parser(node, parserParam) || (position < t.size())) {
-        Location location;
-        if (maxPosition == t.size())
-            location =
-                Location(source.ptr(), static_cast<unsigned>(source->size()));
-        else
-            location = t[maxPosition].location;
-        pushLocation(location);
-        error("parse error");
-    }
+    bool ok = parser(node, parserParam);
+    if ((!ok || position < t.size()) && parseErrors.empty())
+        parseErrors.push_back(buildParseError());
+
+    vector<Diagnostic> errs;
+    errs.swap(parseErrors);
+    bool overflow = parseErrorOverflow;
 
     tokens = nullptr;
+    parseSource = nullptr;
     position = maxPosition = 0;
+    failPosition = 0;
+    failExpected.clear();
+    parseErrorOverflow = false;
+
+    if (!errs.empty()) {
+        // drop exact duplicates from overlapping recovery paths
+        vector<Diagnostic> uniq;
+        for (Diagnostic const &d : errs) {
+            bool dup = false;
+            for (Diagnostic const &u : uniq)
+                if (u.headline == d.headline &&
+                    u.primary.startOffset == d.primary.startOffset)
+                    dup = true;
+            if (!dup)
+                uniq.push_back(d);
+        }
+        for (Diagnostic const &d : uniq)
+            displayDiagnostic(d);
+        if (overflow)
+            displayDiagnostic(Diagnostic(
+                Severity::Note, "too many errors; stopping here", Span()));
+        throw CompilerError();
+    }
 }
 
 struct ModuleParser {
