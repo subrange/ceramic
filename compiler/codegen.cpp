@@ -3439,7 +3439,8 @@ bool codegenStatement(StatementPtr stmt, EnvPtr env, CodegenContext *ctx) {
         MultiPValuePtr mpv = safeAnalyzeMulti(x->values, env, 1);
         MultiCValuePtr mcv = new MultiCValue();
         llvm::ArrayRef<CReturn> returns = ctx->returnLists.back();
-        ensureArity(mpv, returns.size());
+        if (mpv->size() != returns.size())
+            returnArityError(x, returns.size(), mpv->size());
         for (unsigned i = 0; i < mpv->size(); ++i) {
             PVData const &pv = mpv->values[i];
             bool byRef = returnKindToByRef(x->returnKind, pv);
