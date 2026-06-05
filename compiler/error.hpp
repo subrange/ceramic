@@ -99,6 +99,9 @@ void ensureArity2(T const &args, size_t size, bool hasVarArgs) {
 void arityMismatchError(size_t leftArity, size_t rightArity,
                         bool hasVarArg) CERAMIC_NORETURN;
 
+void returnArityError(Statement const *stmt, size_t expected,
+                      size_t received) CERAMIC_NORETURN;
+
 void typeError(llvm::StringRef expected,
                const TypePtr &receivedType) CERAMIC_NORETURN;
 void typeError(const TypePtr &expectedType,

@@ -459,6 +459,44 @@ void arityMismatchError(size_t leftArity, size_t rightArity, bool hasVarArg) {
     error(sout.str());
 }
 
+// the function whose body is currently being compiled, if its declaration is
+// known and useful as a secondary diagnostic span
+static ExternalProcedurePtr enclosingExternalProcedure() {
+    for (auto i = contextStack.rbegin(); i != contextStack.rend(); ++i) {
+        ObjectPtr obj = i->callable;
+        if (obj.ptr() != nullptr && obj->objKind == EXTERNAL_PROCEDURE)
+            return (ExternalProcedure *)obj.ptr();
+    }
+    return nullptr;
+}
+
+void returnArityError(Statement const *stmt, size_t expected, size_t received) {
+    Span span = stmt != nullptr ? Span(stmt->location) : topSpan();
+    const char *headline = received > expected ? "too many return values"
+                                               : "not enough return values";
+    Diagnostic diag(Severity::Error, headline, span);
+
+    string label;
+    llvm::raw_string_ostream lout(label);
+    lout << "have " << received << " " << valuesStr(received) << ", want "
+         << expected;
+    diag.primaryLabel = lout.str();
+
+    // point at a declaration that explains why no value was expected
+    ExternalProcedurePtr proc = enclosingExternalProcedure();
+    if (expected == 0 && proc.ptr() != nullptr && !proc->returnType &&
+        proc->name.ptr() != nullptr && proc->location.ok()) {
+        string note;
+        llvm::raw_string_ostream nout(note);
+        nout << "'" << proc->name->str << "' is declared with no return type";
+        diag.notes.emplace_back(Severity::Note, nout.str(),
+                                Span(proc->location));
+    }
+
+    displayDiagnostic(diag);
+    throw CompilerError();
+}
+
 static string typeErrorMessage(llvm::StringRef expected,
                                const TypePtr &receivedType) {
     string buf;
