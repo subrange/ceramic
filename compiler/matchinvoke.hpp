@@ -124,4 +124,8 @@ MatchResultPtr matchInvoke(OverloadPtr overload, ObjectPtr callable,
                            llvm::ArrayRef<TypePtr> argsKey);
 
 void printMatchError(llvm::raw_ostream &os, const MatchResultPtr &result);
+
+// one-line reason for the compact overload candidate list
+void printMatchErrorCompact(llvm::raw_ostream &os,
+                            const MatchResultPtr &result);
 } // namespace ceramic

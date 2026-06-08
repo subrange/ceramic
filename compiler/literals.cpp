@@ -169,133 +169,133 @@ ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
     if (typeSuffix(x->suffix, defaultType, "ss", int8Type)) {
         long y = strtol(ptr, &end, base);
         if (*end != 0)
-            error("invalid int8 literal");
+            error(x, "invalid int8 literal");
         if ((errno == ERANGE) || (y < SCHAR_MIN) || (y > SCHAR_MAX))
-            error("int8 literal out of range");
+            error(x, "int8 literal out of range");
         vh = new ValueHolder(int8Type);
         *((char *)vh->buf) = (char)y;
     } else if (typeSuffix(x->suffix, defaultType, "s", int16Type)) {
         long y = strtol(ptr, &end, base);
         if (*end != 0)
-            error("invalid int16 literal");
+            error(x, "invalid int16 literal");
         if ((errno == ERANGE) || (y < SHRT_MIN) || (y > SHRT_MAX))
-            error("int16 literal out of range");
+            error(x, "int16 literal out of range");
         vh = new ValueHolder(int16Type);
         *((short *)vh->buf) = (short)y;
     } else if (typeSuffix(x->suffix, defaultType, "i", int32Type)) {
         long y = strtol(ptr, &end, base);
         if (*end != 0)
-            error("invalid int32 literal");
+            error(x, "invalid int32 literal");
         if (errno == ERANGE || (y < INT_MIN) || (y > INT_MAX))
-            error("int32 literal out of range");
+            error(x, "int32 literal out of range");
         vh = new ValueHolder(int32Type);
         *((int *)vh->buf) = (int)y;
     } else if (typeSuffix(x->suffix, defaultType, "l", int64Type)) {
         long long y = strtoll(ptr, &end, base);
         if (*end != 0)
-            error("invalid int64 literal");
+            error(x, "invalid int64 literal");
         if (errno == ERANGE)
-            error("int64 literal out of range");
+            error(x, "int64 literal out of range");
         vh = new ValueHolder(int64Type);
         *((long long *)vh->buf) = y;
     } else if (typeSuffix(x->suffix, defaultType, "ll", int128Type)) {
         long long y = strtoll(ptr, &end, base);
         if (*end != 0)
-            error("invalid int128 literal");
+            error(x, "invalid int128 literal");
         if (errno == ERANGE)
-            error("int128 literal out of range");
+            error(x, "int128 literal out of range");
         vh = new ValueHolder(int128Type);
         *((ceramic_int128 *)vh->buf) = y;
     } else if (typeSuffix(x->suffix, defaultType, "uss", uint8Type)) {
         unsigned long y = strtoul(ptr, &end, base);
         if (*end != 0)
-            error("invalid uint8 literal");
+            error(x, "invalid uint8 literal");
         if ((errno == ERANGE) || (y > UCHAR_MAX))
-            error("uint8 literal out of range");
+            error(x, "uint8 literal out of range");
         vh = new ValueHolder(uint8Type);
         *((unsigned char *)vh->buf) = (unsigned char)y;
     } else if (typeSuffix(x->suffix, defaultType, "us", uint16Type)) {
         unsigned long y = strtoul(ptr, &end, base);
         if (*end != 0)
-            error("invalid uint16 literal");
+            error(x, "invalid uint16 literal");
         if ((errno == ERANGE) || (y > USHRT_MAX))
-            error("uint16 literal out of range");
+            error(x, "uint16 literal out of range");
         vh = new ValueHolder(uint16Type);
         *((unsigned short *)vh->buf) = (unsigned short)y;
     } else if (typeSuffix(x->suffix, defaultType, "u", uint32Type)) {
         unsigned long y = strtoul(ptr, &end, base);
         if (*end != 0)
-            error("invalid uint32 literal");
+            error(x, "invalid uint32 literal");
         if (errno == ERANGE)
-            error("uint32 literal out of range");
+            error(x, "uint32 literal out of range");
         vh = new ValueHolder(uint32Type);
         *((unsigned int *)vh->buf) = (unsigned int)y;
     } else if (typeSuffix(x->suffix, defaultType, "ul", uint64Type)) {
         unsigned long long y = strtoull(ptr, &end, base);
         if (*end != 0)
-            error("invalid uint64 literal");
+            error(x, "invalid uint64 literal");
         if (errno == ERANGE)
-            error("uint64 literal out of range");
+            error(x, "uint64 literal out of range");
         vh = new ValueHolder(uint64Type);
         *((unsigned long long *)vh->buf) = y;
     } else if (typeSuffix(x->suffix, defaultType, "ull", uint128Type)) {
         unsigned long long y = strtoull(ptr, &end, base);
         if (*end != 0)
-            error("invalid uint128 literal");
+            error(x, "invalid uint128 literal");
         if (errno == ERANGE)
-            error("uint128 literal out of range");
+            error(x, "uint128 literal out of range");
         vh = new ValueHolder(uint128Type);
         *((ceramic_uint128 *)vh->buf) = y;
     } else if (x->suffix == "f") {
         float y = (float)ceramic_strtod(ptr, &end);
         if (*end != 0)
-            error("invalid float32 literal");
+            error(x, "invalid float32 literal");
         if (errno == ERANGE)
-            error("float32 literal out of range");
+            error(x, "float32 literal out of range");
         vh = new ValueHolder(float32Type);
         *((float *)vh->buf) = y;
     } else if (x->suffix == "ff") {
         double y = ceramic_strtod(ptr, &end);
         if (*end != 0)
-            error("invalid float64 literal");
+            error(x, "invalid float64 literal");
         if (errno == ERANGE)
-            error("float64 literal out of range");
+            error(x, "float64 literal out of range");
         vh = new ValueHolder(float64Type);
         *((double *)vh->buf) = y;
     } else if (x->suffix == "fl") {
         long double y = ceramic_strtold(ptr, &end);
         if (*end != 0)
-            error("invalid float80 literal");
+            error(x, "invalid float80 literal");
         if (errno == ERANGE)
-            error("float80 literal out of range");
+            error(x, "float80 literal out of range");
         vh = new ValueHolder(float80Type);
         *((long double *)vh->buf) = y;
     } else if (x->suffix == "fj") {
         float y = (float)ceramic_strtod(ptr, &end);
         if (*end != 0)
-            error("invalid imag32 literal");
+            error(x, "invalid imag32 literal");
         if (errno == ERANGE)
-            error("imag32 literal out of range");
+            error(x, "imag32 literal out of range");
         vh = new ValueHolder(imag32Type);
         *((float *)vh->buf) = y;
     } else if (x->suffix == "j" || x->suffix == "ffj") {
         double y = ceramic_strtod(ptr, &end);
         if (*end != 0)
-            error("invalid imag64 literal");
+            error(x, "invalid imag64 literal");
         if (errno == ERANGE)
-            error("imag64 literal out of range");
+            error(x, "imag64 literal out of range");
         vh = new ValueHolder(imag64Type);
         *((double *)vh->buf) = y;
     } else if (x->suffix == "lj" || x->suffix == "flj") {
         long double y = ceramic_strtold(ptr, &end);
         if (*end != 0)
-            error("invalid imag80 literal");
+            error(x, "invalid imag80 literal");
         if (errno == ERANGE)
-            error("imag80 literal out of range");
+            error(x, "imag80 literal out of range");
         vh = new ValueHolder(imag80Type);
         *((long double *)vh->buf) = y;
     } else {
-        error("invalid literal suffix: " + x->suffix);
+        error(x, "invalid literal suffix: " + x->suffix);
     }
     return vh;
 }
@@ -311,55 +311,55 @@ ValueHolderPtr parseFloatLiteral(ModulePtr module, FloatLiteral *x) {
     if (typeSuffix(x->suffix, defaultType, "f", float32Type)) {
         float y = (float)ceramic_strtod(ptr, &end);
         if (*end != 0)
-            error("invalid float32 literal");
+            error(x, "invalid float32 literal");
         if (errno == ERANGE)
-            error("float32 literal out of range");
+            error(x, "float32 literal out of range");
         vh = new ValueHolder(float32Type);
         *((float *)vh->buf) = y;
     } else if (typeSuffix(x->suffix, defaultType, "ff", float64Type)) {
         double y = ceramic_strtod(ptr, &end);
         if (*end != 0)
-            error("invalid float64 literal");
+            error(x, "invalid float64 literal");
         if (errno == ERANGE)
-            error("float64 literal out of range");
+            error(x, "float64 literal out of range");
         vh = new ValueHolder(float64Type);
         *((double *)vh->buf) = y;
     } else if (x->suffix == "fl" || x->suffix == "l" ||
                (x->suffix.empty() && defaultType == float80Type)) {
         long double y = ceramic_strtold(ptr, &end);
         if (*end != 0)
-            error("invalid float80 literal");
+            error(x, "invalid float80 literal");
         if (errno == ERANGE)
-            error("float80 literal out of range");
+            error(x, "float80 literal out of range");
         vh = new ValueHolder(float80Type);
         *((long double *)vh->buf) = y;
     } else if (imagTypeSuffix(x->suffix, defaultType, "fj", float32Type)) {
         float y = (float)ceramic_strtod(ptr, &end);
         if (*end != 0)
-            error("invalid imag32 literal");
+            error(x, "invalid imag32 literal");
         if (errno == ERANGE)
-            error("imag32 literal out of range");
+            error(x, "imag32 literal out of range");
         vh = new ValueHolder(imag32Type);
         *((float *)vh->buf) = y;
     } else if (imagTypeSuffix(x->suffix, defaultType, "ffj", float64Type)) {
         double y = ceramic_strtod(ptr, &end);
         if (*end != 0)
-            error("invalid imag64 literal");
+            error(x, "invalid imag64 literal");
         if (errno == ERANGE)
-            error("imag64 literal out of range");
+            error(x, "imag64 literal out of range");
         vh = new ValueHolder(imag64Type);
         *((double *)vh->buf) = y;
     } else if (x->suffix == "lj" || x->suffix == "flj" ||
                (x->suffix == "j" && defaultType == float80Type)) {
         long double y = ceramic_strtold(ptr, &end);
         if (*end != 0)
-            error("invalid imag80 literal");
+            error(x, "invalid imag80 literal");
         if (errno == ERANGE)
-            error("imag80 literal out of range");
+            error(x, "imag80 literal out of range");
         vh = new ValueHolder(imag80Type);
         *((long double *)vh->buf) = y;
     } else {
-        error("invalid float literal suffix: " + x->suffix);
+        error(x, "invalid float literal suffix: " + x->suffix);
     }
     return vh;
 }

@@ -342,6 +342,8 @@ llvm::AtomicOrdering atomicOrderValue(MultiCValuePtr args, unsigned index) {
             return llvm::AtomicOrdering::AcquireRelease;
         case PRIM_OrderSeqCst:
             return llvm::AtomicOrdering::SequentiallyConsistent;
+        default:
+            break;
         }
     }
     argumentTypeError(index, "atomic ordering", cv->type);
@@ -377,6 +379,8 @@ llvm::AtomicRMWInst::BinOp atomicRMWOpValue(MultiCValuePtr args,
             return llvm::AtomicRMWInst::UMin;
         case PRIM_RMWUMax:
             return llvm::AtomicRMWInst::UMax;
+        default:
+            break;
         }
     }
     argumentTypeError(index, "atomic rmw operation", cv->type);

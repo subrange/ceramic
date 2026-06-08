@@ -55,22 +55,67 @@ static void ambiguousImportError(IdentifierPtr name,
     error(name, err.str());
 }
 
+static unsigned editDistance(llvm::StringRef a, llvm::StringRef b) {
+    size_t n = a.size(), m = b.size();
+    std::vector<unsigned> prev(m + 1), cur(m + 1);
+    for (size_t j = 0; j <= m; ++j)
+        prev[j] = unsigned(j);
+    for (size_t i = 1; i <= n; ++i) {
+        cur[0] = unsigned(i);
+        for (size_t j = 1; j <= m; ++j) {
+            unsigned del = prev[j] + 1;
+            unsigned ins = cur[j - 1] + 1;
+            unsigned sub = prev[j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1);
+            unsigned best = del < ins ? del : ins;
+            cur[j] = best < sub ? best : sub;
+        }
+        prev.swap(cur);
+    }
+    return prev[m];
+}
+
 static void undefinedNameError(IdentifierPtr name) {
     string buf;
     llvm::raw_string_ostream err(buf);
     err << "undefined name: " << name->str;
     set<string> suggestModuleNames;
 
+    // track the closest public name across all modules for a typo hint
+    llvm::StringRef target = name->str;
+    string closestName, closestModule;
+    unsigned closestDist = ~0u;
+
     for (llvm::StringMap<ModulePtr>::const_iterator i = globalModules.begin(),
                                                     end = globalModules.end();
          i != end; ++i) {
-        if (lookupPublic(i->second, name) != nullptr)
-            suggestModuleNames.insert(i->second->moduleName);
+        ModulePtr module = i->second;
+        if (lookupPublic(module, name) != nullptr)
+            suggestModuleNames.insert(module->moduleName);
+        if (target.size() < 3)
+            continue;
+        // publicSymbols is loaded by the lookupPublic call above
+        for (auto s = module->publicSymbols.begin(),
+                  se = module->publicSymbols.end();
+             s != se; ++s) {
+            llvm::StringRef cand = s->first();
+            if (cand.empty() || cand == target)
+                continue;
+            unsigned d = editDistance(target, cand);
+            if (d < closestDist) {
+                closestDist = d;
+                closestName = cand.str();
+                closestModule = module->moduleName;
+            }
+        }
     }
 
     if (!suggestModuleNames.empty()) {
         err << "\n  maybe you need one of:";
         suggestModules(err, suggestModuleNames, name->str);
+    } else if (!closestName.empty() &&
+               closestDist <= (target.size() <= 4 ? 1u : 2u)) {
+        err << "\n  did you mean `" << closestName << "`? (in module "
+            << closestModule << ")";
     }
 
     error(name, err.str());

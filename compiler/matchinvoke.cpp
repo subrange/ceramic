@@ -239,4 +239,56 @@ void printMatchError(llvm::raw_ostream &os, const MatchResultPtr &result) {
         break;
     }
 }
+
+void printMatchErrorCompact(llvm::raw_ostream &os,
+                            const MatchResultPtr &result) {
+    switch (result->matchCode) {
+    case MATCH_ARITY_ERROR: {
+        MatchArityError *e = (MatchArityError *)result.ptr();
+        os << "expected ";
+        if (e->variadic)
+            os << "at least ";
+        os << e->expectedArgs
+           << (e->expectedArgs == 1 ? " arg, found " : " args, found ")
+           << e->gotArgs;
+        break;
+    }
+    case MATCH_ARGUMENT_ERROR: {
+        MatchArgumentError *e = (MatchArgumentError *)result.ptr();
+        os << "argument " << e->argIndex + 1 << ": expected "
+           << shortString(e->arg->type->asString()) << ", found ";
+        printStaticName(os, e->type.ptr());
+        break;
+    }
+    case MATCH_BINDING_ERROR: {
+        MatchBindingError *e = (MatchBindingError *)result.ptr();
+        os << "binding " << e->argIndex + 1 << ": expected "
+           << shortString(e->arg->type->asString()) << ", found ";
+        printStaticName(os, e->type.ptr());
+        break;
+    }
+    case MATCH_MULTI_ARGUMENT_ERROR: {
+        MatchMultiArgumentError *e = (MatchMultiArgumentError *)result.ptr();
+        os << "variadic args from " << e->argIndex + 1 << ": type mismatch";
+        break;
+    }
+    case MATCH_MULTI_BINDING_ERROR: {
+        MatchMultiBindingError *e = (MatchMultiBindingError *)result.ptr();
+        os << "variadic bindings from " << e->argIndex + 1 << ": type mismatch";
+        break;
+    }
+    case MATCH_PREDICATE_ERROR: {
+        MatchPredicateError *e = (MatchPredicateError *)result.ptr();
+        os << "predicate " << shortString(e->predicateExpr->asString())
+           << " failed";
+        break;
+    }
+    case MATCH_CALLABLE_ERROR:
+        os << "name mismatch";
+        break;
+    default:
+        os << "no match";
+        break;
+    }
+}
 } // namespace ceramic
