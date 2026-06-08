@@ -1,0 +1,16 @@
+import printer.(println);
+
+record Pair (a:Int, b:Int);
+
+main() {
+    var p = 5;
+    var i = 2;
+
+    p = 5; p *: i+1; println(p);   // 5*(2+1) = 15
+    p = 5; p +: i*2; println(p);   // 5+(2*2) = 9
+    p = 5; p *: i-1; println(p);   // 5*(2-1) = 5
+    p = 5; p -: i+1; println(p);   // 5-(2+1) = 2
+
+    var pair = Pair(5, 0);
+    pair.a *: i+1; println(pair.a);   // 5*(2+1) = 15
+}

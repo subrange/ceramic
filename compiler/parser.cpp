@@ -1560,12 +1560,7 @@ static bool prefixUpdate(StatementPtr &x) {
     if (!symbol(";"))
         return false;
     ExprListPtr exprs = new ExprList(new NameRef(Identifier::get(op, true)));
-    if (z->exprKind == VARIADIC_OP) {
-        auto y = dynamic_cast<VariadicOp *>(z.ptr());
-        exprs->add(y->exprs);
-    } else {
-        exprs->add(z);
-    }
+    exprs->add(z);
     x = new VariadicAssignment(PREFIX_OP, exprs);
     x->location = location;
     return true;
@@ -1585,12 +1580,7 @@ static bool updateAssignment(StatementPtr &x) {
         return false;
     ExprListPtr exprs = new ExprList(new NameRef(Identifier::get(op, true)));
     exprs->add(y);
-    if (z->exprKind == VARIADIC_OP) {
-        auto variadic_op = dynamic_cast<VariadicOp *>(z.ptr());
-        exprs->add(variadic_op->exprs);
-    } else {
-        exprs->add(z);
-    }
+    exprs->add(z);
     x = new VariadicAssignment(INFIX_OP, exprs);
     x->location = location;
     return true;
