@@ -208,6 +208,8 @@ void Renderer::renderOne(Diagnostic const &diag, llvm::raw_ostream &out) {
 
 void Renderer::render(Diagnostic const &diag, llvm::raw_ostream &out) {
     renderOne(diag, out);
+    if (!diag.detail.empty())
+        out << diag.detail;
     for (size_t i = 0; i < diag.notes.size(); ++i)
         renderOne(diag.notes[i], out);
     if (!diag.suggestion.empty()) {

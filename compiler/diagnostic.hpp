@@ -22,6 +22,7 @@ struct Diagnostic {
     string primaryLabel; // inline label after the caret line; empty = none
     vector<SpanLabel> labels;
     vector<Diagnostic> notes;
+    string detail; // free-form block printed after the snippet, verbatim
     string suggestion;
 
     Diagnostic() = default;
