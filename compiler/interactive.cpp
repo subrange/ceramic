@@ -12,7 +12,7 @@
 #include <cstdio>
 
 namespace ceramic {
-typedef llvm::SmallString<16U> Str;
+using Str = llvm::SmallString<16U>;
 
 const char *replAnonymousFunctionName = "__replAnonymousFunction__";
 

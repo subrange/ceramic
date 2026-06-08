@@ -31,7 +31,7 @@ void parseTopLevelItems(const SourcePtr &source, unsigned offset, size_t length,
 ReplItem parseInteractive(const SourcePtr &source, unsigned offset,
                           size_t length);
 
-typedef vector<Token> (*AddTokensCallback)();
+using AddTokensCallback = vector<Token> (*)();
 
 void setAddTokens(AddTokensCallback f);
 } // namespace ceramic
