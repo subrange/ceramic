@@ -17,6 +17,7 @@ private setArgcArgv(argc_, argv_) {
 
 getArgcArgv() = argc, argv;
 
+[[transparent]]
 private alias runMain(argc_, argv_, f, ..args) : Int {
     setArgcArgv(argc_, argv_);
     try {
@@ -35,17 +36,20 @@ private alias runMain(argc_, argv_, f, ..args) : Int {
 }
 
 [Main]
+[[transparent]]
 default __operators__.callMain(#Main, argc_:Int, argv_:Pointer[Pointer[Int8]]) : Int
     = runMain(argc_, argv_, Main);
 
 [Main when CallDefined?(Main, Type(commandLine()))]
+[[transparent]]
 overload __operators__.callMain(#Main, argc_:Int, argv_:Pointer[Pointer[Int8]])  : Int
     = runMain(argc_, argv_, Main, commandLine());
 
 [Main when CallDefined?(Main, ..Type(argc, argv))]
+[[transparent]]
 overload __operators__.callMain(#Main, argc_:Int, argv_:Pointer[Pointer[Int8]])  : Int
     = runMain(argc_, argv_, Main, argc_, argv_);
 
 private define getExitCode;
-overload getExitCode() : Int = 0;
-overload getExitCode(x) : Int = Int(x);
+[[transparent]] overload getExitCode() : Int = 0;
+[[transparent]] overload getExitCode(x) : Int = Int(x);
