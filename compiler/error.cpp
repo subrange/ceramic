@@ -671,22 +671,152 @@ static void matchFailureMessage(MatchFailureError const &err, string &outBuf) {
     sout.flush();
 }
 
-void matchFailureError(MatchFailureError const &err) {
+// position of the first argument/binding that failed to match, used to break
+// ties within a failure tier: a candidate that failed later matched more
+// leading arguments and is the likelier near-miss.
+static unsigned matchFirstFailIndex(const MatchResultPtr &r) {
+    switch (r->matchCode) {
+    case MATCH_ARGUMENT_ERROR:
+        return ((MatchArgumentError *)r.ptr())->argIndex;
+    case MATCH_BINDING_ERROR:
+        return ((MatchBindingError *)r.ptr())->argIndex;
+    case MATCH_MULTI_ARGUMENT_ERROR:
+        return ((MatchMultiArgumentError *)r.ptr())->argIndex;
+    case MATCH_MULTI_BINDING_ERROR:
+        return ((MatchMultiBindingError *)r.ptr())->argIndex;
+    default:
+        return 0;
+    }
+}
+
+// when exactly one concrete overload matched arity and failed on a single
+// argument's type, the candidate list is noise: the call has one obvious
+// intended overload. return that near-miss so the error renders as a plain
+// type mismatch instead of an overload-resolution dump.
+static MatchArgumentError *singleNearMiss(MatchFailureError const &err,
+                                          OverloadPtr &candidate) {
+    MatchArgumentError *near = nullptr;
+    for (const auto &failure : err.failures) {
+        if (failure.first->nameIsPattern)
+            continue;
+        if (failure.second->matchCode != MATCH_ARGUMENT_ERROR)
+            return nullptr;
+        if (near != nullptr)
+            return nullptr;
+        near = (MatchArgumentError *)failure.second.ptr();
+        candidate = failure.first;
+    }
+    return near;
+}
+
+static void appendOverloadSignature(llvm::raw_ostream &os, llvm::StringRef name,
+                                    OverloadPtr ov) {
+    os << name << "(";
+    CodePtr code = ov->code;
+    for (size_t i = 0; i < code->formalArgs.size(); ++i) {
+        if (i != 0)
+            os << ", ";
+        FormalArgPtr fa = code->formalArgs[i];
+        if (fa->type.ptr() != nullptr)
+            os << shortString(fa->type->asString());
+        else
+            os << "_";
+        if (fa->varArg)
+            os << "..";
+    }
+    os << ")";
+}
+
+// the compact "candidates:" block: each ranked overload as one line,
+// "file:line  name(types)  <reason>"
+static string buildMatchDetail(MatchFailureError const &err,
+                               llvm::StringRef name) {
     string buf;
+    llvm::raw_string_ostream sout(buf);
+
+    if (shouldPrintFullMatchErrors) {
+        for (const auto &failure : err.failures)
+            printFailureLine(sout, failure);
+        sout << "\n";
+        sout.flush();
+        return buf;
+    }
+
+    int hiddenPatternOverloads = 0;
+    vector<pair<OverloadPtr, MatchResultPtr>> visible;
+    for (const auto &failure : err.failures) {
+        if (failure.first->nameIsPattern) {
+            ++hiddenPatternOverloads;
+            continue;
+        }
+        visible.push_back(failure);
+    }
+
+    std::stable_sort(visible.begin(), visible.end(),
+                     [](const pair<OverloadPtr, MatchResultPtr> &a,
+                        const pair<OverloadPtr, MatchResultPtr> &b) {
+                         int sa = failureScore(a.second->matchCode);
+                         int sb = failureScore(b.second->matchCode);
+                         if (sa != sb)
+                             return sa > sb;
+                         return matchFirstFailIndex(a.second) >
+                                matchFirstFailIndex(b.second);
+                     });
+
+    const size_t MAX_SHOW = 5;
+    size_t shown = std::min(visible.size(), MAX_SHOW);
+    size_t lessSpecific = visible.size() - shown;
+
+    if (shown > 0)
+        sout << "  candidates:";
+    for (size_t i = 0; i < shown; ++i) {
+        const auto &f = visible[i];
+        Location loc = f.first->location;
+        unsigned line, column, tabColumn;
+        getLineCol(loc, line, column, tabColumn);
+        sout << "\n    " << loc.source->fileName.c_str() << ":" << line + 1
+             << "  ";
+        appendOverloadSignature(sout, name, f.first);
+        sout << "  ";
+        printMatchErrorCompact(sout, f.second);
+    }
+
+    if (lessSpecific > 0) {
+        sout << "\n  " << lessSpecific << " less-specific not shown";
+        if (hiddenPatternOverloads > 0)
+            sout << " (plus " << hiddenPatternOverloads << " universal)";
+        sout << " (-full-match-errors for all)";
+    } else if (hiddenPatternOverloads > 0) {
+        sout << "\n  " << hiddenPatternOverloads
+             << " universal overloads not shown (-full-match-errors for all)";
+    }
+    sout << "\n";
+    sout.flush();
+    return buf;
+}
+
+void matchFailureError(MatchFailureError const &err) {
+    string name;
     {
-        llvm::raw_string_ostream sout(buf);
+        llvm::raw_string_ostream nameOut(name);
+        if (!contextStack.empty())
+            printName(nameOut, contextStack.back().callable);
+        nameOut.flush();
+    }
+
+    bool noMatch = !err.failedInterface && !err.ambiguousMatch;
+    string headline;
+    {
+        llvm::raw_string_ostream sout(headline);
         if (err.failedInterface)
             sout << "call does not conform to function interface";
         else if (err.ambiguousMatch)
             sout << "call matches ambiguous overloads";
         else {
             sout << "no matching overload found";
-            // Append the callable + arg types from the deepest context frame,
-            // e.g. "no matching overload found for +(Foo, Foo)"
             if (!contextStack.empty()) {
                 const auto &top = contextStack.back();
-                sout << " for ";
-                printName(sout, top.callable);
+                sout << " for " << name;
                 if (top.hasParams) {
                     sout << "(";
                     printNameList(sout, top.params, top.dispatchIndices);
@@ -696,8 +826,6 @@ void matchFailureError(MatchFailureError const &err) {
         }
         sout.flush();
     }
-
-    matchFailureMessage(err, buf);
 
     // Pick the deepest blameable frame.
     Location blame;
@@ -712,12 +840,50 @@ void matchFailureError(MatchFailureError const &err) {
         break;
     }
 
-    if (blame.ok()) {
+    OverloadPtr nearCandidate;
+    MatchArgumentError *near =
+        noMatch ? singleNearMiss(err, nearCandidate) : nullptr;
+    if (near != nullptr) {
+        string expectedFound;
+        {
+            llvm::raw_string_ostream sout(expectedFound);
+            sout << "expected " << shortString(near->arg->type->asString())
+                 << ", found ";
+            printStaticName(sout, near->type.ptr());
+            sout.flush();
+        }
         LocationContext lc(blame);
-        error(buf);
-    } else {
-        error(buf);
+        Location location = topLocation();
+        Span span = topSpan();
+        if (!span.ok())
+            span = Span(location);
+        Diagnostic diag(Severity::Error,
+                        span.ok() ? "type mismatch" : expectedFound, span);
+        if (span.ok())
+            diag.primaryLabel = expectedFound;
+        if (nearCandidate->location.ok() &&
+            nearCandidate->location.source.ptr())
+            diag.notes.emplace_back(Severity::Note, "defined here",
+                                    Span(nearCandidate->location));
+        appendContextNotes(diag, location);
+        displayDiagnostic(diag);
+        throw CompilerError();
     }
+
+    string detail = noMatch ? buildMatchDetail(err, name) : string();
+
+    {
+        LocationContext lc(blame);
+        Location location = topLocation();
+        Span span = topSpan();
+        if (!span.ok())
+            span = Span(location);
+        Diagnostic diag(Severity::Error, headline, span);
+        diag.detail = detail;
+        appendContextNotes(diag, location);
+        displayDiagnostic(diag);
+    }
+    throw CompilerError();
 }
 
 void matchFailureLog(MatchFailureError const &err) {
