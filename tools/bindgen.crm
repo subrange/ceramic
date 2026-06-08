@@ -13,16 +13,17 @@ var ceramicKeywords = array(
     "public", "private", "import", "as",
     "record", "variant", "instance",
     "define", "overload", "default",
-    "external", "alias",
-    "static", "rvalue",
-    "inline", "enum", "var", "ref", "forward",
+    "external", "alias", "rvalue",
+    "ref", "forward",
+    "inline", "noinline", "forceinline",
+    "enum", "var", "newtype",
     "and", "or", "not",
     "if", "else", "goto", "return", "while",
     "switch", "case", "break", "continue", "for", "in",
     "true", "false", "try", "catch", "throw",
-    "finally", "onerror",
-    "eval", "with",
-    "__FILE__", "__LINE__", "__COLUMN__", "__ARG__"
+    "finally", "onerror", "staticassert",
+    "eval", "when",
+    "__FILE__", "__LINE__", "__COLUMN__", "__ARG__", "__llvm__"
 );
 
 var g_declNames = HashMap[CXCursor, String]();
