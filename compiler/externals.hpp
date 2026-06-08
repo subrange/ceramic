@@ -116,7 +116,7 @@ struct ExternalTarget : public RefCounted {
     virtual void computeInfo(ExternalFunction *f) = 0;
 };
 
-typedef Pointer<ExternalTarget> ExternalTargetPtr;
+using ExternalTargetPtr = Pointer<ExternalTarget>;
 
 ExternalTargetPtr getExternalTarget();
 } // namespace ceramic

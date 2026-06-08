@@ -730,49 +730,49 @@ class Op_integerRemainderChecked : public BinaryOpHelper<T> {
 template <typename T> struct next_larger_type;
 
 template <> struct next_larger_type<char> {
-    typedef short type;
+    using type = short;
 };
 
 template <> struct next_larger_type<short> {
-    typedef int type;
+    using type = int;
 };
 
 template <> struct next_larger_type<int> {
-    typedef ptrdiff64_t type;
+    using type = ptrdiff64_t;
 };
 
 template <> struct next_larger_type<ptrdiff64_t> {
-    typedef ceramic_int128 type;
+    using type = ceramic_int128;
 };
 
 template <> struct next_larger_type<ceramic_int128> {
-    typedef ceramic_int128 type;
+    using type = ceramic_int128;
 };
 
 template <> struct next_larger_type<unsigned char> {
-    typedef unsigned short type;
+    using type = unsigned short;
 };
 
 template <> struct next_larger_type<unsigned short> {
-    typedef unsigned type;
+    using type = unsigned;
 };
 
 template <> struct next_larger_type<unsigned> {
-    typedef size64_t type;
+    using type = size64_t;
 };
 
 template <> struct next_larger_type<size64_t> {
-    typedef ceramic_uint128 type;
+    using type = ceramic_uint128;
 };
 
 template <> struct next_larger_type<ceramic_uint128> {
-    typedef ceramic_uint128 type;
+    using type = ceramic_uint128;
 };
 
 template <typename T>
 class Op_integerMultiplyChecked : public BinaryOpHelper<T> {
   public:
-    typedef typename next_larger_type<T>::type BigT;
+    using BigT = typename next_larger_type<T>::type;
 
     virtual void perform(T &a, T &b, void *out) {
         // XXX this won't work for 128-bit types or 64-bit types without

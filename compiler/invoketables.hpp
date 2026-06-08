@@ -110,7 +110,7 @@ struct InvokeSet {
     }
 };
 
-typedef vector<pair<OverloadPtr, MatchResultPtr>> MatchFailureVector;
+using MatchFailureVector = vector<pair<OverloadPtr, MatchResultPtr>>;
 
 struct MatchFailureError {
     MatchFailureVector failures;

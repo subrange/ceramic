@@ -46,7 +46,7 @@ struct MatchSuccess : public MatchResult {
           callable(callable), argsKey(argsKey), varArgPosition(0) {}
 };
 
-typedef Pointer<MatchSuccess> MatchSuccessPtr;
+using MatchSuccessPtr = Pointer<MatchSuccess>;
 
 struct MatchCallableError : public MatchResult {
     ExprPtr patternExpr;

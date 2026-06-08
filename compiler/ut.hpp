@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 namespace ceramic {
-typedef void (*TestFunc)();
+using TestFunc = void (*)();
 
 void register_test(const char *name, TestFunc);
 

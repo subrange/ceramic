@@ -6,7 +6,7 @@
 namespace ceramic {
 using namespace std;
 
-typedef llvm::StringMap<ObjectPtr>::iterator MapIter;
+using MapIter = llvm::StringMap<ObjectPtr>::iterator;
 
 //
 // addGlobal

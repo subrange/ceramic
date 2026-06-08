@@ -72,7 +72,7 @@ struct Termination : public RefCounted {
         : terminationKind(terminationKind), location(location) {}
 };
 
-typedef Pointer<Termination> TerminationPtr;
+using TerminationPtr = Pointer<Termination>;
 
 struct TerminateReturn : Termination {
     TerminateReturn(Location const &location)
@@ -122,7 +122,7 @@ struct EvalContext : public RefCounted {
     EvalContext(llvm::ArrayRef<EReturn> returns) : returns(returns) {}
 };
 
-typedef Pointer<EvalContext> EvalContextPtr;
+using EvalContextPtr = Pointer<EvalContext>;
 
 TerminationPtr evalStatement(StatementPtr stmt, EnvPtr env, EvalContextPtr ctx);
 

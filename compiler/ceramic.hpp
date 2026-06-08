@@ -96,9 +96,9 @@ using std::vector;
 #include <complex>
 
 namespace ceramic {
-typedef std::complex<float> ceramic_cfloat;
-typedef std::complex<double> ceramic_cdouble;
-typedef std::complex<long double> ceramic_cldouble;
+using ceramic_cfloat = std::complex<float>;
+using ceramic_cdouble = std::complex<double>;
+using ceramic_cldouble = std::complex<long double>;
 
 template <typename T> inline T ceramic_creal(std::complex<T> const &c) {
     return std::real(c);
@@ -114,9 +114,9 @@ template <typename T> inline T ceramic_cimag(std::complex<T> const &c) {
 #define CERAMIC_ALIGN(n) __attribute__((aligned(n)))
 
 namespace ceramic {
-typedef std::complex<float> ceramic_cfloat;
-typedef std::complex<double> ceramic_cdouble;
-typedef std::complex<long double> ceramic_cldouble;
+using ceramic_cfloat = std::complex<float>;
+using ceramic_cdouble = std::complex<double>;
+using ceramic_cldouble = std::complex<long double>;
 
 inline float ceramic_creal(const ceramic_cfloat &c) { return c.real(); }
 inline double ceramic_creal(const ceramic_cdouble &c) { return c.real(); }
@@ -137,16 +137,16 @@ namespace ceramic {
 // container typedefs
 //
 
-typedef llvm::SmallString<260> PathString;
+using PathString = llvm::SmallString<260>;
 
 //
 // Target-specific types
 //
-typedef int ptrdiff32_t;
-typedef long long ptrdiff64_t;
+using ptrdiff32_t = int;
+using ptrdiff64_t = long long;
 
-typedef unsigned size32_t;
-typedef unsigned long long size64_t;
+using size32_t = unsigned;
+using size64_t = unsigned long long;
 
 //
 // ObjectKind
@@ -243,7 +243,7 @@ struct Object : public RefCounted {
     std::string toString() const;
 };
 
-typedef Pointer<Object> ObjectPtr;
+using ObjectPtr = Pointer<Object>;
 
 //
 // forwards
@@ -401,149 +401,149 @@ struct MatchFailureError;
 // Pointer typedefs
 //
 
-typedef Pointer<Source> SourcePtr;
+using SourcePtr = Pointer<Source>;
 
-typedef Pointer<ANode> ANodePtr;
-typedef Pointer<Identifier> IdentifierPtr;
-typedef Pointer<DottedName> DottedNamePtr;
+using ANodePtr = Pointer<ANode>;
+using IdentifierPtr = Pointer<Identifier>;
+using DottedNamePtr = Pointer<DottedName>;
 
-typedef Pointer<Expr> ExprPtr;
-typedef Pointer<BoolLiteral> BoolLiteralPtr;
-typedef Pointer<IntLiteral> IntLiteralPtr;
-typedef Pointer<FloatLiteral> FloatLiteralPtr;
-typedef Pointer<CharLiteral> CharLiteralPtr;
-typedef Pointer<StringLiteral> StringLiteralPtr;
-typedef Pointer<NameRef> NameRefPtr;
-typedef Pointer<FILEExpr> FILEExprPtr;
-typedef Pointer<LINEExpr> LINEExprPtr;
-typedef Pointer<COLUMNExpr> COLUMNExprPtr;
-typedef Pointer<ARGExpr> ARGExprPtr;
-typedef Pointer<Tuple> TuplePtr;
-typedef Pointer<Paren> ParenPtr;
-typedef Pointer<Indexing> IndexingPtr;
-typedef Pointer<Call> CallPtr;
-typedef Pointer<FieldRef> FieldRefPtr;
-typedef Pointer<StaticIndexing> StaticIndexingPtr;
-typedef Pointer<VariadicOp> VariadicOpPtr;
-typedef Pointer<And> AndPtr;
-typedef Pointer<Or> OrPtr;
-typedef Pointer<Lambda> LambdaPtr;
-typedef Pointer<Unpack> UnpackPtr;
-typedef Pointer<StaticExpr> StaticExprPtr;
-typedef Pointer<DispatchExpr> DispatchExprPtr;
-typedef Pointer<ForeignExpr> ForeignExprPtr;
-typedef Pointer<ObjectExpr> ObjectExprPtr;
-typedef Pointer<EvalExpr> EvalExprPtr;
+using ExprPtr = Pointer<Expr>;
+using BoolLiteralPtr = Pointer<BoolLiteral>;
+using IntLiteralPtr = Pointer<IntLiteral>;
+using FloatLiteralPtr = Pointer<FloatLiteral>;
+using CharLiteralPtr = Pointer<CharLiteral>;
+using StringLiteralPtr = Pointer<StringLiteral>;
+using NameRefPtr = Pointer<NameRef>;
+using FILEExprPtr = Pointer<FILEExpr>;
+using LINEExprPtr = Pointer<LINEExpr>;
+using COLUMNExprPtr = Pointer<COLUMNExpr>;
+using ARGExprPtr = Pointer<ARGExpr>;
+using TuplePtr = Pointer<Tuple>;
+using ParenPtr = Pointer<Paren>;
+using IndexingPtr = Pointer<Indexing>;
+using CallPtr = Pointer<Call>;
+using FieldRefPtr = Pointer<FieldRef>;
+using StaticIndexingPtr = Pointer<StaticIndexing>;
+using VariadicOpPtr = Pointer<VariadicOp>;
+using AndPtr = Pointer<And>;
+using OrPtr = Pointer<Or>;
+using LambdaPtr = Pointer<Lambda>;
+using UnpackPtr = Pointer<Unpack>;
+using StaticExprPtr = Pointer<StaticExpr>;
+using DispatchExprPtr = Pointer<DispatchExpr>;
+using ForeignExprPtr = Pointer<ForeignExpr>;
+using ObjectExprPtr = Pointer<ObjectExpr>;
+using EvalExprPtr = Pointer<EvalExpr>;
 
-typedef Pointer<ExprList> ExprListPtr;
+using ExprListPtr = Pointer<ExprList>;
 
-typedef Pointer<Statement> StatementPtr;
-typedef Pointer<Block> BlockPtr;
-typedef Pointer<Label> LabelPtr;
-typedef Pointer<Binding> BindingPtr;
-typedef Pointer<Assignment> AssignmentPtr;
-typedef Pointer<InitAssignment> InitAssignmentPtr;
-typedef Pointer<VariadicAssignment> VariadicAssignmentPtr;
-typedef Pointer<Goto> GotoPtr;
-typedef Pointer<Switch> SwitchPtr;
-typedef Pointer<CaseBlock> CaseBlockPtr;
-typedef Pointer<Return> ReturnPtr;
-typedef Pointer<If> IfPtr;
-typedef Pointer<ExprStatement> ExprStatementPtr;
-typedef Pointer<While> WhilePtr;
-typedef Pointer<Break> BreakPtr;
-typedef Pointer<Continue> ContinuePtr;
-typedef Pointer<For> ForPtr;
-typedef Pointer<ForeignStatement> ForeignStatementPtr;
-typedef Pointer<Try> TryPtr;
-typedef Pointer<Catch> CatchPtr;
-typedef Pointer<Throw> ThrowPtr;
-typedef Pointer<StaticFor> StaticForPtr;
-typedef Pointer<Finally> FinallyPtr;
-typedef Pointer<OnError> OnErrorPtr;
-typedef Pointer<Unreachable> UnreachablePtr;
-typedef Pointer<EvalStatement> EvalStatementPtr;
-typedef Pointer<StaticAssertStatement> StaticAssertStatementPtr;
+using StatementPtr = Pointer<Statement>;
+using BlockPtr = Pointer<Block>;
+using LabelPtr = Pointer<Label>;
+using BindingPtr = Pointer<Binding>;
+using AssignmentPtr = Pointer<Assignment>;
+using InitAssignmentPtr = Pointer<InitAssignment>;
+using VariadicAssignmentPtr = Pointer<VariadicAssignment>;
+using GotoPtr = Pointer<Goto>;
+using SwitchPtr = Pointer<Switch>;
+using CaseBlockPtr = Pointer<CaseBlock>;
+using ReturnPtr = Pointer<Return>;
+using IfPtr = Pointer<If>;
+using ExprStatementPtr = Pointer<ExprStatement>;
+using WhilePtr = Pointer<While>;
+using BreakPtr = Pointer<Break>;
+using ContinuePtr = Pointer<Continue>;
+using ForPtr = Pointer<For>;
+using ForeignStatementPtr = Pointer<ForeignStatement>;
+using TryPtr = Pointer<Try>;
+using CatchPtr = Pointer<Catch>;
+using ThrowPtr = Pointer<Throw>;
+using StaticForPtr = Pointer<StaticFor>;
+using FinallyPtr = Pointer<Finally>;
+using OnErrorPtr = Pointer<OnError>;
+using UnreachablePtr = Pointer<Unreachable>;
+using EvalStatementPtr = Pointer<EvalStatement>;
+using StaticAssertStatementPtr = Pointer<StaticAssertStatement>;
 
-typedef Pointer<FormalArg> FormalArgPtr;
-typedef Pointer<ReturnSpec> ReturnSpecPtr;
-typedef Pointer<LLVMCode> LLVMCodePtr;
-typedef Pointer<Code> CodePtr;
+using FormalArgPtr = Pointer<FormalArg>;
+using ReturnSpecPtr = Pointer<ReturnSpec>;
+using LLVMCodePtr = Pointer<LLVMCode>;
+using CodePtr = Pointer<Code>;
 
-typedef Pointer<TopLevelItem> TopLevelItemPtr;
-typedef Pointer<RecordDecl> RecordDeclPtr;
-typedef Pointer<RecordBody> RecordBodyPtr;
-typedef Pointer<RecordField> RecordFieldPtr;
-typedef Pointer<VariantDecl> VariantDeclPtr;
-typedef Pointer<InstanceDecl> InstanceDeclPtr;
-typedef Pointer<NewTypeDecl> NewTypeDeclPtr;
-typedef Pointer<Overload> OverloadPtr;
-typedef Pointer<Procedure> ProcedurePtr;
-typedef Pointer<IntrinsicSymbol> IntrinsicPtr;
-typedef Pointer<EnumDecl> EnumDeclPtr;
-typedef Pointer<EnumMember> EnumMemberPtr;
-typedef Pointer<GlobalVariable> GlobalVariablePtr;
-typedef Pointer<GVarInstance> GVarInstancePtr;
-typedef Pointer<ExternalProcedure> ExternalProcedurePtr;
-typedef Pointer<ExternalArg> ExternalArgPtr;
-typedef Pointer<ExternalVariable> ExternalVariablePtr;
-typedef Pointer<EvalTopLevel> EvalTopLevelPtr;
-typedef Pointer<StaticAssertTopLevel> StaticAssertTopLevelPtr;
-typedef Pointer<Documentation> DocumentationPtr;
+using TopLevelItemPtr = Pointer<TopLevelItem>;
+using RecordDeclPtr = Pointer<RecordDecl>;
+using RecordBodyPtr = Pointer<RecordBody>;
+using RecordFieldPtr = Pointer<RecordField>;
+using VariantDeclPtr = Pointer<VariantDecl>;
+using InstanceDeclPtr = Pointer<InstanceDecl>;
+using NewTypeDeclPtr = Pointer<NewTypeDecl>;
+using OverloadPtr = Pointer<Overload>;
+using ProcedurePtr = Pointer<Procedure>;
+using IntrinsicPtr = Pointer<IntrinsicSymbol>;
+using EnumDeclPtr = Pointer<EnumDecl>;
+using EnumMemberPtr = Pointer<EnumMember>;
+using GlobalVariablePtr = Pointer<GlobalVariable>;
+using GVarInstancePtr = Pointer<GVarInstance>;
+using ExternalProcedurePtr = Pointer<ExternalProcedure>;
+using ExternalArgPtr = Pointer<ExternalArg>;
+using ExternalVariablePtr = Pointer<ExternalVariable>;
+using EvalTopLevelPtr = Pointer<EvalTopLevel>;
+using StaticAssertTopLevelPtr = Pointer<StaticAssertTopLevel>;
+using DocumentationPtr = Pointer<Documentation>;
 
-typedef Pointer<GlobalAlias> GlobalAliasPtr;
+using GlobalAliasPtr = Pointer<GlobalAlias>;
 
-typedef Pointer<Import> ImportPtr;
-typedef Pointer<ImportModule> ImportModulePtr;
-typedef Pointer<ImportStar> ImportStarPtr;
-typedef Pointer<ImportMembers> ImportMembersPtr;
-typedef Pointer<Module> ModulePtr;
-typedef Pointer<ModuleDeclaration> ModuleDeclarationPtr;
+using ImportPtr = Pointer<Import>;
+using ImportModulePtr = Pointer<ImportModule>;
+using ImportStarPtr = Pointer<ImportStar>;
+using ImportMembersPtr = Pointer<ImportMembers>;
+using ModulePtr = Pointer<Module>;
+using ModuleDeclarationPtr = Pointer<ModuleDeclaration>;
 
-typedef Pointer<Env> EnvPtr;
+using EnvPtr = Pointer<Env>;
 
-typedef Pointer<PrimOp> PrimOpPtr;
+using PrimOpPtr = Pointer<PrimOp>;
 
-typedef Pointer<Type> TypePtr;
-typedef Pointer<BoolType> BoolTypePtr;
-typedef Pointer<IntegerType> IntegerTypePtr;
-typedef Pointer<FloatType> FloatTypePtr;
-typedef Pointer<ComplexType> ComplexTypePtr;
-typedef Pointer<ArrayType> ArrayTypePtr;
-typedef Pointer<VecType> VecTypePtr;
-typedef Pointer<TupleType> TupleTypePtr;
-typedef Pointer<UnionType> UnionTypePtr;
-typedef Pointer<PointerType> PointerTypePtr;
-typedef Pointer<CodePointerType> CodePointerTypePtr;
-typedef Pointer<CCodePointerType> CCodePointerTypePtr;
-typedef Pointer<RecordType> RecordTypePtr;
-typedef Pointer<VariantType> VariantTypePtr;
-typedef Pointer<StaticType> StaticTypePtr;
-typedef Pointer<EnumType> EnumTypePtr;
-typedef Pointer<NewType> NewTypePtr;
+using TypePtr = Pointer<Type>;
+using BoolTypePtr = Pointer<BoolType>;
+using IntegerTypePtr = Pointer<IntegerType>;
+using FloatTypePtr = Pointer<FloatType>;
+using ComplexTypePtr = Pointer<ComplexType>;
+using ArrayTypePtr = Pointer<ArrayType>;
+using VecTypePtr = Pointer<VecType>;
+using TupleTypePtr = Pointer<TupleType>;
+using UnionTypePtr = Pointer<UnionType>;
+using PointerTypePtr = Pointer<PointerType>;
+using CodePointerTypePtr = Pointer<CodePointerType>;
+using CCodePointerTypePtr = Pointer<CCodePointerType>;
+using RecordTypePtr = Pointer<RecordType>;
+using VariantTypePtr = Pointer<VariantType>;
+using StaticTypePtr = Pointer<StaticType>;
+using EnumTypePtr = Pointer<EnumType>;
+using NewTypePtr = Pointer<NewType>;
 
-typedef Pointer<Pattern> PatternPtr;
-typedef Pointer<PatternCell> PatternCellPtr;
-typedef Pointer<PatternStruct> PatternStructPtr;
-typedef Pointer<MultiPattern> MultiPatternPtr;
-typedef Pointer<MultiPatternCell> MultiPatternCellPtr;
-typedef Pointer<MultiPatternList> MultiPatternListPtr;
+using PatternPtr = Pointer<Pattern>;
+using PatternCellPtr = Pointer<PatternCell>;
+using PatternStructPtr = Pointer<PatternStruct>;
+using MultiPatternPtr = Pointer<MultiPattern>;
+using MultiPatternCellPtr = Pointer<MultiPatternCell>;
+using MultiPatternListPtr = Pointer<MultiPatternList>;
 
-typedef Pointer<ValueHolder> ValueHolderPtr;
-typedef Pointer<MultiStatic> MultiStaticPtr;
+using ValueHolderPtr = Pointer<ValueHolder>;
+using MultiStaticPtr = Pointer<MultiStatic>;
 
-typedef Pointer<PValue> PValuePtr;
-typedef Pointer<MultiPValue> MultiPValuePtr;
+using PValuePtr = Pointer<PValue>;
+using MultiPValuePtr = Pointer<MultiPValue>;
 
-typedef Pointer<EValue> EValuePtr;
-typedef Pointer<MultiEValue> MultiEValuePtr;
+using EValuePtr = Pointer<EValue>;
+using MultiEValuePtr = Pointer<MultiEValue>;
 
-typedef Pointer<CValue> CValuePtr;
-typedef Pointer<MultiCValue> MultiCValuePtr;
+using CValuePtr = Pointer<CValue>;
+using MultiCValuePtr = Pointer<MultiCValue>;
 
-typedef Pointer<ObjectTable> ObjectTablePtr;
+using ObjectTablePtr = Pointer<ObjectTable>;
 
-typedef Pointer<MatchResult> MatchResultPtr;
+using MatchResultPtr = Pointer<MatchResult>;
 
 //
 // Source, Location

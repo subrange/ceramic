@@ -9,8 +9,8 @@
 #if defined(__GNUC__) && defined(_INT128_DEFINED)
 
 namespace ceramic {
-typedef __int128 ceramic_int128;
-typedef unsigned __int128 ceramic_uint128;
+using ceramic_int128 = __int128;
+using ceramic_uint128 = unsigned __int128;
 } // namespace ceramic
 
 // #elif (defined(__clang__))
@@ -170,8 +170,8 @@ inline int128_holder::int128_holder(uint128_holder y)
     : lowValue(static_cast<ptrdiff64_t>(y.lowValue)),
       highPad(static_cast<ptrdiff64_t>(y.highPad)) {}
 
-typedef int128_holder ceramic_int128;
-typedef uint128_holder ceramic_uint128;
+using ceramic_int128 = int128_holder;
+using ceramic_uint128 = uint128_holder;
 } // namespace ceramic
 
 #endif
