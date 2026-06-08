@@ -1,0 +1,30 @@
+public import raylib.generated.*;
+
+rgba(r, g, b, a) = Color(CUChar(r), CUChar(g), CUChar(b), CUChar(a));
+
+alias LIGHTGRAY  = rgba(200, 200, 200, 255);
+alias GRAY       = rgba(130, 130, 130, 255);
+alias DARKGRAY   = rgba(80, 80, 80, 255);
+alias YELLOW     = rgba(253, 249, 0, 255);
+alias GOLD       = rgba(255, 203, 0, 255);
+alias ORANGE     = rgba(255, 161, 0, 255);
+alias PINK       = rgba(255, 109, 194, 255);
+alias RED        = rgba(230, 41, 55, 255);
+alias MAROON     = rgba(190, 33, 55, 255);
+alias GREEN      = rgba(0, 228, 48, 255);
+alias LIME       = rgba(0, 158, 47, 255);
+alias DARKGREEN  = rgba(0, 117, 44, 255);
+alias SKYBLUE    = rgba(102, 191, 255, 255);
+alias BLUE       = rgba(0, 121, 241, 255);
+alias DARKBLUE   = rgba(0, 82, 172, 255);
+alias PURPLE     = rgba(200, 122, 255, 255);
+alias VIOLET     = rgba(135, 60, 190, 255);
+alias DARKPURPLE = rgba(112, 31, 126, 255);
+alias BEIGE      = rgba(211, 176, 131, 255);
+alias BROWN      = rgba(127, 106, 79, 255);
+alias DARKBROWN  = rgba(76, 63, 47, 255);
+alias WHITE      = rgba(255, 255, 255, 255);
+alias BLACK      = rgba(0, 0, 0, 255);
+alias BLANK      = rgba(0, 0, 0, 0);
+alias MAGENTA    = rgba(255, 0, 255, 255);
+alias RAYWHITE   = rgba(245, 245, 245, 255);

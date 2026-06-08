@@ -13,16 +13,17 @@ var ceramicKeywords = array(
     "public", "private", "import", "as",
     "record", "variant", "instance",
     "define", "overload", "default",
-    "external", "alias",
-    "static", "rvalue",
-    "inline", "enum", "var", "ref", "forward",
+    "external", "alias", "rvalue",
+    "ref", "forward",
+    "inline", "noinline", "forceinline",
+    "enum", "var", "newtype",
     "and", "or", "not",
     "if", "else", "goto", "return", "while",
     "switch", "case", "break", "continue", "for", "in",
     "true", "false", "try", "catch", "throw",
-    "finally", "onerror",
-    "eval", "with",
-    "__FILE__", "__LINE__", "__COLUMN__", "__ARG__"
+    "finally", "onerror", "staticassert",
+    "eval", "when",
+    "__FILE__", "__LINE__", "__COLUMN__", "__ARG__", "__llvm__"
 );
 
 var g_declNames = HashMap[CXCursor, String]();
@@ -201,6 +202,8 @@ convertType(type:CXType, refCursor:CXCursor) : String {
     }
     case (CXType_Pointer)
         return convertPointerType(clang_getPointeeType(type), refCursor);
+    case (CXType_Elaborated)
+        return convertType(clang_getCanonicalType(type), refCursor);
     case (CXType_Record, CXType_Typedef, CXType_Unexposed, CXType_Enum) {
         var typeCursor = clang_getTypeDeclaration(type);
         return convertTypeFromDeclaration(typeCursor);
@@ -226,7 +229,7 @@ convertType(type:CXType, refCursor:CXCursor) : String {
 
 }
 
-visitStruct(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Int
+visitStruct(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Enum_CXChildVisitResult
 {
     ref unnamedFieldIndex = Pointer[Int](data)^;
 
@@ -248,7 +251,7 @@ visitStruct(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Int
     return CXChildVisit_Continue;
 }
 
-visitUnion(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Int
+visitUnion(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Enum_CXChildVisitResult
 {
     assert(clang_getCursorKind(parent) == CXCursor_UnionDecl);
     var kind = clang_getCursorKind(cursor);
@@ -264,7 +267,7 @@ visitUnion(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Int
 
 record FunctionDeclAttributes (asmLabel:Maybe[String]);
 
-visitFunctionAttr(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Int
+visitFunctionAttr(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Enum_CXChildVisitResult
 {
     ref attributes = Pointer[FunctionDeclAttributes](data)^;
     switch (cursor.kind)
@@ -273,7 +276,7 @@ visitFunctionAttr(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Int
     return CXChildVisit_Continue;
 }
 
-visitEnum(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Int
+visitEnum(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Enum_CXChildVisitResult
 {
     switch (cursor.kind)
     case (CXCursor_EnumConstantDecl) {
@@ -374,7 +377,7 @@ enumDefinition(cursor:CXCursor, name:String, data:CXClientData) : {
     }
 }
 
-visitToplevel(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Int
+visitToplevel(cursor:CXCursor, parent:CXCursor, data:CXClientData) : Enum_CXChildVisitResult
 {
     ref options = Pointer[BindgenOptions](data)^;
 

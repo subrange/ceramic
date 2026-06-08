@@ -1,0 +1,17 @@
+import raylib.*;
+
+main() {
+    InitWindow(800, 450, cstring("ceramic + raylib"));
+    SetTargetFPS(60);
+
+    while (not WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        DrawText(cstring("Hello from Ceramic!"), 190, 200, 20, DARKGRAY);
+        DrawRectangle(GetMouseX() - 15, GetMouseY() - 15, 30, 30, MAROON);
+        DrawFPS(10, 10);
+        EndDrawing();
+    }
+
+    CloseWindow();
+}
