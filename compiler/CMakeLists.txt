@@ -1,5 +1,3 @@
-include(PCHsupport)
-
 set(COMPILER_SOURCES
     analyzer.cpp
     analyzer_op.cpp
@@ -61,60 +59,34 @@ add_executable(ceramic ${CERAMIC_SOURCES})
 add_executable(ceramicdoc ${CERAMICDOC_SOURCES})
 add_executable(ut ${UT_SOURCES})
 
-# compiler flags
-target_compile_options(compiler   PRIVATE ${LLVM_CXXFLAGS})
-target_compile_options(ceramic    PRIVATE ${LLVM_CXXFLAGS})
-target_compile_options(ceramicdoc PRIVATE ${LLVM_CXXFLAGS})
-target_compile_options(ut         PRIVATE ${LLVM_CXXFLAGS})
-
-# include directories
-target_include_directories(compiler   PRIVATE ${LLVM_INCLUDEDIR})
-target_include_directories(ceramic    PRIVATE ${LLVM_INCLUDEDIR})
-target_include_directories(ceramicdoc PRIVATE ${LLVM_INCLUDEDIR})
-target_include_directories(ut         PRIVATE ${LLVM_INCLUDEDIR})
-
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    target_compile_definitions(compiler   PRIVATE UNDEBUG)
-    target_compile_definitions(ceramic    PRIVATE UNDEBUG)
-    target_compile_definitions(ceramicdoc PRIVATE UNDEBUG)
-    target_compile_definitions(ut         PRIVATE UNDEBUG)
+    set(_debug_def UNDEBUG)
 else()
-    target_compile_definitions(compiler   PRIVATE NDEBUG)
-    target_compile_definitions(ceramic    PRIVATE NDEBUG)
-    target_compile_definitions(ceramicdoc PRIVATE NDEBUG)
-    target_compile_definitions(ut         PRIVATE NDEBUG)
+    set(_debug_def NDEBUG)
 endif()
 
-if(NOT MSVC)
-    target_compile_options(compiler   PRIVATE -fexceptions)
-    target_compile_options(ceramic    PRIVATE -fexceptions)
-    target_compile_options(ceramicdoc PRIVATE -fexceptions)
-    target_compile_options(ut         PRIVATE -fexceptions)
-endif()
-
-set(ENABLE_PCH False CACHE BOOL
-        "Use precompiled headers when building the compiler. (experimental)")
-
-if(ENABLE_PCH)
-    precompile_header(ceramic.hpp SOURCES pch.cpp ${LLVM_CXXFLAGS})
-endif(ENABLE_PCH)
-
-if (UNIX)
-    target_link_options(compiler   PRIVATE ${LLVM_LDFLAGS})
-    target_link_options(ceramic    PRIVATE ${LLVM_LDFLAGS})
-    target_link_options(ceramicdoc PRIVATE ${LLVM_LDFLAGS})
-    target_link_options(ut         PRIVATE ${LLVM_LDFLAGS})
-endif()
+foreach(tgt IN ITEMS compiler ceramic ceramicdoc ut)
+    target_compile_options(${tgt} PRIVATE ${LLVM_CXXFLAGS})
+    target_include_directories(${tgt} PRIVATE ${LLVM_INCLUDE_DIRS})
+    target_compile_definitions(${tgt} PRIVATE ${_debug_def})
+    if(NOT MSVC)
+        target_compile_options(${tgt} PRIVATE -fexceptions)
+    endif()
+endforeach()
 
 # Libraries
 target_link_libraries(ceramic    PRIVATE compiler ${LLVM_LIBS})
 target_link_libraries(ceramicdoc PRIVATE compiler ${LLVM_LIBS})
 target_link_libraries(ut         PRIVATE compiler ${LLVM_LIBS})
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(ceramic    PRIVATE rt dl pthread)
-    target_link_libraries(ceramicdoc PRIVATE rt dl pthread)
-    target_link_libraries(ut         PRIVATE pthread)
+find_package(Threads REQUIRED)
+target_link_libraries(ceramic    PRIVATE Threads::Threads)
+target_link_libraries(ceramicdoc PRIVATE Threads::Threads)
+target_link_libraries(ut         PRIVATE Threads::Threads)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(ceramic    PRIVATE rt dl)
+    target_link_libraries(ceramicdoc PRIVATE rt dl)
 endif()
 
 # Install
