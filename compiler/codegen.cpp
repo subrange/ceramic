@@ -27,7 +27,6 @@ namespace ceramic {
 llvm::Module *llvmModule = nullptr;
 llvm::DIBuilder *llvmDIBuilder = nullptr;
 llvm::DICompileUnit *llvmDICompileUnit = nullptr;
-llvm::ExecutionEngine *llvmEngine;
 const llvm::DataLayout *llvmDataLayout;
 llvm::LLVMContext llvmContext;
 

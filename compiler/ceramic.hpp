@@ -26,7 +26,6 @@
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Bitcode/BitcodeWriterPass.h>
 #include <llvm/CodeGen/ValueTypes.h>
-#include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/Orc/Core.h>
 #include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
@@ -78,21 +77,6 @@
 #include "refcounted.hpp"
 
 namespace ceramic {
-template <bool Cond> struct StaticAssertChecker;
-
-template <> struct StaticAssertChecker<true> {
-    typedef int type;
-};
-
-template <> struct StaticAssertChecker<false> {};
-
-#define _CERAMIC_CAT(a, b) a##b
-#define CERAMIC_CAT(a, b) _CERAMIC_CAT(a, b)
-
-#define CERAMIC_STATIC_ASSERT(cond)                                            \
-    static const ::ceramic::StaticAssertChecker<(cond)>::type CERAMIC_CAT(     \
-        static_assert_, __LINE__);
-
 using std::make_pair;
 using std::map;
 using std::pair;
