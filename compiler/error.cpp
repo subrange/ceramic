@@ -513,12 +513,28 @@ static string typeErrorMessage(const TypePtr &expectedType,
     return typeErrorMessage(sout.str(), receivedType);
 }
 
+// carry the "expected X, found Y" on the caret line when a location is known,
+// otherwise keep it as the headline so it is never lost.
+static CERAMIC_NORETURN void emitTypeError(string const &expectedFound) {
+    Location location = topLocation();
+    Span span = topSpan();
+    if (!span.ok())
+        span = Span(location);
+    Diagnostic diag(Severity::Error,
+                    span.ok() ? "type mismatch" : expectedFound, span);
+    if (span.ok())
+        diag.primaryLabel = expectedFound;
+    appendContextNotes(diag, location);
+    displayDiagnostic(diag);
+    throw CompilerError();
+}
+
 void typeError(const llvm::StringRef expected, const TypePtr &receivedType) {
-    error(typeErrorMessage(expected, receivedType));
+    emitTypeError(typeErrorMessage(expected, receivedType));
 }
 
 void typeError(const TypePtr &expectedType, const TypePtr &receivedType) {
-    error(typeErrorMessage(expectedType, receivedType));
+    emitTypeError(typeErrorMessage(expectedType, receivedType));
 }
 
 void argumentTypeError(const unsigned index, const llvm::StringRef expected,
