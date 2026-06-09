@@ -1,0 +1,1947 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subrange.github.io/ceramic/language-reference/functions/">
+      
+      
+        <link rel="prev" href="../types/">
+      
+      
+        <link rel="next" href="../statements/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Function Definitions - Ceramic</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#function-definitions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Ceramic" class="md-header__button md-logo" aria-label="Ceramic" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Ceramic
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Function Definitions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subrange/ceramic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subrange/ceramic
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Ceramic" class="md-nav__button md-logo" aria-label="Ceramic" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Ceramic
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subrange/ceramic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subrange/ceramic
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tokenization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tokenization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compilation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compilation Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules & Source Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type Definitions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function Definitions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function Definitions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#simple-function-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Simple Function Definitions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overloaded-function-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overloaded Function Definitions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overloaded Function Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overload-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overload Ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#universal-overloads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Universal Overloads
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arguments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arguments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variadic-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Variadic Arguments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reference-qualifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference Qualifiers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static Arguments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#return-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Return Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Return Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#named-return-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Named Return Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Function Body
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Function Body">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inline-llvm-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inline LLVM Functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inline-and-alias-qualifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inline and Alias Qualifiers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnostic-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnostic Attributes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="External Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#external-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Attributes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#global-value-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Value Definitions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Global Value Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global-aliases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Aliases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#global-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../statements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Statements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../expressions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expressions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Grammar Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primitives Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primitives Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primitive Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/data-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/numeric/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numeric Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/pointers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pointer Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/atomic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Atomic Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/introspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/compiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compiler Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#simple-function-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Simple Function Definitions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#overloaded-function-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overloaded Function Definitions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overloaded Function Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overload-ordering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overload Ordering
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#universal-overloads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Universal Overloads
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arguments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arguments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variadic-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Variadic Arguments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reference-qualifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference Qualifiers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static Arguments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#return-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Return Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Return Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#named-return-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Named Return Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Function Body
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Function Body">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inline-llvm-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inline LLVM Functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inline-and-alias-qualifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inline and Alias Qualifiers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diagnostic-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnostic Attributes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="External Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#external-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Attributes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#global-value-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Value Definitions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Global Value Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global-aliases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Aliases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#global-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="function-definitions">Function Definitions</h1>
+<p>Ceramic functions are inherently generic. They can be parameterized over types or compile-time values, and overloaded to provide multiple implementations of a common interface. A runtime function is instantiated for every distinct set of input types with which it is called.</p>
+<h3 id="simple-function-definitions">Simple Function Definitions</h3>
+<p>A name, argument list, optional return types, and a body. Return types are inferred from the body if not declared.</p>
+<p><pre class="highlight"><code class="language-ceramic">hello() { println(helloString()); }
+private helloString() = "Hello World";
+
+squareInt(x:Int) : Int = x*x;
+
+[T]
+square(x:T) : T = x*x;
+
+[T | Float?(T)]
+quadraticRoots(a:T, b:T, c:T) : T, T {
+    var q = -0.5*(b + signum(b)*sqrt(b*b - 4.*a*c));
+    return q/a, c/q;
+}</code></pre>
+Simple definitions always <strong>create a new symbol</strong>. Defining the same name twice is an error. Use <code>overload</code> instead.</p>
+<pre class="highlight"><code class="language-ceramic">abs(x:Int)   = if (x &lt; 0) -x else x;
+abs(x:Float) = ...;  // ERROR: abs is already defined</code></pre>
+<h3 id="overloaded-function-definitions">Overloaded Function Definitions</h3>
+<p><code>define</code> creates a symbol with no initial implementation. <code>overload</code> adds implementations to an existing symbol.</p>
+<p><pre class="highlight"><code class="language-ceramic">define abs;
+overload abs(x:Int)   = if (x &lt; 0) -x else x;
+overload abs(x:Float) = if (x &lt; 0.) -x else if (x == 0.) 0. else x;</code></pre>
+<code>define</code> may also declare an <strong>interface constraint</strong>: all overloads must conform to it:</p>
+<p><pre class="highlight"><code class="language-ceramic">[T | Numeric?(T)]
+define abs(x:T) : T;
+
+[T | Integer?(T)]
+overload abs(x:T) = if (x &lt; 0) -x else x;
+
+overload abs(x:String) { ... }  // ERROR: Numeric?(String) is false</code></pre>
+Overloading a <strong>type name</strong> is the idiomatic way to define constructors:</p>
+<p><pre class="highlight"><code class="language-ceramic">record LatLong (latitude:Float64, longitude:Float64);
+record Address (street:String, city:String, state:String, zip:String);
+
+overload Address(coords:LatLong) = geocode(coords);</code></pre>
+Overloads bind by pattern matching and can target parameterized types selectively:</p>
+<p><pre class="highlight"><code class="language-ceramic">record Point[T] (x:T, y:T);
+
+[T | Float?(T)]
+overload Point[T]() = Point[T](nan(T), nan(T));    // float default: NaN sentinel
+overload Point[Int]() = Point[Int](-0x8000_0000, 0x7FFF_FFFF);
+
+overload Point() = Point[Float]();  // base name: give them a Float point</code></pre>
+A simple function definition is shorthand for <code>define</code> + <code>overload</code>:</p>
+<pre class="highlight"><code class="language-ceramic">double(x) = x+x;
+// is exactly:
+define double;
+overload double(x) = x+x;</code></pre>
+<h4 id="overload-ordering">Overload Ordering</h4>
+<p>Within a module, overloads are matched in <strong>reverse definition order</strong>. The last definition wins. Across modules, importing modules' overloads are visited before imported modules' (depth-first). Circular-dependency order is undefined.</p>
+<h4 id="universal-overloads">Universal Overloads</h4>
+<p>The overloaded name may itself be a pattern variable, matching any call site not already handled by a more specific overload:</p>
+<p><pre class="highlight"><code class="language-ceramic">// Delegate any call with a MyInt argument to its underlying Int value
+[F]
+overload F(x:MyInt) = ..F(x.value);
+
+// Default zero-constructor for any Numeric? type
+[T | Numeric?(T)]
+overload T() = T(0);</code></pre>
+When the function position of a call is not a symbol, the call desugars to the <code>call</code> operator:</p>
+<pre class="highlight"><code class="language-ceramic">record MyCallable ();
+overload call(f:MyCallable, x:Int, y:Int) : Int = x + y;
+
+main() {
+    var f = MyCallable();
+    println(f(1, 2));  // really: call(f, 1, 2)
+}</code></pre>
+<h3 id="arguments">Arguments</h3>
+<p>Arguments are a parenthesized list of names with optional type patterns. An argument without a type matches any type.</p>
+<p><pre class="highlight"><code class="language-ceramic">[T]
+double(x:T) = x+x;  // explicit pattern variable
+
+double(x) = x+x;    // same, with implicit unbounded variable</code></pre>
+Arguments are passed <strong>by reference</strong>: mutations inside the function are visible to the caller:</p>
+<pre class="highlight"><code class="language-ceramic">inc(x:Int) { x += 1; }
+
+main() {
+    var x = 2;
+    inc(x);
+    println(x);  // 3
+}</code></pre>
+<h4 id="variadic-arguments">Variadic Arguments</h4>
+<p>A final argument prefixed with <code>..</code> matches all remaining arguments at the call site:</p>
+<p><pre class="highlight"><code class="language-ceramic">printlnTimes(n:Int, ..stuff) {
+    for (i in range(n))
+        println(..stuff);
+}
+
+main(args) {
+    printlnTimes(3, "She loves you ", "yeah yeah yeah");
+}</code></pre>
+A type pattern on the variadic argument binds the types of all matched values to a variadic pattern variable:</p>
+<pre class="highlight"><code class="language-ceramic">[..TT | allValues?(String?, ..TT)]
+printlnTimes(n:Int, ..stuff:TT) { ... }
+
+[..In, ..Out]
+overload call(f:CodePointer[[..In], [..Out]], ..in:In) : ..Out {
+    return ..f(..in);
+}</code></pre>
+<h4 id="reference-qualifiers">Reference Qualifiers</h4>
+<p>Ceramic distinguishes <strong>lvalues</strong> (values with a referenceable identity: variables, pointer dereferences, reference returns) from <strong>rvalues</strong> (unnamed temporaries that exist only for a single expression).</p>
+<p>An argument may be qualified to accept only one kind:</p>
+<table>
+<thead>
+<tr>
+<th>Qualifier</th>
+<th>Accepts</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(none)</td>
+<td>lvalue or rvalue, bound as lvalue inside the function</td>
+<td>general</td>
+</tr>
+<tr>
+<td><code>ref</code></td>
+<td>lvalue only</td>
+<td>returning a reference into the argument</td>
+</tr>
+<tr>
+<td><code>rvalue</code></td>
+<td>rvalue only</td>
+<td>move optimization, steal resources from a temporary</td>
+</tr>
+<tr>
+<td><code>forward</code></td>
+<td>either, preserves the caller's lvalue/rvalue-ness</td>
+<td>perfect forwarding</td>
+</tr>
+</tbody>
+</table>
+<p><pre class="highlight"><code class="language-ceramic">// rvalue: steal the string's buffer instead of copying
+foo(rvalue x:String) {
+    return move(x) + " world";
+}
+
+// ref: return a reference into x; dangerous if x is a temporary
+bar(ref x:String) {
+    return sliced(x, 0, 5);
+}
+
+// forward: pass rvalue-ness through to the next call
+baz(forward x:Int) {
+    foo(x);  // ok if x was originally an rvalue at the call site
+}</code></pre>
+Inside a function body, an argument has a name and is therefore an lvalue, even if the caller passed an rvalue. To carry rvalue-ness through to another call, use <code>forward</code> qualification.</p>
+<p><code>ref</code>, <code>rvalue</code>, and <code>forward</code> can all be applied to variadic argument names:</p>
+<pre class="highlight"><code class="language-ceramic">trace(f, forward ..args) {
+    println("enter ", f);
+    finally println("exit  ", f);
+    return forward ..f(..args);
+}</code></pre>
+<h4 id="static-arguments">Static Arguments</h4>
+<p>Static arguments match values computed at compile time. The <code>#</code> prefix at the call site evaluates an expression at compile time and passes the result as the argument.</p>
+<p><pre class="highlight"><code class="language-ceramic">define beetlejuice;
+
+[n]
+overload beetlejuice(#n) {
+    for (i in range(n))
+        println("Beetlejuice!");
+}
+
+// Unrolled specialization for the common case
+overload beetlejuice(#3) {
+    println("Beetlejuice!");
+    println("Beetlejuice!");
+    println("Beetlejuice!");
+}
+
+main() {
+    beetlejuice(#3);
+}</code></pre>
+Symbols and static strings are inherently static and match static arguments without an explicit <code>#</code> at the call site.</p>
+<p><code>#T</code> is syntactic sugar for an unnamed argument of primitive type <code>Static[T]</code>.</p>
+<h3 id="return-types">Return Types</h3>
+<p>Declare return types with <code>:</code> after the argument list. The expression may reference pattern variables from the arguments.</p>
+<p><pre class="highlight"><code class="language-ceramic">double(x:Int) : Int = x + x;
+
+[T]
+diagonal(x:T) : Point[T] = Point[T](x, x);
+
+[T | Integer?(T)]
+safeDouble(x:T) : NextLargerInt(T) {
+    alias NextT = NextLargerInt(T);
+    return NextT(x) + NextT(x);
+}</code></pre>
+Without a declared return type, types are inferred from the body. An empty declaration means "returns nothing":</p>
+<pre class="highlight"><code class="language-ceramic">foo() { }        // inferred: no return values
+foo() : { }      // explicit: no return values
+foo() : () { }   // also explicit</code></pre>
+<h4 id="named-return-values">Named Return Values</h4>
+<p>For cases where constructing a return value all at once is inefficient or impossible, bind names directly to the uninitialized return storage and fill them in piecemeal using <code>&lt;--</code>.</p>
+<p><pre class="highlight"><code class="language-ceramic">record SOAPoint (xs:Vector[Float], ys:Vector[Float]);
+
+overload SOAPoint(size:SizeT) --&gt; returned:SOAPoint
+{
+    returned.xs &lt;-- Vector[Float]();
+    onerror destroy(returned.xs);
+    resize(returned.xs, size);
+
+    returned.ys &lt;-- Vector[Float]();
+    onerror destroy(returned.ys);
+    resize(returned.ys, size);
+}</code></pre>
+Named return values are inherently unsafe. They start uninitialized. Any operation other than <code>&lt;--</code> before initialization is undefined behavior. They are <strong>not</strong> automatically destroyed during exception unwinding. Use <code>onerror</code> to handle cleanup explicitly.</p>
+<p>A variadic named return may be declared with <code>..</code>, in which case its type expression evaluates as a multiple value expression.</p>
+<h3 id="function-body">Function Body</h3>
+<p>A function body is one of three forms:</p>
+<pre class="highlight"><code class="language-ceramic">// Block: the general form
+demBones(a, b) {
+    println(a, " bone's connected to the ", b, " bone");
+}
+
+// Expression shorthand; exactly equivalent to a block with a single return
+square(x) = x*x;
+
+// Inline LLVM assembly
+overload add(x:Int32, y:Int32) --&gt; sum:Int32 __llvm__ {
+    ...
+}</code></pre>
+<h4 id="inline-llvm-functions">Inline LLVM Functions</h4>
+<p>A function may be implemented directly in LLVM IR with an <code>__llvm__</code> block. Arguments and named return values are available as LLVM pointers (e.g., <code>x:Int32</code> → <code>ptr %x</code>). All exit paths must end with <code>ret ptr null</code>.</p>
+<p><pre class="highlight"><code class="language-ceramic">overload add(x:Int32, y:Int32) --&gt; sum:Int32 __llvm__ {
+    %xv = load i32, ptr %x
+    %yv = load i32, ptr %y
+    %sumv = add i32 %xv, %yv
+    store i32 %sumv, ptr %sum
+    ret ptr null
+}</code></pre>
+Ceramic static values can be interpolated with <code>$Name</code> or <code>${Expression}</code>:</p>
+<ul>
+<li>Symbols → their LLVM type</li>
+<li>Static strings → literal text</li>
+<li>Static integer/float/bool → LLVM numeric literal</li>
+</ul>
+<p><pre class="highlight"><code class="language-ceramic">[T | Integer?(T)]
+overload add(x:T, y:T) --&gt; sum:T __llvm__ {
+    %xv = load $T, ptr %x
+    %yv = load $T, ptr %y
+    %sumv = add $T %xv, %yv
+    store $T %sumv, ptr %sum
+    ret ptr null
+}</code></pre>
+Any LLVM intrinsics or globals referenced must be declared in a <a href="../modules/#top-level-llvm">top-level LLVM block</a>. Inline LLVM functions cannot be evaluated at compile time.</p>
+<h3 id="inline-and-alias-qualifiers">Inline and Alias Qualifiers</h3>
+<p>Any function or overload definition may be preceded by <code>inline</code> or <code>alias</code>.</p>
+<ul>
+<li>
+<p><strong><code>inline</code></strong>: the function is always compiled directly into its call site. If inlining is impossible (e.g., a recursive function), it is a compile-time error. This is a hard guarantee, not a hint like C's <code>inline</code>.</p>
+</li>
+<li>
+<p><strong><code>alias</code></strong>: arguments are received unevaluated and re-evaluated in the caller's scope each time they are used inside the function. Equivalent to a hygienic, precedence-safe C preprocessor macro. Alias functions can query their call site's source location via <code>__FILE__</code>, <code>__LINE__</code>, <code>__COLUMN__</code>, and <code>__ARG__</code>.</p>
+</li>
+</ul>
+<pre class="highlight"><code class="language-ceramic">Debug?() = false;
+
+define assert(x:Bool);
+
+[| not Debug?()]
+alias overload assert(x:Bool) { }
+
+[| Debug?()]
+alias overload assert(x:Bool) {
+    if (not x) {
+        printlnTo(stderr, __FILE__, ":", __LINE__, ": assertion failed!");
+        abort();
+    }
+}</code></pre>
+<h3 id="diagnostic-attributes">Diagnostic Attributes</h3>
+<p>An attribute list <code>[[...]]</code> may appear between the pattern guard and any <code>inline</code>/<code>alias</code> qualifier. Unknown attributes produce a warning, not an error.</p>
+<p>Currently recognized attribute:</p>
+<ul>
+<li><strong><code>transparent</code></strong>: marks the function as a pure forwarder. When the compiler locates the source of an error, it skips transparent stack frames and attributes the error to the first non-transparent caller. Only apply this to functions whose body is a single forwarding expression.</li>
+</ul>
+<h3 id="external-functions">External Functions</h3>
+<p>External functions bridge Ceramic with code outside the compilation unit.</p>
+<p>A declaration <strong>without</strong> a body declares a C symbol for Ceramic to call:</p>
+<p><pre class="highlight"><code class="language-ceramic">external puts(s:Pointer[Int8]) : Int;
+external printf(fmt:Pointer[Int8], ..) : Int;  // variadic C
+
+main() {
+    puts(cstring("Hello world!"));
+    printf(cstring("1 + 1 = %d"), 1 + 1);
+}</code></pre>
+A declaration <strong>with</strong> a body gives a Ceramic function C linkage, making it callable from C:</p>
+<p><pre class="highlight"><code class="language-ceramic">// square.crm
+external square(x:Float64) : Float64 = x*x;</code></pre>
+<pre class="highlight"><code class="language-c">// square.c
+double square(double x);
+int main() { printf("%g\n", square(2.0)); }</code></pre>
+Limitations:</p>
+<ul>
+<li>Cannot be generic. Types must be fully specified. No pattern guards. No overloading.</li>
+<li>May return zero or one value only.</li>
+<li>Ceramic exceptions cannot propagate across an external boundary. Unhandled exceptions call <code>unhandledExceptionInExternal</code>.</li>
+<li>Types with nontrivial <code>copy</code> or <code>destroy</code> overloads must be passed by pointer.</li>
+<li>Cannot be called at compile time.</li>
+</ul>
+<p>External function names are not true symbols. They evaluate directly to a <code>CCodePointer</code> value.</p>
+<h4 id="external-attributes">External Attributes</h4>
+<p>An optional parenthesized attribute list after the <code>external</code> keyword sets properties on the function. A string value overrides the linkage name:</p>
+<p><pre class="highlight"><code class="language-ceramic">external ("_start") start() {
+    var greeting = "hello world";
+    write(STDOUT_FILENO, cstring(greeting), size(greeting));
+}</code></pre>
+Calling convention attributes (from <code>__primitives__</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Convention</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AttributeCCall</code></td>
+<td>Default C</td>
+</tr>
+<tr>
+<td><code>AttributeLLVMCall</code></td>
+<td>Native LLVM (for intrinsics and other LLVM-based languages)</td>
+</tr>
+<tr>
+<td><code>AttributeStdCall</code></td>
+<td>x86 stdcall (Windows)</td>
+</tr>
+<tr>
+<td><code>AttributeFastCall</code></td>
+<td>x86 fastcall (Windows)</td>
+</tr>
+<tr>
+<td><code>AttributeThisCall</code></td>
+<td>x86 thiscall (Windows)</td>
+</tr>
+<tr>
+<td>---</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="global-value-definitions">Global Value Definitions</h2>
+<p>Ceramic supports global mutable state initialized before <code>main()</code> runs.</p>
+<h3 id="global-aliases">Global Aliases</h3>
+<p>Global aliases define a name that expands to an expression <strong>on demand</strong>, without allocating any storage.</p>
+<p><pre class="highlight"><code class="language-ceramic">alias PI = 3.14159265358979323846264338327950288;
+
+degreesToRadians(deg:Double) : Double = (PI/180.) * deg;</code></pre>
+Aliases may be parameterized (pattern guard optional when no predicate is needed):</p>
+<p><pre class="highlight"><code class="language-ceramic">[T | Float?(T)]
+alias PI[T] = T(3.14159265358979323846264338327950288);
+
+alias ZERO[T] = T(0);  // [T] implied</code></pre>
+Global alias names are not true symbols. They evaluate directly to the bound expression.</p>
+<h3 id="global-variables">Global Variables</h3>
+<p>Global variables are initialized at runtime before <code>main()</code>, in dependency order.</p>
+<p><pre class="highlight"><code class="language-ceramic">var msg = noisyString();
+
+noisyString() {
+    println("Initializing...");
+    return String();
+}
+
+a() { push(msg, "Hello "); }
+b() { push(msg, "world!"); }
+
+main() { a(); b(); println(msg); }</code></pre>
+Initialization order is determined by dependencies:</p>
+<p><pre class="highlight"><code class="language-ceramic">var a = c + 1;  // runs second
+var b = a + c;  // runs third
+var c = 0;      // runs first
+var d = abc();  // runs fourth</code></pre>
+Circular initialization dependencies are compile-time errors. A global variable that is never referenced by runtime-executed code is never instantiated. Do not rely on its side effects.</p>
+<p>Global variables are destroyed in <strong>reverse initialization order</strong> after <code>main()</code> returns. If destruction throws, <code>exceptionInFinalizer</code> is called.</p>
+<p>Parameterized global variables are supported:</p>
+<p><pre class="highlight"><code class="language-ceramic">private var TAG_COUNTER = 0;
+
+[T]
+private var ANY_TAG[T] = nextTagCounter();</code></pre>
+Global variable names are not true symbols. They evaluate to a reference to the variable's storage.</p>
+<p>Runtime access is subject to the C11/C++11 memory model. See the <em>Primitives Reference</em> for atomic operations.</p>
+<h3 id="external-variables">External Variables</h3>
+<p>C <code>extern</code> variables can be linked with external variable definitions. Like external functions, they cannot be parameterized.</p>
+<p><pre class="highlight"><code class="language-ceramic">external errno : Int;
+
+main() {
+    if (null?(fopen(cstring("hello.txt"), cstring("r"))))
+        println("error code ", errno);
+}</code></pre>
+A string attribute overrides the linkage name:</p>
+<p><pre class="highlight"><code class="language-ceramic">external ("____errno$OBSCURECOMPATIBILITYTAG") errno : Int;</code></pre>
+Ceramic-defined variables with external linkage are currently unsupported. External variables cannot be evaluated at compile time.</p>
+<hr />
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../js/ceramic-highlight.js" type="module"></script>
+      
+    
+  </body>
+</html>

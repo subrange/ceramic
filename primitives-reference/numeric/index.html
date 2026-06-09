@@ -1,0 +1,1532 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subrange.github.io/ceramic/primitives-reference/numeric/">
+      
+      
+        <link rel="prev" href="../data-access/">
+      
+      
+        <link rel="next" href="../pointers/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Numeric Operations - Ceramic</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#numeric-operations" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Ceramic" class="md-header__button md-logo" aria-label="Ceramic" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Ceramic
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Numeric Operations
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subrange/ceramic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subrange/ceramic
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Ceramic" class="md-nav__button md-logo" aria-label="Ceramic" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Ceramic
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subrange/ceramic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subrange/ceramic
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language-reference/tokenization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tokenization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language-reference/compilation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compilation Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language-reference/modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules & Source Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language-reference/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type Definitions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language-reference/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function Definitions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language-reference/statements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Statements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language-reference/expressions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expressions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../language-reference/grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Grammar Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primitives Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primitives Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primitive Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numeric Operations
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numeric Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#boolnot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        boolNot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericequals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericEquals?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericlesser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericLesser?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericadd-numericsubtract-numericmultiply" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericAdd / numericSubtract / numericMultiply
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericdivide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericDivide
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericnegate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericNegate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integerremainder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        integerRemainder
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integershiftleft-integershiftright" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        integerShiftLeft / integerShiftRight
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integerbitwiseand-or-xor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        integerBitwiseAnd / Or / Xor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integerbitwisenot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        integerBitwiseNot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericconvert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericConvert
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="numericConvert">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integer-integer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integer → Integer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#float-float" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Float → Float
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integer-float" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integer → Float
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#float-integer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Float → Integer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checked-integer-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checked Integer Operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pointers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pointer Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../atomic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Atomic Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../introspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compiler Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#boolnot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        boolNot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericequals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericEquals?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericlesser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericLesser?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericadd-numericsubtract-numericmultiply" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericAdd / numericSubtract / numericMultiply
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericdivide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericDivide
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericnegate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericNegate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integerremainder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        integerRemainder
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integershiftleft-integershiftright" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        integerShiftLeft / integerShiftRight
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integerbitwiseand-or-xor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        integerBitwiseAnd / Or / Xor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integerbitwisenot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        integerBitwiseNot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#numericconvert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        numericConvert
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="numericConvert">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integer-integer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integer → Integer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#float-float" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Float → Float
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integer-float" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integer → Float
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#float-integer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Float → Integer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checked-integer-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checked Integer Operations
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="numeric-operations">Numeric Operations</h1>
+<p>Arithmetic, comparison, bitwise, and conversion primitives for <a href="../types/#bool"><code>Bool</code></a>, <a href="../types/#integer-types">integer</a>, <a href="../types/#floating-point-types">floating-point</a>, and <a href="../types/#imaginary-and-complex-types">imaginary</a> types.</p>
+<p>Binary numeric primitives require operands of matching types. Heterogeneous-type conversion is left to the library. Complex math is also library-provided. None of these primitives may be overloaded.</p>
+<h2 id="boolnot"><code>boolNot</code></h2>
+<pre class="highlight"><code class="language-ceramic">boolNot(x:Bool) : Bool;</code></pre>
+<p>Returns the complement of <code>x</code>. Equivalent to the <code>not</code> operator.</p>
+<h2 id="numericequals"><code>numericEquals?</code></h2>
+<pre class="highlight"><code class="language-ceramic">[T | Numeric?(T)]
+numericEquals?(a:T, b:T) : Bool;</code></pre>
+<p>Numeric equality.</p>
+<ul>
+<li>Integer: LLVM <code>icmp eq</code>.</li>
+<li>Floating-point: LLVM <code>fcmp ueq</code> (IEEE 754 unordered). <code>+0.0 == -0.0</code>. Any comparison with NaN is false.</li>
+</ul>
+<h2 id="numericlesser"><code>numericLesser?</code></h2>
+<pre class="highlight"><code class="language-ceramic">[T | Numeric?(T)]
+numericLesser?(a:T, b:T) : Bool;</code></pre>
+<p><code>true</code> if <code>a &lt; b</code>.</p>
+<ul>
+<li>Signed integer: LLVM <code>icmp slt</code>.</li>
+<li>Unsigned integer: LLVM <code>icmp ult</code>.</li>
+<li>Floating-point: LLVM <code>fcmp ult</code> (IEEE 754 unordered). <code>-0.0 &lt; +0.0</code> is false. NaN comparisons are false.</li>
+</ul>
+<p><code>__primitives__</code> does not expose the full set of FP comparisons. The library implements ordered and unordered FP comparison via inline LLVM. These primitives are only used during compile-time evaluation, which cannot run inline LLVM.</p>
+<h2 id="numericadd-numericsubtract-numericmultiply"><code>numericAdd</code> / <code>numericSubtract</code> / <code>numericMultiply</code></h2>
+<pre class="highlight"><code class="language-ceramic">[T | Numeric?(T)]
+numericAdd(a:T, b:T) : T;
+numericSubtract(a:T, b:T) : T;
+numericMultiply(a:T, b:T) : T;</code></pre>
+<p>Standard arithmetic. Integer overflow wraps (two's-complement). Integer ops lower to <code>add</code>, <code>sub</code>, <code>mul</code>. Floating-point ops lower to <code>fadd</code>, <code>fsub</code>, <code>fmul</code>.</p>
+<h2 id="numericdivide"><code>numericDivide</code></h2>
+<pre class="highlight"><code class="language-ceramic">[T | Numeric?(T)]
+numericDivide(a:T, b:T) : T;</code></pre>
+<p>Integer division truncates toward zero. Integer division by zero is <strong>undefined</strong>, as is signed overflow (e.g. <code>-0x8000_0000 / -1</code>). Floating-point division follows IEEE 754.</p>
+<ul>
+<li>Signed: <code>sdiv</code>. Unsigned: <code>udiv</code>. Floating-point: <code>fdiv</code>.</li>
+</ul>
+<h2 id="numericnegate"><code>numericNegate</code></h2>
+<pre class="highlight"><code class="language-ceramic">[T | Numeric?(T)]
+numericNegate(a:T) : T;</code></pre>
+<p>Negation.</p>
+<ul>
+<li>Integer: behaves as two's-complement subtraction from zero (LLVM <code>sub 0, %a</code>). Unsigned negation gives the two's complement. Signed overflow (negating <code>-0x8000_0000</code>) gives the original value.</li>
+<li>Floating-point: LLVM <code>fsub -0.0, %a</code>. Negating a zero yields the other zero. Negating a NaN yields an unspecified other NaN.</li>
+</ul>
+<h2 id="integerremainder"><code>integerRemainder</code></h2>
+<pre class="highlight"><code class="language-ceramic">[T | Integer?(T)]
+integerRemainder(a:T, b:T) : T;</code></pre>
+<p>Remainder of <code>a / b</code>. For signed types, a nonzero remainder takes the sign of <code>a</code>. Division by zero and signed overflow are undefined (LLVM defines the remainder of overflowing division as undefined as well).</p>
+<ul>
+<li>Signed: <code>srem</code>. Unsigned: <code>urem</code>.</li>
+</ul>
+<h2 id="integershiftleft-integershiftright"><code>integerShiftLeft</code> / <code>integerShiftRight</code></h2>
+<pre class="highlight"><code class="language-ceramic">[T | Integer?(T)]
+integerShiftLeft(a:T, b:T) : T;
+integerShiftRight(a:T, b:T) : T;</code></pre>
+<p>Shift <code>a</code> by <code>b</code> bits. Undefined if <code>b</code> is negative or <code>&gt;= bitwidth(T)</code>.</p>
+<ul>
+<li><code>integerShiftLeft</code> → LLVM <code>shl</code>. Overflowed bits discarded.</li>
+<li><code>integerShiftRight</code> → arithmetic shift (<code>ashr</code>) for signed types, logical (<code>lshr</code>) for unsigned.</li>
+</ul>
+<h2 id="integerbitwiseand-or-xor"><code>integerBitwiseAnd</code> / <code>Or</code> / <code>Xor</code></h2>
+<pre class="highlight"><code class="language-ceramic">[T | Integer?(T)]
+integerBitwiseAnd(a:T, b:T) : T;
+integerBitwiseOr(a:T, b:T)  : T;
+integerBitwiseXor(a:T, b:T) : T;</code></pre>
+<p>Bitwise AND, OR, XOR. Lower to LLVM <code>and</code>, <code>or</code>, <code>xor</code>.</p>
+<h2 id="integerbitwisenot"><code>integerBitwiseNot</code></h2>
+<pre class="highlight"><code class="language-ceramic">[T | Integer?(T)]
+integerBitwiseNot(a:T) : T;</code></pre>
+<p>Bitwise complement. Lowers to LLVM <code>xor %T %a, -1</code>.</p>
+<h2 id="numericconvert"><code>numericConvert</code></h2>
+<pre class="highlight"><code class="language-ceramic">[T, U | Numeric?(T) and Numeric?(U)]
+numericConvert(#T, a:U) : T;</code></pre>
+<p>Converts <code>a</code> to type <code>T</code> while preserving its numeric value. If <code>T == U</code>, the value is copied. Otherwise, the conversion depends on the kinds of <code>T</code> and <code>U</code>:</p>
+<h3 id="integer-integer">Integer → Integer</h3>
+<table>
+<thead>
+<tr>
+<th>Direction</th>
+<th>LLVM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Narrowing</td>
+<td><code>trunc</code> (bitwise truncation)</td>
+</tr>
+<tr>
+<td>Widening to signed</td>
+<td><code>sext</code> (sign-extend)</td>
+</tr>
+<tr>
+<td>Widening to unsigned</td>
+<td><code>zext</code> (zero-extend)</td>
+</tr>
+<tr>
+<td>Same width, sign change</td>
+<td><code>bitcast</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="float-float">Float → Float</h3>
+<ul>
+<li>Narrowing: <code>fptrunc</code>. Overflowing truncation is undefined.</li>
+<li>Widening: <code>fpext</code>.</li>
+</ul>
+<h3 id="integer-float">Integer → Float</h3>
+<ul>
+<li>Signed: <code>sitofp</code>. Unsigned: <code>uitofp</code>.</li>
+<li>Overflowing conversion is undefined.</li>
+</ul>
+<h3 id="float-integer">Float → Integer</h3>
+<ul>
+<li>Signed: <code>fptosi</code>. Unsigned: <code>fptoui</code>.</li>
+<li>Overflowing conversion is undefined.</li>
+</ul>
+<h2 id="checked-integer-operations">Checked Integer Operations</h2>
+<p>Variants of the integer primitives that also return a <code>Bool</code> overflow flag. On overflow, the numeric result is <strong>undefined</strong> and the flag is <code>true</code>. Otherwise the result matches the unchecked version and the flag is <code>false</code>. None may be overloaded.</p>
+<pre class="highlight"><code class="language-ceramic">[T | Integer?(T)]
+integerAddChecked(a:T, b:T)      : T, Bool;
+integerSubtractChecked(a:T, b:T) : T, Bool;
+integerMultiplyChecked(a:T, b:T) : T, Bool;
+integerDivideChecked(a:T, b:T)   : T, Bool;
+integerNegateChecked(a:T)        : T, Bool;
+integerRemainderChecked(a:T, b:T): T, Bool;
+integerShiftLeftChecked(a:T, b:T): T, Bool;
+
+[T, U | Integer?(T) and Integer?(U)]
+integerConvertChecked(#T, a:U) : T, Bool;</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../js/ceramic-highlight.js" type="module"></script>
+      
+    
+  </body>
+</html>
