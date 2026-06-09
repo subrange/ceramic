@@ -38,7 +38,7 @@
         "storage.modifier.ceramic",
         "storage.modifier.attribute.ceramic"
       ],
-      "settings": { "foreground": "#1a5fb4", "fontStyle": "bold" }
+      "settings": { "foreground": "#165ece", "fontStyle": "bold" }
     }
   ]
 }
