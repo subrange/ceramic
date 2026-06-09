@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 80" width="460" height="80">
   <svg x="4" y="4" width="72" height="72" viewBox="0 0 32 32">
     <path d="M 12 4 C 12 4, 4 7, 4 17 C 4 25, 8 29, 16 29 C 24 29, 28 25, 28 17 C 28 7, 20 4, 20 4 Z"
-      fill="#9aa0a6" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+      fill="#9aa0a6" stroke="#4f565c" stroke-width="2" stroke-linejoin="round"/>
     <ellipse cx="16" cy="4" rx="4" ry="2"
-      fill="#9aa0a6" stroke="#ffffff" stroke-width="2"/>
+      fill="#9aa0a6" stroke="#4f565c" stroke-width="2"/>
   </svg>
   <text
     x="86"
@@ -11,6 +11,6 @@
     font-family="'Helvetica Neue', 'Helvetica', 'Arial', sans-serif"
     font-weight="700"
     font-size="64"
-    fill="#ffffff"
+    fill="#4f565c"
   >Ceramic</text>
 </svg>

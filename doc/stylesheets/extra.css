@@ -1,15 +1,15 @@
 [data-md-color-scheme="default"] {
-  --md-primary-fg-color: #c2571a;
-  --md-primary-fg-color--light: #d4663a;
-  --md-primary-fg-color--dark: #a8471a;
-  --md-accent-fg-color: #c2571a;
-  --md-typeset-a-color: #c2571a;
+  --md-primary-fg-color: #4f565c;
+  --md-primary-fg-color--light: #5e656c;
+  --md-primary-fg-color--dark: #3f454a;
+  --md-accent-fg-color: #1657c4;
+  --md-typeset-a-color: #1657c4;
 }
 
 [data-md-color-scheme="default"] .md-typeset a,
 [data-md-color-scheme="default"] .md-nav__link--active,
 [data-md-color-scheme="default"] .md-nav__link--active code {
-  color: #c2571a;
+  color: #1657c4;
 }
 
 .md-typeset pre.shiki {
