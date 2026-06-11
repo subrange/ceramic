@@ -293,16 +293,6 @@ static string stripTrailingNewline(llvm::Twine const &msg) {
     return s;
 }
 
-static Severity severityFromKind(llvm::StringRef kind) {
-    if (kind == "warning")
-        return Severity::Warning;
-    if (kind == "note")
-        return Severity::Note;
-    if (kind == "help")
-        return Severity::Help;
-    return Severity::Error;
-}
-
 static string compileFrameHeadline(CompileContextEntry const &frame) {
     string buf;
     llvm::raw_string_ostream sout(buf);
@@ -346,24 +336,87 @@ static void appendContextNotes(Diagnostic &diag, Location primaryLocation) {
     }
 }
 
-void displayError(llvm::Twine const &msg, llvm::StringRef kind) {
-    Location location = topLocation();
+static Span currentSpan() {
     Span span = topSpan();
     if (!span.ok())
-        span = Span(location);
-    Diagnostic diag(severityFromKind(kind), stripTrailingNewline(msg), span);
-    appendContextNotes(diag, location);
+        span = Span(topLocation());
+    return span;
+}
+
+DiagBuilder::DiagBuilder(llvm::Twine const &headline, Severity severity) {
+    diag.severity = severity;
+    diag.headline = stripTrailingNewline(headline);
+}
+
+DiagBuilder &DiagBuilder::at(Span span) {
+    diag.primary = span;
+    explicitSpan = true;
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::at(Location const &location) {
+    at(Span(location));
+    skipLocation = location;
+    explicitSkip = true;
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::label(llvm::Twine const &text) {
+    diag.primaryLabel = text.str();
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::note(Span span, llvm::Twine const &text) {
+    diag.notes.emplace_back(Severity::Note, text.str(), span);
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::note(Location const &location,
+                               llvm::Twine const &text) {
+    return note(Span(location), text);
+}
+
+DiagBuilder &DiagBuilder::detail(string text) {
+    diag.detail = std::move(text);
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::help(llvm::Twine const &text) {
+    diag.suggestion = text.str();
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::noContextNotes() {
+    contextNotes = false;
+    return *this;
+}
+
+void DiagBuilder::finish() {
+    // resolve fallbacks late so location pushes made between construction
+    // and emit still count
+    if (!explicitSpan)
+        diag.primary = currentSpan();
+    if (contextNotes)
+        appendContextNotes(diag, explicitSkip ? skipLocation : topLocation());
     displayDiagnostic(diag);
 }
 
-void warning(llvm::Twine const &msg) { displayError(msg, "warning"); }
+void DiagBuilder::display() { finish(); }
 
-void note(llvm::Twine const &msg) { displayError(msg, "note"); }
-
-void error(llvm::Twine const &msg) {
-    displayError(msg, "error");
+void DiagBuilder::emit() {
+    finish();
     throw CompilerError();
 }
+
+void warning(llvm::Twine const &msg) {
+    DiagBuilder(msg, Severity::Warning).display();
+}
+
+void note(llvm::Twine const &msg) {
+    DiagBuilder(msg, Severity::Note).display();
+}
+
+void error(llvm::Twine const &msg) { DiagBuilder(msg).emit(); }
 
 void error(Location const &location, llvm::Twine const &msg) {
     if (location.ok())
