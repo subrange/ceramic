@@ -190,51 +190,6 @@ void getLineCol(Location const &location, unsigned &line, unsigned &column,
     computeLineCol(location, line, column, tabColumn);
 }
 
-static void splitLines(const SourcePtr &source, vector<string> &lines) {
-    lines.clear();
-    if (!source || source->data() == source->endData()) {
-        return;
-    }
-    const std::string_view sourceView(source->data(),
-                                      source->endData() - source->data());
-    lines.emplace_back();
-
-    for (const char c : sourceView) {
-        lines.back().push_back(c);
-        if (c == '\n')
-            lines.emplace_back();
-    }
-}
-
-static bool endsWithNewline(llvm::StringRef s) {
-    if (s.size() == 0)
-        return false;
-    return s[s.size() - 1] == '\n';
-}
-
-static void displayLocation(Location const &location, unsigned &line,
-                            unsigned &column) {
-    unsigned tabColumn;
-    getLineCol(location, line, column, tabColumn);
-    vector<string> lines;
-    splitLines(location.source, lines);
-    llvm::errs() << "###############################\n";
-    unsigned i = (line < 2) ? 0 : line - 2;
-    for (; i <= line + 2; ++i) {
-        if (i >= lines.size())
-            continue;
-        llvm::errs() << lines[i];
-        if (!endsWithNewline(lines[i]))
-            llvm::errs() << "\n";
-        if (i == line) {
-            for (unsigned j = 0; j < tabColumn; ++j)
-                llvm::errs() << "-";
-            llvm::errs() << "^\n";
-        }
-    }
-    llvm::errs() << "###############################\n";
-}
-
 // This has to use stdio because it needs to be usable from the debugger
 // and cerr or errs may be destroyed if there's a bug in global dtors
 extern "C" void displayCompileContext() {
