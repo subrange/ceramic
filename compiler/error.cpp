@@ -623,36 +623,25 @@ void argumentInvalidStaticObjectError(const unsigned index,
 }
 
 // the primary span is the use site, since the declaration itself is fine
-static CERAMIC_NORETURN void emitUnboundPatternVar(Diagnostic &diag,
+static CERAMIC_NORETURN void emitUnboundPatternVar(DiagBuilder &bld,
                                                    IdentifierPtr const &name,
                                                    llvm::StringRef declLabel) {
-    if (name->location.ok()) {
-        string note;
-        llvm::raw_string_ostream nout(note);
-        nout << "'" << name->str << "' " << declLabel;
-        diag.notes.emplace_back(Severity::Note, nout.str(),
-                                Span(name->location));
-    }
-    appendContextNotes(diag, topLocation());
-    displayDiagnostic(diag);
-    throw CompilerError();
+    if (name->location.ok())
+        bld.note(name->location, "'" + name->str + "' " + declLabel);
+    bld.emit();
 }
 
 static Span useSiteSpan(IdentifierPtr const &name) {
-    Span span = topSpan();
-    if (!span.ok())
-        span = Span(topLocation());
+    Span span = currentSpan();
     if (!span.ok())
         span = Span(name->location);
     return span;
 }
 
 void unboundPatternVarError(IdentifierPtr const &name) {
-    string headline;
-    llvm::raw_string_ostream sout(headline);
-    sout << "pattern variable '" << name->str << "' cannot be inferred";
-    Diagnostic diag(Severity::Error, sout.str(), useSiteSpan(name));
-    emitUnboundPatternVar(diag, name, "declared here");
+    DiagBuilder bld("pattern variable '" + name->str + "' cannot be inferred");
+    bld.at(useSiteSpan(name));
+    emitUnboundPatternVar(bld, name, "declared here");
 }
 
 void unboundPatternVarError(IdentifierPtr const &name, ObjectPtr callable,
@@ -661,13 +650,8 @@ void unboundPatternVarError(IdentifierPtr const &name, ObjectPtr callable,
         unboundPatternVarError(name);
 
     RecordDecl *record = (RecordDecl *)callable.ptr();
-    string headline;
-    llvm::raw_string_ostream sout(headline);
-    sout << "cannot infer record parameter '" << name->str << "' in call to '"
-         << record->name->str << "'";
-    Diagnostic diag(Severity::Error, sout.str(), useSiteSpan(name));
-
-    llvm::raw_string_ostream hout(diag.suggestion);
+    string help;
+    llvm::raw_string_ostream hout(help);
     hout << "write the parameters explicitly: '" << record->name->str << "[";
     for (size_t i = 0; i < record->params.size(); ++i) {
         if (i > 0)
@@ -680,9 +664,11 @@ void unboundPatternVarError(IdentifierPtr const &name, ObjectPtr callable,
         hout << ".." << record->varParam->str;
     }
     hout << "](...)'";
-    hout.flush();
 
-    emitUnboundPatternVar(diag, name, "is not determined by the field types");
+    DiagBuilder bld("cannot infer record parameter '" + name->str +
+                    "' in call to '" + record->name->str + "'");
+    bld.at(useSiteSpan(name)).help(hout.str());
+    emitUnboundPatternVar(bld, name, "is not determined by the field types");
 }
 
 void matchBindingError(MatchResultPtr const &result) {
