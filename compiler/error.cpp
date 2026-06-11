@@ -944,37 +944,21 @@ void matchFailureError(MatchFailureError const &err) {
             sout.flush();
         }
         LocationContext lc(blame);
-        Location location = topLocation();
-        Span span = topSpan();
-        if (!span.ok())
-            span = Span(location);
-        Diagnostic diag(Severity::Error,
-                        span.ok() ? "type mismatch" : expectedFound, span);
+        Span span = currentSpan();
+        DiagBuilder bld(span.ok() ? "type mismatch" : expectedFound.c_str());
+        bld.at(span);
         if (span.ok())
-            diag.primaryLabel = expectedFound;
+            bld.label(expectedFound);
         if (nearCandidate->location.ok() &&
             nearCandidate->location.source.ptr())
-            diag.notes.emplace_back(Severity::Note, "defined here",
-                                    Span(nearCandidate->location));
-        appendContextNotes(diag, location);
-        displayDiagnostic(diag);
-        throw CompilerError();
+            bld.note(nearCandidate->location, "defined here");
+        bld.emit();
     }
 
     string detail = noMatch ? buildMatchDetail(err, name) : string();
 
-    {
-        LocationContext lc(blame);
-        Location location = topLocation();
-        Span span = topSpan();
-        if (!span.ok())
-            span = Span(location);
-        Diagnostic diag(Severity::Error, headline, span);
-        diag.detail = detail;
-        appendContextNotes(diag, location);
-        displayDiagnostic(diag);
-    }
-    throw CompilerError();
+    LocationContext lc(blame);
+    DiagBuilder(headline).detail(std::move(detail)).emit();
 }
 
 void matchFailureLog(MatchFailureError const &err) {
