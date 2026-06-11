@@ -190,51 +190,6 @@ void getLineCol(Location const &location, unsigned &line, unsigned &column,
     computeLineCol(location, line, column, tabColumn);
 }
 
-static void splitLines(const SourcePtr &source, vector<string> &lines) {
-    lines.clear();
-    if (!source || source->data() == source->endData()) {
-        return;
-    }
-    const std::string_view sourceView(source->data(),
-                                      source->endData() - source->data());
-    lines.emplace_back();
-
-    for (const char c : sourceView) {
-        lines.back().push_back(c);
-        if (c == '\n')
-            lines.emplace_back();
-    }
-}
-
-static bool endsWithNewline(llvm::StringRef s) {
-    if (s.size() == 0)
-        return false;
-    return s[s.size() - 1] == '\n';
-}
-
-static void displayLocation(Location const &location, unsigned &line,
-                            unsigned &column) {
-    unsigned tabColumn;
-    getLineCol(location, line, column, tabColumn);
-    vector<string> lines;
-    splitLines(location.source, lines);
-    llvm::errs() << "###############################\n";
-    unsigned i = (line < 2) ? 0 : line - 2;
-    for (; i <= line + 2; ++i) {
-        if (i >= lines.size())
-            continue;
-        llvm::errs() << lines[i];
-        if (!endsWithNewline(lines[i]))
-            llvm::errs() << "\n";
-        if (i == line) {
-            for (unsigned j = 0; j < tabColumn; ++j)
-                llvm::errs() << "-";
-            llvm::errs() << "^\n";
-        }
-    }
-    llvm::errs() << "###############################\n";
-}
-
 // This has to use stdio because it needs to be usable from the debugger
 // and cerr or errs may be destroyed if there's a bug in global dtors
 extern "C" void displayCompileContext() {
@@ -293,16 +248,6 @@ static string stripTrailingNewline(llvm::Twine const &msg) {
     return s;
 }
 
-static Severity severityFromKind(llvm::StringRef kind) {
-    if (kind == "warning")
-        return Severity::Warning;
-    if (kind == "note")
-        return Severity::Note;
-    if (kind == "help")
-        return Severity::Help;
-    return Severity::Error;
-}
-
 static string compileFrameHeadline(CompileContextEntry const &frame) {
     string buf;
     llvm::raw_string_ostream sout(buf);
@@ -346,24 +291,87 @@ static void appendContextNotes(Diagnostic &diag, Location primaryLocation) {
     }
 }
 
-void displayError(llvm::Twine const &msg, llvm::StringRef kind) {
-    Location location = topLocation();
+static Span currentSpan() {
     Span span = topSpan();
     if (!span.ok())
-        span = Span(location);
-    Diagnostic diag(severityFromKind(kind), stripTrailingNewline(msg), span);
-    appendContextNotes(diag, location);
+        span = Span(topLocation());
+    return span;
+}
+
+DiagBuilder::DiagBuilder(llvm::Twine const &headline, Severity severity) {
+    diag.severity = severity;
+    diag.headline = stripTrailingNewline(headline);
+}
+
+DiagBuilder &DiagBuilder::at(Span span) {
+    diag.primary = span;
+    explicitSpan = true;
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::at(Location const &location) {
+    at(Span(location));
+    skipLocation = location;
+    explicitSkip = true;
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::label(llvm::Twine const &text) {
+    diag.primaryLabel = text.str();
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::note(Span span, llvm::Twine const &text) {
+    diag.notes.emplace_back(Severity::Note, text.str(), span);
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::note(Location const &location,
+                               llvm::Twine const &text) {
+    return note(Span(location), text);
+}
+
+DiagBuilder &DiagBuilder::detail(string text) {
+    diag.detail = std::move(text);
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::help(llvm::Twine const &text) {
+    diag.suggestion = text.str();
+    return *this;
+}
+
+DiagBuilder &DiagBuilder::noContextNotes() {
+    contextNotes = false;
+    return *this;
+}
+
+void DiagBuilder::finish() {
+    // resolve fallbacks late so location pushes made between construction
+    // and emit still count
+    if (!explicitSpan)
+        diag.primary = currentSpan();
+    if (contextNotes)
+        appendContextNotes(diag, explicitSkip ? skipLocation : topLocation());
     displayDiagnostic(diag);
 }
 
-void warning(llvm::Twine const &msg) { displayError(msg, "warning"); }
+void DiagBuilder::display() { finish(); }
 
-void note(llvm::Twine const &msg) { displayError(msg, "note"); }
-
-void error(llvm::Twine const &msg) {
-    displayError(msg, "error");
+void DiagBuilder::emit() {
+    finish();
     throw CompilerError();
 }
+
+void warning(llvm::Twine const &msg) {
+    DiagBuilder(msg, Severity::Warning).display();
+}
+
+void note(llvm::Twine const &msg) {
+    DiagBuilder(msg, Severity::Note).display();
+}
+
+void error(llvm::Twine const &msg) { DiagBuilder(msg).emit(); }
 
 void error(Location const &location, llvm::Twine const &msg) {
     if (location.ok())
@@ -471,30 +479,24 @@ static ExternalProcedurePtr enclosingExternalProcedure() {
 }
 
 void returnArityError(Statement const *stmt, size_t expected, size_t received) {
-    Span span = stmt != nullptr ? Span(stmt->location) : topSpan();
-    const char *headline = received > expected ? "too many return values"
-                                               : "not enough return values";
-    Diagnostic diag(Severity::Error, headline, span);
-
     string label;
     llvm::raw_string_ostream lout(label);
     lout << "have " << received << " " << valuesStr(received) << ", want "
          << expected;
-    diag.primaryLabel = lout.str();
+
+    DiagBuilder bld(received > expected ? "too many return values"
+                                        : "not enough return values");
+    bld.at(stmt != nullptr ? Span(stmt->location) : topSpan())
+        .label(lout.str())
+        .noContextNotes();
 
     // point at a declaration that explains why no value was expected
     ExternalProcedurePtr proc = enclosingExternalProcedure();
     if (expected == 0 && proc.ptr() != nullptr && !proc->returnType &&
-        proc->name.ptr() != nullptr && proc->location.ok()) {
-        string note;
-        llvm::raw_string_ostream nout(note);
-        nout << "'" << proc->name->str << "' is declared with no return type";
-        diag.notes.emplace_back(Severity::Note, nout.str(),
-                                Span(proc->location));
-    }
-
-    displayDiagnostic(diag);
-    throw CompilerError();
+        proc->name.ptr() != nullptr && proc->location.ok())
+        bld.note(proc->location,
+                 "'" + proc->name->str + "' is declared with no return type");
+    bld.emit();
 }
 
 static string typeErrorMessage(llvm::StringRef expected,
@@ -516,17 +518,12 @@ static string typeErrorMessage(const TypePtr &expectedType,
 // carry the "expected X, found Y" on the caret line when a location is known,
 // otherwise keep it as the headline so it is never lost.
 static CERAMIC_NORETURN void emitTypeError(string const &expectedFound) {
-    Location location = topLocation();
-    Span span = topSpan();
-    if (!span.ok())
-        span = Span(location);
-    Diagnostic diag(Severity::Error,
-                    span.ok() ? "type mismatch" : expectedFound, span);
+    Span span = currentSpan();
+    DiagBuilder bld(span.ok() ? "type mismatch" : expectedFound.c_str());
+    bld.at(span);
     if (span.ok())
-        diag.primaryLabel = expectedFound;
-    appendContextNotes(diag, location);
-    displayDiagnostic(diag);
-    throw CompilerError();
+        bld.label(expectedFound);
+    bld.emit();
 }
 
 void typeError(const llvm::StringRef expected, const TypePtr &receivedType) {
@@ -578,6 +575,55 @@ void argumentInvalidStaticObjectError(const unsigned index,
     llvm::raw_string_ostream sout(buf);
     sout << "invalid static object: " << obj->toString();
     argumentError(index, sout.str());
+}
+
+// the primary span is the use site, since the declaration itself is fine
+static CERAMIC_NORETURN void emitUnboundPatternVar(DiagBuilder &bld,
+                                                   IdentifierPtr const &name,
+                                                   llvm::StringRef declLabel) {
+    if (name->location.ok())
+        bld.note(name->location, "'" + name->str + "' " + declLabel);
+    bld.emit();
+}
+
+static Span useSiteSpan(IdentifierPtr const &name) {
+    Span span = currentSpan();
+    if (!span.ok())
+        span = Span(name->location);
+    return span;
+}
+
+void unboundPatternVarError(IdentifierPtr const &name) {
+    DiagBuilder bld("pattern variable '" + name->str + "' cannot be inferred");
+    bld.at(useSiteSpan(name));
+    emitUnboundPatternVar(bld, name, "declared here");
+}
+
+void unboundPatternVarError(IdentifierPtr const &name, ObjectPtr callable,
+                            OverloadPtr overload) {
+    if (!overload->isBuiltinConstructor || callable->objKind != RECORD_DECL)
+        unboundPatternVarError(name);
+
+    RecordDecl *record = (RecordDecl *)callable.ptr();
+    string help;
+    llvm::raw_string_ostream hout(help);
+    hout << "write the parameters explicitly: '" << record->name->str << "[";
+    for (size_t i = 0; i < record->params.size(); ++i) {
+        if (i > 0)
+            hout << ",";
+        hout << record->params[i]->str;
+    }
+    if (record->varParam.ptr()) {
+        if (!record->params.empty())
+            hout << ",";
+        hout << ".." << record->varParam->str;
+    }
+    hout << "](...)'";
+
+    DiagBuilder bld("cannot infer record parameter '" + name->str +
+                    "' in call to '" + record->name->str + "'");
+    bld.at(useSiteSpan(name)).help(hout.str());
+    emitUnboundPatternVar(bld, name, "is not determined by the field types");
 }
 
 void matchBindingError(MatchResultPtr const &result) {
@@ -853,37 +899,21 @@ void matchFailureError(MatchFailureError const &err) {
             sout.flush();
         }
         LocationContext lc(blame);
-        Location location = topLocation();
-        Span span = topSpan();
-        if (!span.ok())
-            span = Span(location);
-        Diagnostic diag(Severity::Error,
-                        span.ok() ? "type mismatch" : expectedFound, span);
+        Span span = currentSpan();
+        DiagBuilder bld(span.ok() ? "type mismatch" : expectedFound.c_str());
+        bld.at(span);
         if (span.ok())
-            diag.primaryLabel = expectedFound;
+            bld.label(expectedFound);
         if (nearCandidate->location.ok() &&
             nearCandidate->location.source.ptr())
-            diag.notes.emplace_back(Severity::Note, "defined here",
-                                    Span(nearCandidate->location));
-        appendContextNotes(diag, location);
-        displayDiagnostic(diag);
-        throw CompilerError();
+            bld.note(nearCandidate->location, "defined here");
+        bld.emit();
     }
 
     string detail = noMatch ? buildMatchDetail(err, name) : string();
 
-    {
-        LocationContext lc(blame);
-        Location location = topLocation();
-        Span span = topSpan();
-        if (!span.ok())
-            span = Span(location);
-        Diagnostic diag(Severity::Error, headline, span);
-        diag.detail = detail;
-        appendContextNotes(diag, location);
-        displayDiagnostic(diag);
-    }
-    throw CompilerError();
+    LocationContext lc(blame);
+    DiagBuilder(headline).detail(std::move(detail)).emit();
 }
 
 void matchFailureLog(MatchFailureError const &err) {

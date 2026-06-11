@@ -139,12 +139,12 @@ MatchResultPtr matchInvoke(OverloadPtr overload, ObjectPtr callable,
         if (pvars[i].isMulti) {
             MultiStaticPtr ms = derefDeep(overload->multiCells[i].ptr());
             if (!ms)
-                error(pvars[i].name, "unbound pattern variable");
+                unboundPatternVarError(pvars[i].name, callable, overload);
             addLocal(staticEnv, pvars[i].name, ms.ptr());
         } else {
             ObjectPtr v = derefDeep(overload->cells[i].ptr());
             if (!v)
-                error(pvars[i].name, "unbound pattern variable");
+                unboundPatternVarError(pvars[i].name, callable, overload);
             addLocal(staticEnv, pvars[i].name, v.ptr());
         }
     }

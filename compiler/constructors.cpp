@@ -132,6 +132,7 @@ void initBuiltinConstructor(RecordDeclPtr x) {
 
     OverloadPtr defaultOverload =
         new Overload(x->module, recName, code, true, IGNORE);
+    defaultOverload->isBuiltinConstructor = true;
     defaultOverload->location = x->location;
     defaultOverload->env = x->env;
     x->overloads.push_back(defaultOverload);

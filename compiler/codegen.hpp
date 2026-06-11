@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ceramic.hpp"
+#include "error.hpp"
 #include "types.hpp"
 
 namespace ceramic {

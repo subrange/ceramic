@@ -279,7 +279,7 @@ void evaluatePredicate(llvm::ArrayRef<PatternVar> patternVars,
                        ExprPtr predicate, EnvPtr env) {
     for (size_t i = 0; i < patternVars.size(); ++i) {
         if (lookupEnv(env, patternVars[i].name) == nullptr)
-            error(patternVars[i].name, "unbound pattern variable");
+            unboundPatternVarError(patternVars[i].name);
     }
     if (predicate != nullptr) {
         if (!evaluateBool(predicate, env))

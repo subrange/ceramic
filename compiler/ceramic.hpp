@@ -604,113 +604,6 @@ struct Span {
 };
 
 //
-// error module
-//
-
-struct CompileContextEntry {
-    vector<ObjectPtr> params;
-    vector<unsigned> dispatchIndices;
-
-    Location location;
-
-    ObjectPtr callable;
-    OverloadPtr overload;
-
-    bool hasParams : 1;
-
-    CompileContextEntry(ObjectPtr callable)
-        : callable(callable), hasParams(false) {}
-
-    CompileContextEntry(ObjectPtr callable, llvm::ArrayRef<ObjectPtr> params)
-        : params(params), callable(callable), hasParams(true) {}
-
-    CompileContextEntry(ObjectPtr callable, llvm::ArrayRef<ObjectPtr> params,
-                        llvm::ArrayRef<unsigned> dispatchIndices)
-        : params(params), dispatchIndices(dispatchIndices), callable(callable),
-          hasParams(true) {}
-};
-
-void pushCompileContext(const ObjectPtr &obj);
-
-void pushCompileContext(const ObjectPtr &obj, llvm::ArrayRef<ObjectPtr> params);
-
-void pushCompileContext(ObjectPtr obj, llvm::ArrayRef<ObjectPtr> params,
-                        llvm::ArrayRef<unsigned> dispatchIndices);
-
-void popCompileContext();
-
-void setCurrentOverload(OverloadPtr overload);
-
-vector<CompileContextEntry> getCompileContext();
-
-void setCompileContext(llvm::ArrayRef<CompileContextEntry> x);
-
-struct PVData;
-
-struct CompileContextPusher {
-    CompileContextPusher(const ObjectPtr &obj) { pushCompileContext(obj); }
-
-    CompileContextPusher(const ObjectPtr &obj,
-                         llvm::ArrayRef<ObjectPtr> params) {
-        pushCompileContext(obj, params);
-    }
-
-    CompileContextPusher(
-        ObjectPtr obj, llvm::ArrayRef<PVData> params,
-        llvm::ArrayRef<unsigned> dispatchIndices = llvm::ArrayRef<unsigned>());
-
-    ~CompileContextPusher() { popCompileContext(); }
-};
-
-void pushLocation(Location const &location);
-
-void popLocation();
-
-Location topLocation();
-
-struct LocationContext {
-    Location loc;
-
-    LocationContext(Location const &loc) : loc(loc) {
-        if (loc.ok())
-            pushLocation(loc);
-    }
-
-    ~LocationContext() {
-        if (loc.ok())
-            popLocation();
-    }
-
-  private:
-    LocationContext(const LocationContext &) {}
-
-    void operator=(const LocationContext &) {}
-};
-
-void getLineCol(Location const &location, unsigned &line, unsigned &column,
-                unsigned &tabColumn);
-
-llvm::DIFile *getDebugLineCol(Location const &location, unsigned &line,
-                              unsigned &column);
-
-void printFileLineCol(llvm::raw_ostream &out, Location const &location);
-
-void invalidStaticObjectError(const ObjectPtr &obj);
-
-void argumentInvalidStaticObjectError(unsigned index, const ObjectPtr &obj);
-
-struct DebugPrinter {
-    static int indent;
-    const ObjectPtr obj;
-
-    DebugPrinter(ObjectPtr obj);
-
-    ~DebugPrinter();
-};
-
-extern "C" void displayCompileContext();
-
-//
 // AST
 //
 
@@ -1706,6 +1599,7 @@ struct Overload : public TopLevelItem {
     int patternsInitializedState : 2 = 0; // 0:notinit, -1:initing, +1:inited
     bool callByName : 1 = false;
     bool nameIsPattern : 1 = false;
+    bool isBuiltinConstructor : 1 = false;
     bool hasAsConversion : 1 = false;
     bool isDefault : 1 = false;
     bool isDiagnosticTransparent : 1 = false;

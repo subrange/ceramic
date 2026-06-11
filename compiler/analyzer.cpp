@@ -2563,13 +2563,13 @@ static EnvPtr analyzeBinding(BindingPtr x, EnvPtr env) {
             if (pvars[i].isMulti) {
                 MultiStaticPtr ms = derefDeep(multiCells[i].ptr());
                 if (!ms)
-                    error(pvars[i].name, "unbound pattern variable");
+                    unboundPatternVarError(pvars[i].name);
                 addLocal(staticEnv, pvars[i].name, ms.ptr());
                 x->patternTypes.push_back(ms.ptr());
             } else {
                 ObjectPtr v = derefDeep(cells[i].ptr());
                 if (!v)
-                    error(pvars[i].name, "unbound pattern variable");
+                    unboundPatternVarError(pvars[i].name);
                 addLocal(staticEnv, pvars[i].name, v.ptr());
                 x->patternTypes.push_back(v.ptr());
             }
