@@ -1,2 +1,0 @@
-IBOutlet(forward x) = forward x;
-IBAction(forward x) = forward x;

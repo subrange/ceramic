@@ -1,1 +1,0 @@
-#include <QuartzCore/QuartzCore.h>

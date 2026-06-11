@@ -1,3 +1,0 @@
-import cocoa.objc.*;
-
-record FooClass = newClass(Void, InstanceVars(), ClassMethods(), InstanceMethods());
