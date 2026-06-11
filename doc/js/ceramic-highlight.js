@@ -43,9 +43,13 @@ const apply = () => {
       const temp = document.createElement("div");
       temp.innerHTML = html;
       const newPre = temp.querySelector("pre");
-      newPre.dataset.shikiTheme = themeLight.name;
-      newPre.dataset.shikiRaw = raw;
-      pre.replaceWith(newPre);
+
+      pre.classList.add(...newPre.classList);
+      const style = newPre.getAttribute("style");
+      if (style) pre.setAttribute("style", style);
+      pre.dataset.shikiTheme = themeLight.name;
+      pre.dataset.shikiRaw = raw;
+      code.replaceWith(newPre.querySelector("code"));
     }
   });
 };
