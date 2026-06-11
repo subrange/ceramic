@@ -814,12 +814,12 @@ static void initializeVariantType(const VariantTypePtr &t) {
             if (pvars[j].isMulti) {
                 MultiStaticPtr ms = derefDeep(multiCells[j].ptr());
                 if (!ms)
-                    error(pvars[j].name, "unbound pattern variable");
+                    unboundPatternVarError(pvars[j].name);
                 addLocal(staticEnv, pvars[j].name, ms.ptr());
             } else {
                 ObjectPtr v = derefDeep(cells[j].ptr());
                 if (!v)
-                    error(pvars[j].name, "unbound pattern variable");
+                    unboundPatternVarError(pvars[j].name);
                 addLocal(staticEnv, pvars[j].name, v.ptr());
             }
         }

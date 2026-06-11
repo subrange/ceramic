@@ -122,6 +122,10 @@ void argumentIndexRangeError(unsigned index, llvm::StringRef kind, size_t value,
 extern bool shouldPrintFullMatchErrors;
 extern set<pair<string, string>> logMatchSymbols;
 
+void unboundPatternVarError(IdentifierPtr const &name) CERAMIC_NORETURN;
+void unboundPatternVarError(IdentifierPtr const &name, ObjectPtr callable,
+                            OverloadPtr overload) CERAMIC_NORETURN;
+
 void matchBindingError(MatchResultPtr const &result) CERAMIC_NORETURN;
 void matchFailureLog(MatchFailureError const &err);
 void matchFailureError(MatchFailureError const &err) CERAMIC_NORETURN;

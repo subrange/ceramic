@@ -1706,6 +1706,7 @@ struct Overload : public TopLevelItem {
     int patternsInitializedState : 2 = 0; // 0:notinit, -1:initing, +1:inited
     bool callByName : 1 = false;
     bool nameIsPattern : 1 = false;
+    bool isBuiltinConstructor : 1 = false;
     bool hasAsConversion : 1 = false;
     bool isDefault : 1 = false;
     bool isDiagnosticTransparent : 1 = false;
