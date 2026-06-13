@@ -144,6 +144,10 @@ class DiagBuilder {
     // OPTIONAL. suppress the automatic "while compiling ..." notes
     DiagBuilder &noContextNotes();
 
+    // OPTIONAL. drop the innermost "while compiling" note, for errors
+    // whose headline already names that call
+    DiagBuilder &skipInnermostContextNote();
+
     // REQUIRED terminator. renders, then aborts compilation
     void emit() CERAMIC_NORETURN;
     // REQUIRED terminator for warnings and notes. renders without throwing
@@ -155,6 +159,7 @@ class DiagBuilder {
     bool explicitSpan = false;
     bool explicitSkip = false;
     bool contextNotes = true;
+    bool innermostContextNote = true;
 
     void finish();
 };
