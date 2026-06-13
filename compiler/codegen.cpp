@@ -1626,12 +1626,28 @@ void codegenCompileTimeValue(EValuePtr ev, CodegenContext *ctx,
 // codegenSimpleConstant
 //
 
+template <typename T> llvm::Value *_wideConstant(EValuePtr ev) {
+    constexpr unsigned words = sizeof(T) / sizeof(uint64_t);
+    uint64_t bits[words];
+    memcpy(bits, ev->addr, sizeof(T));
+    return llvm::ConstantInt::get(
+        llvmContext,
+        llvm::APInt(sizeof(T) * 8, llvm::ArrayRef<uint64_t>(bits, words)));
+}
+
 template <typename T> llvm::Value *_sintConstant(EValuePtr ev) {
-    return llvm::ConstantInt::getSigned(llvmType(ev->type), *((T *)ev->addr));
+    if constexpr (sizeof(T) > sizeof(uint64_t))
+        return _wideConstant<T>(ev);
+    else
+        return llvm::ConstantInt::getSigned(llvmType(ev->type),
+                                            *((T *)ev->addr));
 }
 
 template <typename T> llvm::Value *_uintConstant(EValuePtr ev) {
-    return llvm::ConstantInt::get(llvmType(ev->type), *((T *)ev->addr));
+    if constexpr (sizeof(T) > sizeof(uint64_t))
+        return _wideConstant<T>(ev);
+    else
+        return llvm::ConstantInt::get(llvmType(ev->type), *((T *)ev->addr));
 }
 
 llvm::Value *codegenSimpleConstant(EValuePtr ev) {

@@ -157,6 +157,16 @@ static bool imagTypeSuffix(llvm::StringRef suffix, TypePtr defaultType,
            (suffix == "j" && defaultType == testDefaultType);
 }
 
+static bool parseInt128Magnitude(llvm::StringRef s, int base, bool &negative,
+                                 llvm::APInt &mag) {
+    negative = s.consume_front("-");
+    if (!negative)
+        s.consume_front("+");
+    if (base == 16)
+        s.consume_front("0x") || s.consume_front("0X");
+    return !s.getAsInteger(base, mag);
+}
+
 ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
     TypePtr defaultType = module->attrDefaultIntegerType.ptr();
     if (defaultType == nullptr)
@@ -199,13 +209,20 @@ ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
         vh = new ValueHolder(int64Type);
         *((long long *)vh->buf) = y;
     } else if (typeSuffix(x->suffix, defaultType, "ll", int128Type)) {
-        long long y = strtoll(ptr, &end, base);
-        if (*end != 0)
+        bool negative;
+        llvm::APInt mag;
+        if (!parseInt128Magnitude(x->value, base, negative, mag))
             error(x, "invalid int128 literal");
-        if (errno == ERANGE)
+        if (mag.getActiveBits() > 128)
             error(x, "int128 literal out of range");
+        llvm::APInt y = mag.zextOrTrunc(128);
+        if (y.isSignBitSet() &&
+            (!negative || y != llvm::APInt::getSignedMinValue(128)))
+            error(x, "int128 literal out of range");
+        if (negative)
+            y = -y;
         vh = new ValueHolder(int128Type);
-        *((ceramic_int128 *)vh->buf) = y;
+        memcpy(vh->buf, y.getRawData(), 16);
     } else if (typeSuffix(x->suffix, defaultType, "uss", uint8Type)) {
         unsigned long y = strtoul(ptr, &end, base);
         if (*end != 0)
@@ -239,13 +256,17 @@ ValueHolderPtr parseIntLiteral(ModulePtr module, IntLiteral *x) {
         vh = new ValueHolder(uint64Type);
         *((unsigned long long *)vh->buf) = y;
     } else if (typeSuffix(x->suffix, defaultType, "ull", uint128Type)) {
-        unsigned long long y = strtoull(ptr, &end, base);
-        if (*end != 0)
+        bool negative;
+        llvm::APInt mag;
+        if (!parseInt128Magnitude(x->value, base, negative, mag))
             error(x, "invalid uint128 literal");
-        if (errno == ERANGE)
+        if (mag.getActiveBits() > 128)
             error(x, "uint128 literal out of range");
+        llvm::APInt y = mag.zextOrTrunc(128);
+        if (negative)
+            y = -y;
         vh = new ValueHolder(uint128Type);
-        *((ceramic_uint128 *)vh->buf) = y;
+        memcpy(vh->buf, y.getRawData(), 16);
     } else if (x->suffix == "f") {
         float y = (float)ceramic_strtod(ptr, &end);
         if (*end != 0)
