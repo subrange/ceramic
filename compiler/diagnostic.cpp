@@ -1,5 +1,7 @@
 #include "diagnostic.hpp"
 
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/Path.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include <unistd.h>
@@ -17,6 +19,20 @@ static const char *ANSI_BOLD_CYAN = "\033[1;36m";
 static const char *ANSI_BOLD_GREEN = "\033[1;32m";
 
 static bool isUtf8Continuation(unsigned char c) { return (c & 0xC0) == 0x80; }
+
+// normalize away "..", then prefer a path relative to the working directory
+string displayPath(llvm::StringRef path) {
+    llvm::SmallString<256> normalized(path);
+    llvm::sys::path::remove_dots(normalized, /*remove_dot_dot=*/true);
+
+    llvm::SmallString<256> cwd;
+    if (!llvm::sys::fs::current_path(cwd)) {
+        llvm::StringRef rest(normalized);
+        if (rest.consume_front(cwd) && rest.consume_front("/") && !rest.empty())
+            return rest.str();
+    }
+    return string(normalized.str());
+}
 
 void lineBoundsAt(SourcePtr const &source, unsigned offset, unsigned &lineStart,
                   unsigned &lineEnd, unsigned &lineNumber) {
@@ -120,8 +136,8 @@ void Renderer::renderLocationLine(Span primary, llvm::raw_ostream &out) {
     lineBoundsAt(primary.source, primary.startOffset, lineStart, lineEnd,
                  lineNumber);
     unsigned column = visualColumn(primary.source, primary.startOffset) + 1;
-    out << LOCATION_INDENT << "at " << primary.source->fileName << ":"
-        << lineNumber << ":" << column << "\n";
+    out << LOCATION_INDENT << "at " << displayPath(primary.source->fileName)
+        << ":" << lineNumber << ":" << column << "\n";
 }
 
 void Renderer::renderSnippet(Span primary, llvm::StringRef inlineLabel,

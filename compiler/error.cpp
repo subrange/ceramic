@@ -274,8 +274,12 @@ static string compileFrameHeadline(CompileContextEntry const &frame) {
     return buf;
 }
 
-static void appendContextNotes(Diagnostic &diag, Location primaryLocation) {
-    for (size_t i = 0; i < contextStack.size(); ++i) {
+static void appendContextNotes(Diagnostic &diag, Location primaryLocation,
+                               bool skipInnermost) {
+    size_t end = contextStack.size();
+    if (skipInnermost && end > 0)
+        --end;
+    for (size_t i = 0; i < end; ++i) {
         CompileContextEntry const &frame = contextStack[i];
         if (!frame.location.ok())
             continue;
@@ -346,13 +350,19 @@ DiagBuilder &DiagBuilder::noContextNotes() {
     return *this;
 }
 
+DiagBuilder &DiagBuilder::skipInnermostContextNote() {
+    innermostContextNote = false;
+    return *this;
+}
+
 void DiagBuilder::finish() {
     // resolve fallbacks late so location pushes made between construction
     // and emit still count
     if (!explicitSpan)
         diag.primary = currentSpan();
     if (contextNotes)
-        appendContextNotes(diag, explicitSkip ? skipLocation : topLocation());
+        appendContextNotes(diag, explicitSkip ? skipLocation : topLocation(),
+                           !innermostContextNote);
     displayDiagnostic(diag);
 }
 
@@ -660,7 +670,7 @@ static void printFailureLine(llvm::raw_ostream &sout,
     Location location = failure.first->location;
     unsigned line, column, tabColumn;
     getLineCol(location, line, column, tabColumn);
-    sout << location.source->fileName.c_str() << "(" << line + 1 << ","
+    sout << displayPath(location.source->fileName) << "(" << line + 1 << ","
          << column << ")"
          << "\n        ";
     printMatchError(sout, failure.second);
@@ -820,7 +830,7 @@ static string buildMatchDetail(MatchFailureError const &err,
         Location loc = f.first->location;
         unsigned line, column, tabColumn;
         getLineCol(loc, line, column, tabColumn);
-        sout << "\n    " << loc.source->fileName.c_str() << ":" << line + 1
+        sout << "\n    " << displayPath(loc.source->fileName) << ":" << line + 1
              << "  ";
         appendOverloadSignature(sout, name, f.first);
         sout << "  ";
@@ -934,6 +944,7 @@ void matchFailureError(MatchFailureError const &err) {
         if (nearCandidate->location.ok() &&
             nearCandidate->location.source.ptr())
             bld.note(nearCandidate->location, "defined here");
+        bld.skipInnermostContextNote();
         bld.emit();
     }
 
@@ -947,6 +958,8 @@ void matchFailureError(MatchFailureError const &err) {
     bld.detail(std::move(detail));
     if (!hint.empty())
         bld.help(hint);
+    if (noMatch)
+        bld.skipInnermostContextNote();
     bld.emit();
 }
 
@@ -961,6 +974,7 @@ void matchFailureLog(MatchFailureError const &err) {
 void printFileLineCol(llvm::raw_ostream &out, Location const &location) {
     unsigned line, column, tabColumn;
     getLineCol(location, line, column, tabColumn);
-    out << location.source->fileName << "(" << line + 1 << "," << column << ")";
+    out << displayPath(location.source->fileName) << "(" << line + 1 << ","
+        << column << ")";
 }
 } // namespace ceramic

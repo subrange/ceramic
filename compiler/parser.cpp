@@ -3727,12 +3727,14 @@ static bool importList(vector<ImportPtr> &x, Visibility vis) {
     return true;
 }
 
-static bool import(vector<ImportPtr> &x) {
+static bool import(vector<ImportPtr> &x, bool &sawKeyword) {
+    sawKeyword = false;
     Visibility vis;
     if (!importVisibility(vis))
         return false;
     if (!keyword("import"))
         return false;
+    sawKeyword = true;
     if (!importList(x, vis))
         return false;
     if (!symbol(";"))
@@ -3743,9 +3745,21 @@ static bool import(vector<ImportPtr> &x) {
 static bool imports(vector<ImportPtr> &x) {
     x.clear();
     while (true) {
+        beginItem();
         unsigned p = save();
-        if (!import(x)) {
-            restore(p);
+        bool sawKeyword = false;
+        if (import(x, sawKeyword))
+            continue;
+        restore(p);
+        // a run that got past the keyword is a broken import, not the
+        // start of the declarations
+        if (!sawKeyword)
+            break;
+        recordParseError();
+        synchronizeTopLevel();
+        if (parseErrors.size() >= maxParseErrors &&
+            !shouldPrintFullMatchErrors) {
+            parseErrorOverflow = true;
             break;
         }
     }
@@ -4019,7 +4033,8 @@ static bool replItems(ReplItem &x, bool = false) {
             continue;
         }
 
-        if (!import(x.imports)) {
+        bool sawImportKeyword = false;
+        if (!import(x.imports, sawImportKeyword)) {
             restore(i);
         } else {
             continue;
