@@ -6,7 +6,7 @@
 // int128 type
 //
 
-#if defined(__GNUC__) && defined(_INT128_DEFINED)
+#if defined(__SIZEOF_INT128__)
 
 namespace ceramic {
 using ceramic_int128 = __int128;
