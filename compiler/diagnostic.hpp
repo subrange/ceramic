@@ -50,6 +50,8 @@ class Renderer {
     string colorCaret(Severity severity, llvm::StringRef s) const;
 };
 
+string displayPath(llvm::StringRef path);
+
 unsigned visualColumn(SourcePtr const &source, unsigned offset);
 void lineBoundsAt(SourcePtr const &source, unsigned offset, unsigned &lineStart,
                   unsigned &lineEnd, unsigned &lineNumber);

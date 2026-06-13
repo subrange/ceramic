@@ -660,7 +660,7 @@ static void printFailureLine(llvm::raw_ostream &sout,
     Location location = failure.first->location;
     unsigned line, column, tabColumn;
     getLineCol(location, line, column, tabColumn);
-    sout << location.source->fileName.c_str() << "(" << line + 1 << ","
+    sout << displayPath(location.source->fileName) << "(" << line + 1 << ","
          << column << ")"
          << "\n        ";
     printMatchError(sout, failure.second);
@@ -820,7 +820,7 @@ static string buildMatchDetail(MatchFailureError const &err,
         Location loc = f.first->location;
         unsigned line, column, tabColumn;
         getLineCol(loc, line, column, tabColumn);
-        sout << "\n    " << loc.source->fileName.c_str() << ":" << line + 1
+        sout << "\n    " << displayPath(loc.source->fileName) << ":" << line + 1
              << "  ";
         appendOverloadSignature(sout, name, f.first);
         sout << "  ";
@@ -927,6 +927,7 @@ void matchFailureLog(MatchFailureError const &err) {
 void printFileLineCol(llvm::raw_ostream &out, Location const &location) {
     unsigned line, column, tabColumn;
     getLineCol(location, line, column, tabColumn);
-    out << location.source->fileName << "(" << line + 1 << "," << column << ")";
+    out << displayPath(location.source->fileName) << "(" << line + 1 << ","
+        << column << ")";
 }
 } // namespace ceramic
