@@ -274,8 +274,12 @@ static string compileFrameHeadline(CompileContextEntry const &frame) {
     return buf;
 }
 
-static void appendContextNotes(Diagnostic &diag, Location primaryLocation) {
-    for (size_t i = 0; i < contextStack.size(); ++i) {
+static void appendContextNotes(Diagnostic &diag, Location primaryLocation,
+                               bool skipInnermost) {
+    size_t end = contextStack.size();
+    if (skipInnermost && end > 0)
+        --end;
+    for (size_t i = 0; i < end; ++i) {
         CompileContextEntry const &frame = contextStack[i];
         if (!frame.location.ok())
             continue;
@@ -346,13 +350,19 @@ DiagBuilder &DiagBuilder::noContextNotes() {
     return *this;
 }
 
+DiagBuilder &DiagBuilder::skipInnermostContextNote() {
+    innermostContextNote = false;
+    return *this;
+}
+
 void DiagBuilder::finish() {
     // resolve fallbacks late so location pushes made between construction
     // and emit still count
     if (!explicitSpan)
         diag.primary = currentSpan();
     if (contextNotes)
-        appendContextNotes(diag, explicitSkip ? skipLocation : topLocation());
+        appendContextNotes(diag, explicitSkip ? skipLocation : topLocation(),
+                           !innermostContextNote);
     displayDiagnostic(diag);
 }
 
@@ -907,13 +917,18 @@ void matchFailureError(MatchFailureError const &err) {
         if (nearCandidate->location.ok() &&
             nearCandidate->location.source.ptr())
             bld.note(nearCandidate->location, "defined here");
+        bld.skipInnermostContextNote();
         bld.emit();
     }
 
     string detail = noMatch ? buildMatchDetail(err, name) : string();
 
     LocationContext lc(blame);
-    DiagBuilder(headline).detail(std::move(detail)).emit();
+    DiagBuilder bld(headline);
+    bld.detail(std::move(detail));
+    if (noMatch)
+        bld.skipInnermostContextNote();
+    bld.emit();
 }
 
 void matchFailureLog(MatchFailureError const &err) {
