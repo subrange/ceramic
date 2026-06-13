@@ -3,6 +3,14 @@ name: Build
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'doc/**'
+      - 'editor-support/**'
+      - 'mkdocs.yml'
+      - '**.md'
+      - 'LICENSE*'
+      - 'AUTHORS.txt'
+      - 'ChangeLog.txt'
 
 env:
   LLVM_DEPS: llvm-19 llvm-19-dev clang-19 python3 ninja-build cmake
