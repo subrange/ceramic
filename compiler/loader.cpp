@@ -567,8 +567,12 @@ void addOverload(vector<OverloadPtr> &overloads, OverloadPtr &x) {
 
 void addProcedureOverload(ProcedurePtr proc, EnvPtr env, OverloadPtr x) {
     if (!!proc->singleOverload && proc->singleOverload != x) {
-        // TODO: points to wrong line
-        error(x->location, "standalone functions cannot be overloaded");
+        DiagBuilder("standalone functions cannot be overloaded")
+            .at(Span(x->target->startLocation, x->target->endLocation))
+            .note(proc->singleOverload->location,
+                  "'" + toString(proc->name->str) +
+                      "' is defined as a standalone function here")
+            .emit();
     }
 
     if (proc->privateOverload) {

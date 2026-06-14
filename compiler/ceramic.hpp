@@ -600,6 +600,10 @@ struct Span {
     Span(Location const &loc)
         : source(loc.source), startOffset(loc.offset), endOffset(loc.offset) {}
 
+    Span(Location const &start, Location const &end)
+        : source(start.source), startOffset(start.offset),
+          endOffset(end.offset) {}
+
     bool ok() const { return source != nullptr; }
 };
 
