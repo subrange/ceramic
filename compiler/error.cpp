@@ -410,15 +410,6 @@ void error(Pointer<Expr> context, llvm::Twine const &msg) {
     error(context.ptr(), msg);
 }
 
-void fmtError(const char *fmt, ...) {
-    va_list ap;
-    char s[256];
-    va_start(ap, fmt);
-    vsnprintf(s, sizeof(s) - 1, fmt, ap);
-    va_end(ap);
-    error(s);
-}
-
 void argumentError(size_t index, llvm::StringRef msg) {
     string buf;
     llvm::raw_string_ostream sout(buf);

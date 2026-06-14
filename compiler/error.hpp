@@ -171,8 +171,6 @@ void error(Pointer<Expr> context, llvm::Twine const &msg) CERAMIC_NORETURN;
 
 void warning(llvm::Twine const &msg);
 
-void fmtError(const char *fmt, ...) CERAMIC_NORETURN;
-
 template <class T>
 void error(Pointer<T> context, llvm::Twine const &msg) CERAMIC_NORETURN;
 

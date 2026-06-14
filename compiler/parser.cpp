@@ -3803,8 +3803,7 @@ documentationAnnotation(std::map<DocumentationAnnotation, string> &an) {
         ano = RecordAnnotation;
     } else {
         ano = InvalidAnnotation;
-        pushLocation(location);
-        fmtError("invalid annotation '%s'\n", key.str().c_str());
+        error(location, "invalid annotation '" + key + "'");
     }
 
     if (!next(t) || t->tokenKind != T_DOC_TEXT)
