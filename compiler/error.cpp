@@ -389,6 +389,10 @@ void error(Location const &location, llvm::Twine const &msg) {
     error(msg);
 }
 
+void error(Span span, llvm::Twine const &msg) {
+    DiagBuilder(msg).at(span).emit();
+}
+
 static Span exprSpan(Expr const *e) {
     if (e == nullptr)
         return {};

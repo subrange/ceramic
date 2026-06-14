@@ -603,6 +603,11 @@ struct Span {
     bool ok() const { return source != nullptr; }
 };
 
+inline Span identifierSpan(Location const &start, llvm::StringRef text) {
+    return Span(start.source, start.offset,
+                start.offset + static_cast<unsigned>(text.size()));
+}
+
 //
 // AST
 //
