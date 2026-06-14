@@ -43,10 +43,11 @@ add_subdirectory(compiler)
 add_subdirectory(tools)
 
 add_custom_target(test
-    ${Python3_EXECUTABLE}
-    "${PROJECT_SOURCE_DIR}/test/runtests.py"
-    --buildflags="-Dtest.minimal"
+    COMMAND $<TARGET_FILE:ut>
+    COMMAND ${Python3_EXECUTABLE}
+        "${PROJECT_SOURCE_DIR}/test/runtests.py"
+        --buildflags="-Dtest.minimal"
 )
 
-add_dependencies(test ceramic)
+add_dependencies(test ceramic ut)
 
