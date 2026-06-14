@@ -22,6 +22,7 @@ void register_test(const char *name, const TestFunc func) {
 }
 
 int real_main(int argc, char **argv, char const *const *envp) {
+    int failures = 0;
     for (const auto test : *tests) {
         std::cout << test.name << "...\n";
         try {
@@ -30,9 +31,10 @@ int real_main(int argc, char **argv, char const *const *envp) {
             std::cout << test.name << " OK\n";
         } catch (const AssertionError &) {
             std::cout << test.name << " FAILED\n";
+            ++failures;
         }
     }
-    return 0;
+    return failures == 0 ? 0 : 1;
 }
 } // namespace ceramic
 
