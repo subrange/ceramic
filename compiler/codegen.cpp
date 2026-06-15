@@ -3203,7 +3203,7 @@ static void codegenBlockStatement(BlockPtr block, unsigned i, StatementPtr stmt,
         }
         ctx->builder->SetInsertPoint(jt.block);
     } else if (terminated) {
-        error(stmt, "unreachable code");
+        warning(stmt, "unreachable code");
     } else if (stmt->stmtKind == BINDING) {
         env = codegenBinding((Binding *)stmt.ptr(), env, ctx);
         codegenCollectLabels(block->statements, i + 1, ctx);
@@ -3577,8 +3577,10 @@ bool codegenStatement(StatementPtr stmt, EnvPtr env, CodegenContext *ctx) {
         llvm::ArrayRef<StatementPtr> evaled = desugarEvalStatement(eval, env);
         bool terminated = false;
         for (size_t i = 0; i < evaled.size(); ++i) {
-            if (terminated)
-                error(evaled[i], "unreachable code");
+            if (terminated) {
+                warning(evaled[i], "unreachable code");
+                continue;
+            }
             terminated = codegenStatement(evaled[i], env, ctx);
         }
         return terminated;
@@ -3756,7 +3758,8 @@ bool codegenStatement(StatementPtr stmt, EnvPtr env, CodegenContext *ctx) {
                 string buf;
                 llvm::raw_string_ostream ostr(buf);
                 ostr << "unreachable code in iteration " << (i + 1);
-                error(ostr.str());
+                warning(ostr.str());
+                continue;
             }
             EnvPtr env2 = new Env(env);
             addLocal(env2, x->variable, mcv->values[i].ptr());
