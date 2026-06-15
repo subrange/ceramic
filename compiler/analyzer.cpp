@@ -518,7 +518,7 @@ static MultiPValuePtr analyzeExpr2(ExprPtr expr, EnvPtr env) {
     }
 
     case FILE_EXPR: {
-        Location location = safeLookupCallByNameLocation(env);
+        Location location = safeLookupCallByNameLocation(env, "__FILE__");
         string filename = location.source->fileName;
         return analyzeStaticObject(Identifier::get(filename));
     }
