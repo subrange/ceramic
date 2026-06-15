@@ -1,0 +1,4 @@
+warning: unreachable code
+  at main.crm:5:5
+        println("dead");
+        ^
