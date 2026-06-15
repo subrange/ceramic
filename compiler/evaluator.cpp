@@ -868,7 +868,7 @@ void evalExpr(ExprPtr expr, EnvPtr env, MultiEValuePtr out) {
         break;
 
     case LINE_EXPR: {
-        Location location = safeLookupCallByNameLocation(env);
+        Location location = safeLookupCallByNameLocation(env, "__LINE__");
         unsigned line, column, tabColumn;
         getLineCol(location, line, column, tabColumn);
 
@@ -877,7 +877,7 @@ void evalExpr(ExprPtr expr, EnvPtr env, MultiEValuePtr out) {
         break;
     }
     case COLUMN_EXPR: {
-        Location location = safeLookupCallByNameLocation(env);
+        Location location = safeLookupCallByNameLocation(env, "__COLUMN__");
         unsigned line, column, tabColumn;
         getLineCol(location, line, column, tabColumn);
 

@@ -22,7 +22,7 @@ ObjectPtr lookupEnvEx(EnvPtr env, IdentifierPtr name, EnvPtr nonLocalEnv,
 ExprPtr foreignExpr(EnvPtr env, ExprPtr expr);
 
 ExprPtr lookupCallByNameExprHead(EnvPtr env);
-Location safeLookupCallByNameLocation(EnvPtr env);
+Location safeLookupCallByNameLocation(EnvPtr env, const char *macro);
 
 bool lookupExceptionAvailable(const Env *env);
 } // namespace ceramic

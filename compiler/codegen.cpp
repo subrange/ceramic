@@ -822,7 +822,7 @@ void codegenExpr(ExprPtr expr, EnvPtr env, CodegenContext *ctx,
         break;
 
     case LINE_EXPR: {
-        Location location = safeLookupCallByNameLocation(env);
+        Location location = safeLookupCallByNameLocation(env, "__LINE__");
         unsigned line, column, tabColumn;
         getLineCol(location, line, column, tabColumn);
 
@@ -831,7 +831,7 @@ void codegenExpr(ExprPtr expr, EnvPtr env, CodegenContext *ctx,
         break;
     }
     case COLUMN_EXPR: {
-        Location location = safeLookupCallByNameLocation(env);
+        Location location = safeLookupCallByNameLocation(env, "__COLUMN__");
         unsigned line, column, tabColumn;
         getLineCol(location, line, column, tabColumn);
 

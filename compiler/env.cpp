@@ -511,11 +511,10 @@ ExprPtr lookupCallByNameExprHead(EnvPtr env) {
 // safeLookupCallByNameLocation
 //
 
-Location safeLookupCallByNameLocation(EnvPtr env) {
+Location safeLookupCallByNameLocation(EnvPtr env, const char *macro) {
     ExprPtr head = lookupCallByNameExprHead(env);
     if (head.ptr() == 0) {
-        error("__FILE__, __LINE__, and __COLUMN__ are only allowed in an alias "
-              "function");
+        error(llvm::Twine(macro) + " is only allowed in an alias function");
     }
     return head->location;
 }
