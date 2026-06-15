@@ -3202,6 +3202,8 @@ static void codegenBlockStatement(BlockPtr block, unsigned i, StatementPtr stmt,
             ++jt.useCount;
         }
         ctx->builder->SetInsertPoint(jt.block);
+        // jump target reachable again
+        terminated = false;
     } else if (terminated) {
         warning(stmt, "unreachable code");
     } else if (stmt->stmtKind == BINDING) {
