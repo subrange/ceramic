@@ -181,8 +181,8 @@ void codegenCWrapper(InvokeEntry *entry, CallingConv cc);
 
 bool codegenStatement(StatementPtr stmt, EnvPtr env, CodegenContext *ctx);
 
-void codegenCollectLabels(llvm::ArrayRef<StatementPtr> statements,
-                          unsigned startIndex, CodegenContext *ctx);
+bool codegenCollectLabels(llvm::ArrayRef<StatementPtr> statements,
+                          unsigned startIndex, EnvPtr env, CodegenContext *ctx);
 
 EnvPtr codegenBinding(BindingPtr x, EnvPtr env, CodegenContext *ctx);
 
@@ -3205,6 +3205,12 @@ static void codegenBlockStatement(BlockPtr block, unsigned i, StatementPtr stmt,
         // jump target reachable again
         terminated = false;
         warnedUnreachable = false;
+    } else if (stmt->stmtKind == EVAL_STATEMENT) {
+        EvalStatement *eval = (EvalStatement *)stmt.ptr();
+        llvm::ArrayRef<StatementPtr> evaled = desugarEvalStatement(eval, env);
+        for (unsigned i = 0; i < evaled.size(); ++i)
+            codegenBlockStatement(block, i, evaled[i], env, ctx, terminated,
+                                  warnedUnreachable);
     } else if (terminated) {
         // warn once per dead run
         if (!warnedUnreachable) {
@@ -3213,13 +3219,7 @@ static void codegenBlockStatement(BlockPtr block, unsigned i, StatementPtr stmt,
         }
     } else if (stmt->stmtKind == BINDING) {
         env = codegenBinding((Binding *)stmt.ptr(), env, ctx);
-        codegenCollectLabels(block->statements, i + 1, ctx);
-    } else if (stmt->stmtKind == EVAL_STATEMENT) {
-        EvalStatement *eval = (EvalStatement *)stmt.ptr();
-        llvm::ArrayRef<StatementPtr> evaled = desugarEvalStatement(eval, env);
-        for (unsigned i = 0; i < evaled.size(); ++i)
-            codegenBlockStatement(block, i, evaled[i], env, ctx, terminated,
-                                  warnedUnreachable);
+        codegenCollectLabels(block->statements, i + 1, env, ctx);
     } else {
         terminated = codegenStatement(stmt, env, ctx);
     }
@@ -3284,7 +3284,7 @@ bool codegenStatement(StatementPtr stmt, EnvPtr env, CodegenContext *ctx) {
     case BLOCK: {
         Block *block = (Block *)stmt.ptr();
         size_t blockMarker = codegenBeginScope(stmt, ctx);
-        codegenCollectLabels(block->statements, 0, ctx);
+        codegenCollectLabels(block->statements, 0, env, ctx);
         bool terminated = false;
         bool warnedUnreachable = false;
         for (unsigned i = 0; i < block->statements.size(); ++i) {
@@ -3810,8 +3810,10 @@ bool codegenStatement(StatementPtr stmt, EnvPtr env, CodegenContext *ctx) {
 // codegenCollectLabels
 //
 
-void codegenCollectLabels(llvm::ArrayRef<StatementPtr> statements,
-                          unsigned startIndex, CodegenContext *ctx) {
+// returns true if a binding was hit, which stops label collection
+bool codegenCollectLabels(llvm::ArrayRef<StatementPtr> statements,
+                          unsigned startIndex, EnvPtr env,
+                          CodegenContext *ctx) {
     for (size_t i = startIndex; i < statements.size(); ++i) {
         StatementPtr x = statements[i];
         switch (x->stmtKind) {
@@ -3825,12 +3827,21 @@ void codegenCollectLabels(llvm::ArrayRef<StatementPtr> statements,
             ctx->labels[y->name->str] = JumpTarget(bb, cgMarkStack(ctx));
             break;
         }
+        case EVAL_STATEMENT: {
+            EvalStatement *eval = (EvalStatement *)x.ptr();
+            llvm::ArrayRef<StatementPtr> evaled =
+                desugarEvalStatement(eval, env);
+            if (codegenCollectLabels(evaled, 0, env, ctx))
+                return true;
+            break;
+        }
         case BINDING:
-            return;
+            return true;
         default:
             break;
         }
     }
+    return false;
 }
 
 //
