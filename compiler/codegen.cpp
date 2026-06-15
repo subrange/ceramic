@@ -3190,7 +3190,7 @@ bool codegenStatement(StatementPtr stmt, EnvPtr env, CodegenContext *ctx);
 
 static void codegenBlockStatement(BlockPtr block, unsigned i, StatementPtr stmt,
                                   EnvPtr &env, CodegenContext *ctx,
-                                  bool &terminated) {
+                                  bool &terminated, bool &warnedUnreachable) {
     if (stmt->stmtKind == LABEL) {
         Label *label = (Label *)stmt.ptr();
         llvm::StringMap<JumpTarget>::iterator li =
@@ -3204,8 +3204,13 @@ static void codegenBlockStatement(BlockPtr block, unsigned i, StatementPtr stmt,
         ctx->builder->SetInsertPoint(jt.block);
         // jump target reachable again
         terminated = false;
+        warnedUnreachable = false;
     } else if (terminated) {
-        warning(stmt, "unreachable code");
+        // warn once per dead run
+        if (!warnedUnreachable) {
+            warning(stmt, "unreachable code");
+            warnedUnreachable = true;
+        }
     } else if (stmt->stmtKind == BINDING) {
         env = codegenBinding((Binding *)stmt.ptr(), env, ctx);
         codegenCollectLabels(block->statements, i + 1, ctx);
@@ -3213,7 +3218,8 @@ static void codegenBlockStatement(BlockPtr block, unsigned i, StatementPtr stmt,
         EvalStatement *eval = (EvalStatement *)stmt.ptr();
         llvm::ArrayRef<StatementPtr> evaled = desugarEvalStatement(eval, env);
         for (unsigned i = 0; i < evaled.size(); ++i)
-            codegenBlockStatement(block, i, evaled[i], env, ctx, terminated);
+            codegenBlockStatement(block, i, evaled[i], env, ctx, terminated,
+                                  warnedUnreachable);
     } else {
         terminated = codegenStatement(stmt, env, ctx);
     }
@@ -3280,9 +3286,10 @@ bool codegenStatement(StatementPtr stmt, EnvPtr env, CodegenContext *ctx) {
         size_t blockMarker = codegenBeginScope(stmt, ctx);
         codegenCollectLabels(block->statements, 0, ctx);
         bool terminated = false;
+        bool warnedUnreachable = false;
         for (unsigned i = 0; i < block->statements.size(); ++i) {
             codegenBlockStatement(block, i, block->statements[i], env, ctx,
-                                  terminated);
+                                  terminated, warnedUnreachable);
         }
         codegenEndScope(blockMarker, terminated, ctx);
         return terminated;
