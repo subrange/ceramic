@@ -299,6 +299,7 @@ class TestCase(object):
                 return "compiler error"
             outfile = fileForPlatform(self.opt, ".", "out", "txt")
             errfile = fileForPlatform(self.opt, ".", "err", "txt")
+            warnfile = fileForPlatform(self.opt, ".", "warn", "txt")
             if not os.path.isfile(outfile):
                 self.testLogBuffer.write("Failure: out.txt missing\n")
                 self.testLogBuffer.write("Stdout:\n")
@@ -310,29 +311,33 @@ class TestCase(object):
             referr = RefText.empty("err.txt")
             if os.path.isfile(errfile):
                 referr = RefText.load("err.txt", errfile)
+            refwarn = RefText.empty("warn.txt")
+            if os.path.isfile(warnfile):
+                refwarn = RefText.load("warn.txt", warnfile)
             outcompare = refout.compare(resultout)
             errcompare = referr.compare(resulterr)
-            if not outcompare and not errcompare:
+            warncompare = refwarn.compare(self.compilerWarnings)
+            if not outcompare and not errcompare and not warncompare:
                 return "ok"
-            elif outcompare and errcompare:
-                self.testLogBuffer.write("Failure: out.txt and err.txt mismatch\n")
+            failures = []
+            if outcompare:
+                failures.append("out.txt")
+            if errcompare:
+                failures.append("err.txt")
+            if warncompare:
+                failures.append("warn.txt")
+            label = " and ".join(failures) + " mismatch"
+            self.testLogBuffer.write("Failure: %s\n" % label)
+            if outcompare:
                 self.testLogBuffer.write("Diff-Stdout:\n")
                 self.testLogBuffer.write(outcompare)
+            if errcompare:
                 self.testLogBuffer.write("Diff-Stderr:\n")
                 self.testLogBuffer.write(errcompare)
-                return "out.txt and err.txt mismatch"
-            elif outcompare:
-                self.testLogBuffer.write("Failure: out.txt mismatch\n")
-                self.testLogBuffer.write("Diff-Stdout:\n")
-                self.testLogBuffer.write(outcompare)
-                return "out.txt mismatch"
-            elif errcompare:
-                self.testLogBuffer.write("Failure: err.txt mismatch\n")
-                self.testLogBuffer.write("Diff-Stderr:\n")
-                self.testLogBuffer.write(errcompare)
-                return "err.txt mismatch"
-            else:
-                raise Exception("impossible")
+            if warncompare:
+                self.testLogBuffer.write("Diff-Warnings:\n")
+                self.testLogBuffer.write(warncompare)
+            return label
 
     def run(self):
         self.testLogBuffer = StringIO()
@@ -355,6 +360,7 @@ class TestCase(object):
     def runtest(self):
         outfilename = "test.exe"
         outfilename = os.path.join(".", outfilename)
+        self.compilerWarnings = ""
         process = subprocess.Popen(
             self.cmdline(self.opt.ceramicCompiler),
             stdout=subprocess.PIPE,
@@ -364,6 +370,8 @@ class TestCase(object):
         compilerout, compilererr = process.communicate()
         if process.returncode != 0:
             return "", "%s\n%s" % (compilerout, compilererr), "compiler error"
+        # warnings land on stderr of a successful compile
+        self.compilerWarnings = compilererr
         if self.runscript is None:
             commandline = [outfilename]
         else:

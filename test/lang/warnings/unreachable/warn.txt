@@ -1,0 +1,8 @@
+warning: unreachable code
+  at main.crm:6:5
+        println("dead");
+        ^
+note: while compiling main()
+  at main.crm:4:12
+        println("ok");
+               ^

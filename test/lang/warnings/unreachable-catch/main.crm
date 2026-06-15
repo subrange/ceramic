@@ -1,0 +1,17 @@
+import printer.*;
+
+record MyException(a: Int);
+
+instance Exception (MyException);
+
+main() {
+    try {
+        throw MyException(17);
+    }
+    catch (e) {
+        println("any");
+    }
+    catch (e: MyException) {
+        println("typed");
+    }
+}
