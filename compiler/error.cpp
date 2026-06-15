@@ -374,18 +374,18 @@ void DiagBuilder::emit() {
 }
 
 void warning(llvm::Twine const &msg) {
-    DiagBuilder(msg, Severity::Warning).display();
+    DiagBuilder(msg, Severity::Warning).noContextNotes().display();
 }
 
 void warning(Span span, llvm::Twine const &msg) {
-    DiagBuilder(msg, Severity::Warning).at(span).display();
+    DiagBuilder(msg, Severity::Warning).at(span).noContextNotes().display();
 }
 
 void warning(Location const &location, llvm::Twine const &msg) {
     DiagBuilder b(msg, Severity::Warning);
     if (location.ok())
         b.at(location);
-    b.display();
+    b.noContextNotes().display();
 }
 
 void note(llvm::Twine const &msg) {
@@ -429,7 +429,7 @@ void warning(Expr const *context, llvm::Twine const &msg) {
     DiagBuilder b(msg, Severity::Warning);
     if (context != nullptr)
         b.at(exprSpan(context));
-    b.display();
+    b.noContextNotes().display();
 }
 
 void warning(Pointer<Expr> context, llvm::Twine const &msg) {
