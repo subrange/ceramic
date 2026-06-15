@@ -212,8 +212,10 @@ StatementPtr desugarCatchBlocks(llvm::ArrayRef<CatchPtr> catchBlocks) {
     StatementPtr result;
     for (size_t i = 0; i < catchBlocks.size(); ++i) {
         CatchPtr x = catchBlocks[i];
-        if (lastWasAny)
-            error(x, "unreachable catch block");
+        if (lastWasAny) {
+            warning(x, "unreachable catch block");
+            continue;
+        }
         if (x->exceptionType.ptr()) {
             ExprListPtr asTypeArgs = new ExprList(x->exceptionType);
             ExprPtr expVarName = new NameRef(expVar);
