@@ -1,3 +1,15 @@
+================
+0.2 -> 0.3 (WIP)
+================
+
+Mostly tooling and fixes. No language changes to speak of.
+
+* Rewrote compiler diagnostics: caret snippets, context notes, typo
+  suggestions, parser error recovery, colorized output.
+* Emit valid debug info with -g.
+* Integer literals can now use the full 128-bit range.
+* VS Code extension, raylib bindings, regenerated libclang bindings for LLVM 19.
+
 ==========
 0.1 -> 0.2
 ==========
