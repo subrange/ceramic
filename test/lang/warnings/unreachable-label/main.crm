@@ -1,0 +1,8 @@
+import printer.(println);
+
+main() {
+    goto skip;
+    println("dead");
+skip:
+    println("reached");
+}

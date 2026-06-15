@@ -1,0 +1,4 @@
+warning: unreachable catch block
+  at main.crm:14:5
+        catch (e: MyException) {
+        ^
