@@ -164,14 +164,17 @@ class DiagBuilder {
     void finish();
 };
 
+// caret falls back to the current compile context
 void error(llvm::Twine const &msg) CERAMIC_NORETURN;
+// point caret at one location
 void error(Location const &location, llvm::Twine const &msg) CERAMIC_NORETURN;
+// wide caret across a span
+void error(Span span, llvm::Twine const &msg) CERAMIC_NORETURN;
+// caret spans the whole expression node
 void error(Expr const *context, llvm::Twine const &msg) CERAMIC_NORETURN;
 void error(Pointer<Expr> context, llvm::Twine const &msg) CERAMIC_NORETURN;
 
 void warning(llvm::Twine const &msg);
-
-void fmtError(const char *fmt, ...) CERAMIC_NORETURN;
 
 template <class T>
 void error(Pointer<T> context, llvm::Twine const &msg) CERAMIC_NORETURN;

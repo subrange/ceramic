@@ -118,7 +118,11 @@ static void undefinedNameError(IdentifierPtr name) {
             << closestModule << ")";
     }
 
-    error(name, err.str());
+    Location loc = name->location;
+    if (!loc.ok())
+        error(err.str());
+
+    error(identifierSpan(loc, name->str), err.str());
 }
 
 //

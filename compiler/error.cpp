@@ -389,6 +389,10 @@ void error(Location const &location, llvm::Twine const &msg) {
     error(msg);
 }
 
+void error(Span span, llvm::Twine const &msg) {
+    DiagBuilder(msg).at(span).emit();
+}
+
 static Span exprSpan(Expr const *e) {
     if (e == nullptr)
         return {};
@@ -408,15 +412,6 @@ void error(Expr const *context, llvm::Twine const &msg) {
 
 void error(Pointer<Expr> context, llvm::Twine const &msg) {
     error(context.ptr(), msg);
-}
-
-void fmtError(const char *fmt, ...) {
-    va_list ap;
-    char s[256];
-    va_start(ap, fmt);
-    vsnprintf(s, sizeof(s) - 1, fmt, ap);
-    va_end(ap);
-    error(s);
 }
 
 void argumentError(size_t index, llvm::StringRef msg) {

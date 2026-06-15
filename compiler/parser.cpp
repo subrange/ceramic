@@ -134,9 +134,7 @@ static Diagnostic buildParseError() {
             found = "end of input";
         } else {
             const Token &tok = t[pos];
-            unsigned start = tok.location.offset;
-            span = Span(parseSource, start,
-                        start + static_cast<unsigned>(tok.str.size()));
+            span = identifierSpan(tok.location, tok.str);
             found = (llvm::Twine("`") + tok.str.str() + "`").str();
         }
         if (ordered.empty()) {
@@ -3803,8 +3801,7 @@ documentationAnnotation(std::map<DocumentationAnnotation, string> &an) {
         ano = RecordAnnotation;
     } else {
         ano = InvalidAnnotation;
-        pushLocation(location);
-        fmtError("invalid annotation '%s'\n", key.str().c_str());
+        error(location, "invalid annotation '" + key + "'");
     }
 
     if (!next(t) || t->tokenKind != T_DOC_TEXT)
