@@ -18,6 +18,7 @@ static SourcePtr parseSource;
 static vector<Diagnostic> parseErrors;
 static constexpr unsigned maxParseErrors = 20;
 static bool parseErrorOverflow;
+static bool importErrorRecorded;
 static bool parserOptionKeepDocumentation = false;
 
 static AddTokensCallback addTokens = nullptr;
@@ -178,6 +179,7 @@ static void beginItem() {
     maxPosition = position;
     failPosition = position;
     failExpected.clear();
+    importErrorRecorded = false;
 }
 
 static bool isStmtStartKw(llvm::StringRef s) {
@@ -289,6 +291,39 @@ static void recordTopLevelError() {
         d.suggestion = "move it inside a function";
     }
     parseErrors.push_back(d);
+}
+
+static void recordImportExpected(const char *what) {
+    importErrorRecorded = true;
+    if (parseErrors.size() >= maxParseErrors && !shouldPrintFullMatchErrors) {
+        parseErrorOverflow = true;
+        return;
+    }
+    const vector<Token> &t = *tokens;
+    bool unterminated =
+        position >= t.size() ||
+        (t[position].tokenKind == T_SYMBOL && t[position].str == ";") ||
+        (t[position].tokenKind == T_KEYWORD &&
+         isTopLevelStartKw(t[position].str));
+
+    Span span;
+    string headline;
+    if (unterminated) {
+        unsigned gap = 0;
+        if (position > 0) {
+            const Token &prev = t[position - 1];
+            gap = prev.location.offset + static_cast<unsigned>(prev.str.size());
+        }
+        span = Span(parseSource, gap, gap);
+        headline = (llvm::Twine("expected ") + what).str();
+    } else {
+        const Token &cur = t[position];
+        span = identifierSpan(cur.location, cur.str);
+        headline =
+            (llvm::Twine("expected ") + what + ", found `" + cur.str + "`")
+                .str();
+    }
+    parseErrors.push_back(Diagnostic(Severity::Error, headline, span));
 }
 
 static Location currentLocation() {
@@ -3610,33 +3645,6 @@ static bool optImportAlias(IdentifierPtr &x) {
     return true;
 }
 
-static bool importModule(ImportPtr &x) {
-    Location location = currentLocation();
-    DottedNamePtr y;
-    if (!dottedName(y))
-        return false;
-    IdentifierPtr z;
-    if (!optImportAlias(z))
-        return false;
-    x = new ImportModule(y, z);
-    x->location = location;
-    return true;
-}
-
-static bool importStar(ImportPtr &x) {
-    Location location = currentLocation();
-    DottedNamePtr y;
-    if (!dottedName(y))
-        return false;
-    if (!symbol("."))
-        return false;
-    if (!opsymbol("*"))
-        return false;
-    x = new ImportStar(y);
-    x->location = location;
-    return true;
-}
-
 static bool importedMember(ImportedMember &x) {
     if (!topLevelVisibility(x.visibility))
         return false;
@@ -3668,38 +3676,44 @@ static bool importedMemberList(vector<ImportedMember> &x) {
     return true;
 }
 
-static bool importMembers(ImportPtr &x) {
-    Location location = currentLocation();
-    DottedNamePtr y;
-    if (!dottedName(y))
-        return false;
-    if (!symbol("."))
-        return false;
-    if (!symbol("("))
-        return false;
-    ImportMembersPtr z = new ImportMembers(y);
-    if (!importedMemberList(z->members))
-        return false;
-    if (!symbol(")"))
-        return false;
-    x = z.ptr();
-    x->location = location;
-    return true;
-}
-
 static bool import2(ImportPtr &x, Visibility visTop) {
     Visibility vis;
     if (!importVisibility(vis))
         return false;
+    Location location = currentLocation();
+
+    unsigned q = save();
+    DottedNamePtr y;
+    if (!dottedName(y)) {
+        restore(q);
+        recordImportExpected("a module name");
+        return false;
+    }
+
     unsigned p = save();
-    if (importStar(x))
-        goto importsuccess;
-    if (restore(p), importMembers(x))
-        goto importsuccess;
-    if (restore(p), importModule(x))
-        goto importsuccess;
-    return false;
-importsuccess:
+    if (symbol(".") && opsymbol("*")) {
+        x = new ImportStar(y);
+    } else if (restore(p), (symbol(".") && symbol("("))) {
+        ImportMembersPtr z = new ImportMembers(y);
+
+        unsigned m = save();
+        if (!importedMemberList(z->members)) {
+            restore(m);
+            recordImportExpected("a member name");
+            return false;
+        }
+
+        if (!symbol(")"))
+            return false;
+        x = z.ptr();
+    } else {
+        restore(p);
+        IdentifierPtr z;
+        if (!optImportAlias(z))
+            return false;
+        x = new ImportModule(y, z);
+    }
+    x->location = location;
     if (vis == VISIBILITY_UNDEFINED) {
         if (visTop == VISIBILITY_UNDEFINED)
             x->visibility = PRIVATE;
@@ -3753,7 +3767,8 @@ static bool imports(vector<ImportPtr> &x) {
         // start of the declarations
         if (!sawKeyword)
             break;
-        recordParseError();
+        if (!importErrorRecorded)
+            recordParseError();
         synchronizeTopLevel();
         if (parseErrors.size() >= maxParseErrors &&
             !shouldPrintFullMatchErrors) {
