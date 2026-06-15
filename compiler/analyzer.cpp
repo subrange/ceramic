@@ -1763,7 +1763,7 @@ static void checkLiteralDivisionByZero(ExprPtr callable, ExprListPtr args) {
         ExprPtr div = args->exprs[i + 1];
         if (div->exprKind == INT_LITERAL &&
             ((IntLiteral *)div.ptr())->value == "0")
-            error(div.ptr(), "division by zero");
+            error(div.ptr(), op == "%" ? "modulo by zero" : "division by zero");
     }
 }
 
