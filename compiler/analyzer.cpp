@@ -1747,7 +1747,28 @@ static MultiPValuePtr analyzeIntrinsic(IntrinsicSymbol *intrin,
 // analyzeCallExpr
 //
 
+static void checkLiteralDivisionByZero(ExprPtr callable, ExprListPtr args) {
+    if (callable.ptr() != operator_expr_infixOperator().ptr())
+        return;
+
+    // divisor is the operand after the operator nameref
+    for (size_t i = 0; i + 1 < args->size(); ++i) {
+        if (args->exprs[i]->exprKind != NAME_REF)
+            continue;
+
+        llvm::StringRef op = ((NameRef *)args->exprs[i].ptr())->name->str;
+        if (op != "\\" && op != "%")
+            continue;
+
+        ExprPtr div = args->exprs[i + 1];
+        if (div->exprKind == INT_LITERAL &&
+            ((IntLiteral *)div.ptr())->value == "0")
+            error(div.ptr(), "division by zero");
+    }
+}
+
 MultiPValuePtr analyzeCallExpr(ExprPtr callable, ExprListPtr args, EnvPtr env) {
+    checkLiteralDivisionByZero(callable, args);
     PVData pv = analyzeOne(callable, env);
     if (!pv.ok())
         return nullptr;
