@@ -38,6 +38,9 @@ set(CERAMICDOC_SOURCES
     html.cpp
 )
 
+set_property(SOURCE ceramicdoc.cpp APPEND PROPERTY
+    COMPILE_DEFINITIONS "STYLE_CSS_PATH=\"${CMAKE_CURRENT_SOURCE_DIR}/style.css\"")
+
 set(UT_SOURCES
     refcounted_ut.cpp
     ut_main.cpp

@@ -123,14 +123,18 @@ int main(int argc, char **argv) {
         return 4;
     }
 
+    if (auto cssEc =
+            llvm::sys::fs::copy_file(STYLE_CSS_PATH, outputDir + "/style.css"))
+        llvm::errs() << "cannot copy style.css: " << cssEc.message() << "\n";
+
     std::error_code ec2;
     auto *state = new DocState;
     state->name = llvm::sys::path::filename(inputDir).str();
 
     for (llvm::sys::fs::recursive_directory_iterator it(inputDir, ec2), ite;
          it != ite; it.increment(ec)) {
-        llvm::sys::fs::file_status status;
-        if (!it->status() && is_regular_file(status) &&
+        auto status = it->status();
+        if (status && is_regular_file(*status) &&
             endsWith(it->path(), ".crm")) {
             std::string fqn;
 
