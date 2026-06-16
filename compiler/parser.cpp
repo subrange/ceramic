@@ -13,6 +13,8 @@ static unsigned maxPosition;
 // farthest token a terminal tried to match, and what it expected there
 static unsigned failPosition;
 static vector<llvm::StringRef> failExpected;
+// prevent errors if tokens is missing
+static bool suppressExpected;
 // diagnostics collected during recovery, rendered together at the end
 static SourcePtr parseSource;
 static vector<Diagnostic> parseErrors;
@@ -54,6 +56,8 @@ static void restore(unsigned p) { position = p; }
 
 // remember the set of terminals expected at the farthest failure point
 static void recordExpected(unsigned p, llvm::StringRef what) {
+    if (suppressExpected)
+        return;
     if (p > failPosition) {
         failPosition = p;
         failExpected.clear();
@@ -378,6 +382,18 @@ static bool symbol(const char *s) {
     return true;
 }
 
+// optional probe: matches silently and backtracks on failure
+template <class Probe> static bool optSymbol(Probe probe) {
+    unsigned p = save();
+    bool saved = suppressExpected;
+    suppressExpected = true;
+    bool matched = probe();
+    suppressExpected = saved;
+    if (!matched)
+        restore(p);
+    return matched;
+}
+
 static bool keyword(const char *s) {
     unsigned p = position;
     Token *t;
@@ -456,11 +472,8 @@ static bool dottedName(DottedNamePtr &x) {
         return false;
     while (true) {
         y->parts.push_back(ident);
-        unsigned p = save();
-        if (!symbol(".") || !identifier(ident)) {
-            restore(p);
+        if (!optSymbol([&] { return symbol(".") && identifier(ident); }))
             break;
-        }
     }
     x = y;
     x->location = location;
@@ -617,7 +630,7 @@ static bool optExpressionList(ExprListPtr &x) {
 
 static bool tupleExpr(ExprPtr &x) {
     Location location = currentLocation();
-    if (!symbol("["))
+    if (!optSymbol([&] { return symbol("["); }))
         return false;
     ExprListPtr args;
     if (!optExpressionList(args))
@@ -631,7 +644,7 @@ static bool tupleExpr(ExprPtr &x) {
 
 static bool parenExpr(ExprPtr &x) {
     Location location = currentLocation();
-    if (!symbol("("))
+    if (!optSymbol([&] { return symbol("("); }))
         return false;
     ExprListPtr args;
     if (!optExpressionList(args))
@@ -745,7 +758,7 @@ static bool stringLiteralSuffix(ExprPtr &x) {
 
 static bool indexingSuffix(ExprPtr &x) {
     Location location = currentLocation();
-    if (!symbol("["))
+    if (!optSymbol([&] { return symbol("["); }))
         return false;
     ExprListPtr args;
     if (!optExpressionList(args))
@@ -759,7 +772,7 @@ static bool indexingSuffix(ExprPtr &x) {
 
 static bool callSuffix(ExprPtr &x) {
     Location location = currentLocation();
-    if (!symbol("("))
+    if (!optSymbol([&] { return symbol("("); }))
         return false;
     ExprListPtr args;
     if (!optExpressionList(args))
@@ -773,7 +786,7 @@ static bool callSuffix(ExprPtr &x) {
 
 static bool fieldRefSuffix(ExprPtr &x) {
     Location location = currentLocation();
-    if (!symbol("."))
+    if (!optSymbol([&] { return symbol("."); }))
         return false;
     IdentifierPtr a;
     if (!identifier(a))
@@ -800,7 +813,7 @@ static bool staticIndexingSuffix(ExprPtr &x) {
 
 static bool dereferenceSuffix(ExprPtr &x) {
     Location location = currentLocation();
-    if (!symbol("^"))
+    if (!optSymbol([&] { return symbol("^"); }))
         return false;
     x = new VariadicOp(DEREFERENCE, new ExprList());
     x->location = location;
@@ -1343,7 +1356,7 @@ static bool atomicPattern(ExprPtr &x) {
 
 static bool patternSuffix(IndexingPtr &x) {
     Location location = currentLocation();
-    if (!symbol("["))
+    if (!optSymbol([&] { return symbol("["); }))
         return false;
     ExprListPtr args;
     if (!optExpressionList(args))
@@ -1379,7 +1392,7 @@ static bool pattern(ExprPtr &x) {
 //
 
 static bool typeSpec(ExprPtr &x) {
-    if (!symbol(":"))
+    if (!optSymbol([&] { return symbol(":"); }))
         return false;
     return pattern(x);
 }
@@ -1401,7 +1414,13 @@ static bool exprTypeSpec(ExprPtr &x) {
 
 static bool optExprTypeSpec(ExprPtr &x) {
     unsigned p = save();
-    if (!exprTypeSpec(x)) {
+    // TODO: relook through this call paths again.
+    // if (!exprTypeSpec(x)) {
+    if (!optSymbol([&] { return symbol(":"); })) {
+        x = nullptr;
+        return true;
+    }
+    if (!expression(x)) {
         restore(p);
         x = nullptr;
     }
@@ -1458,9 +1477,7 @@ static bool localBinding(StatementPtr &x) {
     bool hasVarArg = false;
     if (!bindingsBody(args, hasVarArg))
         return false;
-    unsigned p = save();
-    if (!symbol(","))
-        restore(p);
+    optSymbol([&] { return symbol(","); });
     if (!opsymbol("="))
         return false;
     ExprListPtr z;
@@ -2391,11 +2408,8 @@ static bool bindingsBody(vector<FormalArgPtr> &x, bool &hasVarArg) {
     x.clear();
     while (true) {
         x.push_back(y);
-        unsigned p = save();
-        if (!symbol(",") || !bindingArg(y, hasVarArg)) {
-            restore(p);
+        if (!optSymbol([&] { return symbol(",") && bindingArg(y, hasVarArg); }))
             break;
-        }
     }
     return true;
 }
