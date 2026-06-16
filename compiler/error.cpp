@@ -868,33 +868,6 @@ static string buildMatchDetail(MatchFailureError const &err,
     return buf;
 }
 
-static bool paramOfKind(ObjectPtr const &param, TypeKind kind) {
-    return param.ptr() != nullptr && param->objKind == TYPE &&
-           ((Type *)param.ptr())->typeKind == kind;
-}
-
-// suggest the sibling division operator across the int/float split
-static string operatorHint(llvm::StringRef name) {
-    if (contextStack.empty() || !contextStack.back().hasParams)
-        return string();
-    const vector<ObjectPtr> &params = contextStack.back().params;
-    if (params.empty())
-        return string();
-
-    if (name == "/") {
-        for (const auto &param : params)
-            if (!paramOfKind(param, INTEGER_TYPE))
-                return string();
-        return "use '\\' for integer division";
-    }
-    if (name == "\\") {
-        for (const auto &param : params)
-            if (paramOfKind(param, FLOAT_TYPE))
-                return "use '/' for floating point division";
-    }
-    return string();
-}
-
 void matchFailureError(MatchFailureError const &err) {
     string name;
     {
@@ -965,16 +938,11 @@ void matchFailureError(MatchFailureError const &err) {
         bld.emit();
     }
 
-    string hint =
-        noMatch && !shouldPrintFullMatchErrors ? operatorHint(name) : string();
-    string detail =
-        noMatch && hint.empty() ? buildMatchDetail(err, name) : string();
+    string detail = noMatch ? buildMatchDetail(err, name) : string();
 
     LocationContext lc(blame);
     DiagBuilder bld(headline);
     bld.detail(std::move(detail));
-    if (!hint.empty())
-        bld.help(hint);
     if (noMatch)
         bld.skipInnermostContextNote();
     bld.emit();
