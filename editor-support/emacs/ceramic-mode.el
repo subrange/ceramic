@@ -35,6 +35,9 @@
 
 (add-to-list 'auto-mode-alist '("\\.crm\\'" . ceramic-mode))
 
+(defvar ceramic-indent-offset 4
+  "Number of columns for each indentation step in Ceramic mode.")
+
 (defconst ceramic-quoted-string-re "\\(\".*?[^\\]\"\\|'.*?[^\\]'\\)")
 (defconst ceramic-quoted-string-or-regex-re "\\(/.*?[^\\]/\\w*\\|\".*?[^\\]\"\\|'.*?[^\\]'\\)")
 
@@ -99,9 +102,9 @@
               (forward-line -2)
               (if (and (looking-at "^[ \t]*\\(else\\|for\\|if\\|while\\)")
                        (not (looking-at ".*?{[ ]*$")))
-                  (setq cur-indent (- (current-indentation) default-tab-width))
+                  (setq cur-indent (- (current-indentation) ceramic-indent-offset))
                 (forward-line 1)
-                (setq cur-indent (- (current-indentation) default-tab-width))))
+                (setq cur-indent (- (current-indentation) ceramic-indent-offset))))
             (if (< cur-indent 0) ; We can't indent past the left margin
                 (setq cur-indent 0)))
         (save-excursion
@@ -120,7 +123,7 @@
                                                        (not (looking-at ".*?{[ ]*$\\|.*?=[ ]*$"))))
                     (setq cur-indent (if use-current-indentation
                           (current-indentation)
-                          (+ (current-indentation) default-tab-width))) ; Do the actual indenting
+                          (+ (current-indentation) ceramic-indent-offset))) ; Do the actual indenting
                     (setq not-indented nil))
                 (if (bobp)
                     (setq not-indented nil)))))))
@@ -150,7 +153,7 @@
   (set (make-local-variable 'comment-start-skip) "/\\*+ *")
   (set (make-local-variable 'comment-end) "*/")
   ;; Setting default tab width to 4
-  (set (make-local-variable 'default-tab-width) 4)
+  (set (make-local-variable 'ceramic-indent-offset) 4)
   ;; Register our indentation function
   (set (make-local-variable 'indent-line-function) 'ceramic-indent-line)
   (setq major-mode 'ceramic-mode)
