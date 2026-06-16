@@ -27,3 +27,4 @@ Using `-run` skips the binary and runs immediately:
 ceramic -run hello.crm
 ```
 
+The compiler is built from source with CMake. Run `cmake -B build && cmake --build build` from the repository root to produce `build/compiler/ceramic`.
