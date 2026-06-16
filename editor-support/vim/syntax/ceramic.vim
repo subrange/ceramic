@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: ceramic
-" Maintainer: Joe Groff <joe@duriansoftware.com>
-" Last Change: 2011 Nov 21
+" Maintainer: Ramon Asuncion <asuncionbatista@gmail.com>
+" Last Change: 2026 Jun 15
 
 " Quit when a custom syntax file was already loaded
 if exists("b:current_syntax")
