@@ -28,3 +28,18 @@ ceramic -run hello.crm
 ```
 
 The compiler is built from source with CMake. Run `cmake -B build && cmake --build build` from the repository root to produce `build/compiler/ceramic`.
+
+### Variables
+
+A `var` creates a mutable local where types are inferred from the initializer or declared explicitly after a `:`.
+
+```ceramic
+import printer.(println);
+
+main() {
+  var x = 1;
+  var y : Int = 2;
+  x = 10;           // assignments are statements, not expressions
+  println(x + y);   // 12
+}
+```
