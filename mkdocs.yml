@@ -52,6 +52,3 @@ nav:
     - Compiler Interface: primitives-reference/compiler.md
 
 docs_dir: doc
-
-exclude_docs: |
-  _archive/
