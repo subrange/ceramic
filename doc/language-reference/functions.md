@@ -15,7 +15,7 @@ squareInt(x:Int) : Int = x*x;
 [T]
 square(x:T) : T = x*x;
 
-[T | Float?(T)]
+[T when Float?(T)]
 quadraticRoots(a:T, b:T, c:T) : T, T {
     var q = -0.5*(b + signum(b)*sqrt(b*b - 4.*a*c));
     return q/a, c/q;
@@ -40,10 +40,10 @@ overload abs(x:Float) = if (x < 0.) -x else if (x == 0.) 0. else x;
 `define` may also declare an **interface constraint**: all overloads must conform to it:
 
 ```ceramic
-[T | Numeric?(T)]
+[T when Numeric?(T)]
 define abs(x:T) : T;
 
-[T | Integer?(T)]
+[T when Integer?(T)]
 overload abs(x:T) = if (x < 0) -x else x;
 
 overload abs(x:String) { ... }  // ERROR: Numeric?(String) is false
@@ -61,7 +61,7 @@ Overloads bind by pattern matching and can target parameterized types selectivel
 ```ceramic
 record Point[T] (x:T, y:T);
 
-[T | Float?(T)]
+[T when Float?(T)]
 overload Point[T]() = Point[T](nan(T), nan(T));    // float default: NaN sentinel
 overload Point[Int]() = Point[Int](-0x8000_0000, 0x7FFF_FFFF);
 
@@ -90,7 +90,7 @@ The overloaded name may itself be a pattern variable, matching any call site not
 overload F(x:MyInt) = ..F(x.value);
 
 // Default zero-constructor for any Numeric? type
-[T | Numeric?(T)]
+[T when Numeric?(T)]
 overload T() = T(0);
 ```
 When the function position of a call is not a symbol, the call desugars to the `call` operator:
@@ -118,7 +118,7 @@ double(x) = x+x;    // same, with implicit unbounded variable
 Arguments are passed **by reference**: mutations inside the function are visible to the caller:
 
 ```ceramic
-inc(x:Int) { x += 1; }
+inc(x:Int) { x +: 1; }
 
 main() {
     var x = 2;
@@ -144,7 +144,7 @@ main(args) {
 A type pattern on the variadic argument binds the types of all matched values to a variadic pattern variable:
 
 ```ceramic
-[..TT | allValues?(String?, ..TT)]
+[..TT when allValues?(String?, ..TT)]
 printlnTimes(n:Int, ..stuff:TT) { ... }
 
 [..In, ..Out]
@@ -232,7 +232,7 @@ double(x:Int) : Int = x + x;
 [T]
 diagonal(x:T) : Point[T] = Point[T](x, x);
 
-[T | Integer?(T)]
+[T when Integer?(T)]
 safeDouble(x:T) : NextLargerInt(T) {
     alias NextT = NextLargerInt(T);
     return NextT(x) + NextT(x);
@@ -307,7 +307,7 @@ Ceramic static values can be interpolated with `$Name` or `${Expression}`:
 - Static integer/float/bool → LLVM numeric literal
 
 ```ceramic
-[T | Integer?(T)]
+[T when Integer?(T)]
 overload add(x:T, y:T) --> sum:T __llvm__ {
     %xv = load $T, ptr %x
     %yv = load $T, ptr %y
@@ -331,10 +331,10 @@ Debug?() = false;
 
 define assert(x:Bool);
 
-[| not Debug?()]
+[when not Debug?()]
 alias overload assert(x:Bool) { }
 
-[| Debug?()]
+[when Debug?()]
 alias overload assert(x:Bool) {
     if (not x) {
         printlnTo(stderr, __FILE__, ":", __LINE__, ": assertion failed!");
@@ -424,7 +424,7 @@ degreesToRadians(deg:Double) : Double = (PI/180.) * deg;
 Aliases may be parameterized (pattern guard optional when no predicate is needed):
 
 ```ceramic
-[T | Float?(T)]
+[T when Float?(T)]
 alias PI[T] = T(3.14159265358979323846264338327950288);
 
 alias ZERO[T] = T(0);  // [T] implied
