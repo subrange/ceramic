@@ -214,14 +214,14 @@ printlnTwice(file:File, ..x:TT) {
     printlnTo(file, ..x);
 }
 ```
-A `|` after the variables adds a **predicate**, constraining which values are valid:
+A `when` after the variables adds a **predicate**, constraining which values are valid:
 
 ```ceramic
-[T | Numeric?(T)]
+[T when Numeric?(T)]
 record Point[T] (x:T, y:T);
 
 // No variables: just a platform condition
-[| TypeSize(Pointer[Int]) < 4]
+[when TypeSize(Pointer[Int]) < 4]
 overload platformCheck() { error("Time for a new computer"); }
 ```
 

@@ -14,7 +14,7 @@ Bitwise copies `TypeSize(T)` bytes from `src` into `dest`. Lowers to an LLVM `lo
 ## `arrayRef`
 
 ```ceramic
-[T, n, I | Integer?(I)]
+[T, n, I when Integer?(I)]
 arrayRef(array:Array[T, n], i:I) : ref T;
 ```
 
@@ -35,7 +35,7 @@ Returns a multiple-value list of references to every element of `array` in order
 ## `tupleRef`
 
 ```ceramic
-[..T, n | n >= 0 and n < countValues(..T)]
+[..T, n when n >= 0 and n < countValues(..T)]
 tupleRef(tuple:Tuple[..T], #n) : ref nthValue(#n, ..T);
 ```
 
@@ -56,7 +56,7 @@ Returns a multiple-value list of references to every tuple element in order.
 ## `recordFieldRef`
 
 ```ceramic
-[R, n | Record?(R) and n >= 0 and n < RecordFieldCount(R)]
+[R, n when Record?(R) and n >= 0 and n < RecordFieldCount(R)]
 recordFieldRef(rec:R, #n) : ref RecordFieldType(R, #n);
 ```
 
@@ -68,7 +68,7 @@ Returns a reference to the `n`th field of a record value.
 ## `recordFieldRefByName`
 
 ```ceramic
-[R, name | Record?(R) and Identifier?(name) and RecordWithField?(R, name)]
+[R, name when Record?(R) and Identifier?(name) and RecordWithField?(R, name)]
 recordFieldRefByName(rec:R, #name) : ref RecordFieldTypeByName(R, name);
 ```
 
@@ -77,7 +77,7 @@ Returns a reference to the field named `name` (a static string) in `rec`.
 ## `recordFields`
 
 ```ceramic
-[R | Record?(R)]
+[R when Record?(R)]
 recordFields(rec:R) : ref ..RecordFieldTypes(R);
 ```
 
@@ -86,7 +86,7 @@ Returns a multiple-value list of references to all fields of `rec` in declaratio
 ## `enumToInt`
 
 ```ceramic
-[E | Enum?(E)]
+[E when Enum?(E)]
 enumToInt(en:E) : Int32;
 ```
 
@@ -95,7 +95,7 @@ Returns the ordinal of `en` as an `Int32`.
 ## `intToEnum`
 
 ```ceramic
-[E | Enum?(E)]
+[E when Enum?(E)]
 intToEnum(#E, n:Int32) : E;
 ```
 

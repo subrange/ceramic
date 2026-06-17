@@ -211,7 +211,7 @@ Loops while a `Bool` expression is true.
 var x = 0;
 while (x < 10) {
     println(x);
-    x += 1;
+    x +: 1;
 }
 ```
 
@@ -238,7 +238,7 @@ for (x in range(10))
 Unrolls over each value of a multiple-value expression at **compile time**. The loop variable's type may differ between iterations.
 
 ```ceramic
-[..TT | countValues(..TT) != 1]
+[..TT when countValues(..TT) != 1]
 overload printTo(stream, ..xs:TT) {
     ..for (x in xs)
         printTo(stream, x);

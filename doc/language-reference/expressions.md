@@ -277,7 +277,7 @@ Two capture modes:
 ```ceramic
 // by reference; sum accumulates outside
 var sum = 0;
-var squares = mapped(x -> { var sq = x*x; sum += sq; return sq; }, range(10));
+var squares = mapped(x -> { var sq = x*x; sum +: sq; return sq; }, range(10));
 
 // by value; closure is self-contained
 curriedAdd(x) = y => x + y;

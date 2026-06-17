@@ -18,7 +18,7 @@ A global alias set to `true` when exceptions are enabled for the current compila
 ### `Flag?`
 
 ```ceramic
-[name | Identifier?(name)]
+[name when Identifier?(name)]
 Flag?(#name) : Bool;
 ```
 
@@ -27,7 +27,7 @@ Flag?(#name) : Bool;
 ### `Flag`
 
 ```ceramic
-[name | Identifier?(name)]
+[name when Identifier?(name)]
 Flag(#name);
 ```
 
@@ -59,7 +59,7 @@ These symbols may be used as attributes on external function declarations.
 ### `staticIntegers`
 
 ```ceramic
-[n | n >= 0]
+[n when n >= 0]
 staticIntegers(#n);
 ```
 
