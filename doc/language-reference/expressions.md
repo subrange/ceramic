@@ -104,15 +104,14 @@ println(eval #""" "hello world" """);
 
 If `a` is a symbol, argument types are matched to its overloads and the matching one is called. If `a` is a `CodePointer`, the pointed-to function is invoked. Otherwise, the call desugars to `call(a, b, c)`.
 
-Lambda expressions can be passed as trailing arguments with `:` / `::` separators:
+Lambda expressions can be passed as call arguments, including block lambdas:
 
 ```ceramic
-ifZero(rand()): () -> {
-    println("Reply hazy; try again")
-} :: x -> {
-    println("Lucky number: ", x);
-}
+ifZero(rand(),
+    () -> { println("Reply hazy; try again"); },
+    x -> { println("Lucky number: ", x); });
 ```
+
 If any argument is prefixed with `*`, the call becomes a [dynamic dispatch](#dispatch-a) on a variant type.
 
 #### Index (`a[b, c]`)

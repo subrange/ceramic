@@ -25,14 +25,12 @@ main() {
     println("Hi");
 }
 ```
-If a call's final argument is a block lambda, the trailing `;` may be omitted:
+Block lambdas can be passed as call arguments:
 
 ```ceramic
-maybe(maybeMode): mode -> {
-    println(mode.name, " mode selected");
-} :: () -> {
-    println("Please select a mode");
-}
+maybe(maybeMode,
+    mode -> { println(mode.name, " mode selected"); },
+    () -> { println("Please select a mode"); });
 ```
 
 ### Return Statements
