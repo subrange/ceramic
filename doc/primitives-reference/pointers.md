@@ -34,7 +34,7 @@ pointerLesser?(p:Pointer[T], q:Pointer[U]) : Bool;
 ## `pointerOffset`
 
 ```ceramic
-[T, I when Integer?(I)]
+[T, I | Integer?(I)]
 pointerOffset(p:Pointer[T], i:I) : Pointer[T];
 ```
 
@@ -43,7 +43,7 @@ Returns a pointer offset from `p` by `i * TypeSize(T)` bytes. Lowers to LLVM `ge
 ## `pointerToInt`
 
 ```ceramic
-[T, I when Integer?(I)]
+[T, I | Integer?(I)]
 pointerToInt(#I, p:Pointer[T]) : I;
 ```
 
@@ -52,7 +52,7 @@ Converts the address of `p` to integer type `I`. Zero-extends if `I` is wider th
 ## `intToPointer`
 
 ```ceramic
-[T, I when Integer?(I)]
+[T, I | Integer?(I)]
 intToPointer(#T, address:I) : Pointer[T];
 ```
 
@@ -61,7 +61,7 @@ Converts `address` to a `Pointer[T]`. Truncates if `I` is wider than a pointer, 
 ## `pointerCast`
 
 ```ceramic
-[P1, P2 when Pointer?(P1) and Pointer?(P2)]
+[P1, P2 | Pointer?(P1) and Pointer?(P2)]
 pointerCast(#P1, p:P2) : P1;
 ```
 

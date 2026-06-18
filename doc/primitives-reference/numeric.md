@@ -15,7 +15,7 @@ Returns the complement of `x`. Equivalent to the `not` operator.
 ## `numericEquals?`
 
 ```ceramic
-[T when Numeric?(T)]
+[T | Numeric?(T)]
 numericEquals?(a:T, b:T) : Bool;
 ```
 
@@ -27,7 +27,7 @@ Numeric equality.
 ## `numericLesser?`
 
 ```ceramic
-[T when Numeric?(T)]
+[T | Numeric?(T)]
 numericLesser?(a:T, b:T) : Bool;
 ```
 
@@ -42,7 +42,7 @@ numericLesser?(a:T, b:T) : Bool;
 ## `numericAdd` / `numericSubtract` / `numericMultiply`
 
 ```ceramic
-[T when Numeric?(T)]
+[T | Numeric?(T)]
 numericAdd(a:T, b:T) : T;
 numericSubtract(a:T, b:T) : T;
 numericMultiply(a:T, b:T) : T;
@@ -53,7 +53,7 @@ Standard arithmetic. Integer overflow wraps (two's-complement). Integer ops lowe
 ## `numericDivide`
 
 ```ceramic
-[T when Numeric?(T)]
+[T | Numeric?(T)]
 numericDivide(a:T, b:T) : T;
 ```
 
@@ -64,7 +64,7 @@ Integer division truncates toward zero. Integer division by zero is **undefined*
 ## `numericNegate`
 
 ```ceramic
-[T when Numeric?(T)]
+[T | Numeric?(T)]
 numericNegate(a:T) : T;
 ```
 
@@ -76,7 +76,7 @@ Negation.
 ## `integerRemainder`
 
 ```ceramic
-[T when Integer?(T)]
+[T | Integer?(T)]
 integerRemainder(a:T, b:T) : T;
 ```
 
@@ -87,7 +87,7 @@ Remainder of `a / b`. For signed types, a nonzero remainder takes the sign of `a
 ## `integerShiftLeft` / `integerShiftRight`
 
 ```ceramic
-[T when Integer?(T)]
+[T | Integer?(T)]
 integerShiftLeft(a:T, b:T) : T;
 integerShiftRight(a:T, b:T) : T;
 ```
@@ -100,7 +100,7 @@ Shift `a` by `b` bits. Undefined if `b` is negative or `>= bitwidth(T)`.
 ## `integerBitwiseAnd` / `Or` / `Xor`
 
 ```ceramic
-[T when Integer?(T)]
+[T | Integer?(T)]
 integerBitwiseAnd(a:T, b:T) : T;
 integerBitwiseOr(a:T, b:T)  : T;
 integerBitwiseXor(a:T, b:T) : T;
@@ -111,7 +111,7 @@ Bitwise AND, OR, XOR. Lower to LLVM `and`, `or`, `xor`.
 ## `integerBitwiseNot`
 
 ```ceramic
-[T when Integer?(T)]
+[T | Integer?(T)]
 integerBitwiseNot(a:T) : T;
 ```
 
@@ -120,7 +120,7 @@ Bitwise complement. Lowers to LLVM `xor %T %a, -1`.
 ## `numericConvert`
 
 ```ceramic
-[T, U when Numeric?(T) and Numeric?(U)]
+[T, U | Numeric?(T) and Numeric?(U)]
 numericConvert(#T, a:U) : T;
 ```
 
@@ -155,7 +155,7 @@ Converts `a` to type `T` while preserving its numeric value. If `T == U`, the va
 Variants of the integer primitives that also return a `Bool` overflow flag. On overflow, the numeric result is **undefined** and the flag is `true`. Otherwise the result matches the unchecked version and the flag is `false`. None may be overloaded.
 
 ```ceramic
-[T when Integer?(T)]
+[T | Integer?(T)]
 integerAddChecked(a:T, b:T)      : T, Bool;
 integerSubtractChecked(a:T, b:T) : T, Bool;
 integerMultiplyChecked(a:T, b:T) : T, Bool;
@@ -164,6 +164,6 @@ integerNegateChecked(a:T)        : T, Bool;
 integerRemainderChecked(a:T, b:T): T, Bool;
 integerShiftLeftChecked(a:T, b:T): T, Bool;
 
-[T, U when Integer?(T) and Integer?(U)]
+[T, U | Integer?(T) and Integer?(U)]
 integerConvertChecked(#T, a:U) : T, Bool;
 ```
