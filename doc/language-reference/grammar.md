@@ -339,7 +339,7 @@ OpChars      -> /[=!<>+\-*\/\\%~|&]+/
 [→ context in statements.md](statements.md#switch)
 
 ```text
-IfStatement     -> "if" "(" Expression ")" Statement ("else" Statement)?
+IfStatement     -> "if" "(" StatementExpression ")" Statement ("else" Statement)?
 SwitchStatement -> "switch" "(" Expression ")"
                    ("case" "(" ExprList ")" Statement)*
                    ("else" Statement)?
@@ -350,9 +350,12 @@ SwitchStatement -> "switch" "(" Expression ")"
 [→ context in statements.md](statements.md#for-multiple-value-for)
 
 ```text
-WhileStatement         -> "while" "(" Expression ")" Statement
+WhileStatement         -> "while" "(" StatementExpression ")" Statement
 ForStatement           -> "for" "(" comma_list(Identifier) "in" Expression ")" Statement
 MultiValueForStatement -> ".." "for" "(" Identifier "in" ExprList ")" Statement
+
+StatementExpression    -> (StatementExprStatement ";")* Expression
+StatementExprStatement -> Binding | Assignment
 ```
 
 ### `goto`
