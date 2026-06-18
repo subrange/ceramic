@@ -34,6 +34,7 @@ foo(d) {
     println(a, b, c, d, e);
 }
 ```
+
 Names bound to multiple values (variadic variables, variadic arguments) must be referenced with the `..` unpack operator:
 
 ```ceramic
@@ -61,6 +62,7 @@ println(Type(+1ul));   // UInt64
 println(Type(1.0f));   // Float32
 println(Type(1.j));    // Imag64
 ```
+
 Integer type suffixes may be applied to floating-point literal tokens to produce a float of that type. Floating-point suffixes may not be applied to integer literal tokens.
 
 #### Parentheses
@@ -258,6 +260,7 @@ Both `and` and `or` require `Bool` operands and are not overloadable.
 ```ceramic
 if (condition) thenExpr else elseExpr
 ```
+
 Both branches must have the same type. Unlike `if` statements, the `else` clause is required.
 
 #### Keyword Pair Expressions
@@ -288,6 +291,7 @@ An anonymous function: argument list, arrow, body.
 ```ceramic
 var squares = mapped(x -> x*x, range(10));
 ```
+
 Two capture modes:
 
 - **`->`**: captures by reference. Mutations are visible outside the lambda. The lambda must not outlive its enclosing scope.
@@ -314,12 +318,14 @@ Most Ceramic functions can return multiple values. The comma operator builds a m
 ```ceramic
 twoThroughFour() = 2, 3, 4;
 ```
+
 Expressions are normally constrained to a **single value**. To use a multiple-value expression inside another expression, unpack it with `..`:
 
 ```ceramic
 oneThroughFive() = 1, ..twoThroughFour(), 5;  // ok
 oneThroughFive() = 1, twoThroughFour(), 5;    // ERROR
 ```
+
 The following contexts provide **implicit** multiple-value context at the outermost level. No `..` is needed there:
 
 - Expression statements
