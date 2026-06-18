@@ -277,12 +277,13 @@ Two capture modes:
 ```ceramic
 // by reference; sum accumulates outside
 var sum = 0;
-var squares = mapped(x -> { var sq = x*x; sum += sq; return sq; }, range(10));
+var squares = mapped(x -> { var sq = x*x; sum +: sq; return sq; }, range(10));
 
 // by value; closure is self-contained
 curriedAdd(x) = y => x + y;
 var plus3 = curriedAdd(3);
 ```
+
 A lambda with a single untyped argument may omit parentheses: `x -> x*x`. A lambda that does not capture is equivalent to an anonymous named function.
 
 Lambda has higher precedence than the multi-value comma. `a -> b, c` parses as `(a -> b), c`. To return multiple values from a lambda, use a block body or explicit parentheses: `a -> (b, c)`.

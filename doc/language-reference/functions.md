@@ -118,7 +118,7 @@ double(x) = x+x;    // same, with implicit unbounded variable
 Arguments are passed **by reference**: mutations inside the function are visible to the caller:
 
 ```ceramic
-inc(x:Int) { x += 1; }
+inc(x:Int) { x +: 1; }
 
 main() {
     var x = 2;
