@@ -9,7 +9,7 @@ Create, dereference, compare, and convert pointers, plus function-pointer constr
 addressOf(ref x:T) : Pointer[T];
 ```
 
-Returns the address of `x`. `x` must be an lvalue. Equivalent to the prefix `&` operator.
+Returns the address of `x`. `x` must be an lvalue. Equivalent to the prefix `@` operator.
 
 ## `pointerDereference`
 

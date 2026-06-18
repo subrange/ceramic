@@ -160,7 +160,7 @@ Desugars to `dereference(a)`. Used to get a reference to the value behind a poin
 | -------- | --------------------------------------------------------------------------------- |
 | `+a`     | desugars to `plus(a)`                                                             |
 | `-a`     | desugars to `minus(a)`                                                            |
-| `&a`     | primitive: returns `Pointer[T]` to `a`, which must be an lvalue. Not overloadable |
+| `@a`     | primitive: returns `Pointer[T]` to `a`, which must be an lvalue. Not overloadable |
 | `*a`     | dispatch operator. Only valid as an argument to a call expression                 |
 
 #### Dispatch (`*a`)

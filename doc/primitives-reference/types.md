@@ -41,7 +41,7 @@ For each floating-point width:
 Pointer[T]
 ```
 
-A pointer to a value of type `T`. Corresponds to LLVM `%T*` or C `T*`. Created with prefix `&` or [`addressOf`](pointers.md#addressof).
+A pointer to a value of type `T`. Corresponds to LLVM `%T*` or C `T*`. Created with prefix `@` or [`addressOf`](pointers.md#addressof).
 
 ## `CodePointer`
 
