@@ -54,18 +54,19 @@ A pointer to a Ceramic function instance. Created with [`makeCodePointer`](point
 ## External Code Pointer Types
 
 ```ceramic
-CCodePointer[[..In], [..Out]]
+ExternalCodePointer[CC, V?, [..In], [..Out]]
 ```
 
-A pointer to a C function. `CCodePointer[[A,B,C],[]]` corresponds to `void (*)(A,B,C)`. `CCodePointer[[A,B,C],[D]]` corresponds to `D (*)(A,B,C)`.
+A pointer to a function using a foreign calling convention `CC`, optionally variadic (`V?`). `ExternalCodePointer[cdecl, false, [A,B,C], []]` corresponds to `void (*)(A,B,C)`; with `[D]` outputs, `D (*)(A,B,C)`.
 
-Variants for other conventions:
+The common conventions have aliases:
 
-- `LLVMCodePointer[[..In],[..Out]]`: LLVM `ccc` convention.
-- `VarArgsCCodePointer[[..In],[..Out]]`: variadic C: `D (*)(A,B,C,...)`.
+- `CCodePointer[[..In],[..Out]]` = `ExternalCodePointer[cdecl, false, …]`.
+- `VarArgsCCodePointer[[..In],[..Out]]` = `ExternalCodePointer[cdecl, true, …]`: variadic C, `D (*)(A,B,C,...)`.
+- `LLVMCodePointer[[..In],[..Out]]` = `ExternalCodePointer[llvm, false, …]`.
 - `StdCallCodePointer`, `FastCallCodePointer`, `ThisCallCodePointer`: legacy Windows x86 conventions.
 
-These pointers are obtained by evaluating external function names, returning them from C functions, or via [`makeCCodePointer`](pointers.md#makeccodepointer). They are invoked through [`callCCodePointer`](pointers.md#callccodepointer).
+These pointers are obtained by evaluating external function names, returning them from C functions, or via [`makeExternalCodePointer`](pointers.md#makeexternalcodepointer). They are invoked through [`callExternalCodePointer`](pointers.md#callexternalcodepointer).
 
 ## `Array`
 

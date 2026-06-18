@@ -391,7 +391,7 @@ Limitations:
 - Types with nontrivial `copy` or `destroy` overloads must be passed by pointer.
 - Cannot be called at compile time.
 
-External function names are not true symbols. They evaluate directly to a `CCodePointer` value.
+External function names are not true symbols. They evaluate directly to an `ExternalCodePointer` value.
 
 #### External Attributes
 

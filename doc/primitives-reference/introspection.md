@@ -203,20 +203,20 @@ Size in bytes of a value of type `T`.
 ### `TypeAlignment`
 
 ```ceramic
-[T | Type?(T)]
+[T when Type?(T)]
 TypeAlignment(#T) : SizeT;
 ```
 
 Natural alignment in bytes of a value of type `T`.
 
-### `CCodePointer?`
+### `BaseType`
 
 ```ceramic
-[T]
-CCodePointer?(#T) : Bool;
+[T when Type?(T)]
+BaseType(#T);                           // static type
 ```
 
-`true` if `T` is a symbol and an instance of one of the [external code pointer types](types.md#external-code-pointer-types) (`CCodePointer`, `LLVMCodePointer`, …).
+The underlying representation type of `T`. For a new type, this is the type it wraps. For any other type, it is `T` itself.
 
 ### `TupleElementCount`
 
