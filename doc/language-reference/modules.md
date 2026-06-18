@@ -19,10 +19,10 @@ Modules are the basis of Ceramic's namespacing and encapsulation. Each module ha
 Operator functions are symbols in library code that the language uses internally to implement syntactic forms. They must be publicly reachable through the `prelude` module.
 
 **Overloadable operators:**
-`add` `call` `dereference` `divide` `equals?` `fieldRef` `greater?` `greaterEquals?` `index` `lesser?` `lesserEquals?` `minus` `multiply` `notEquals?` `plus` `remainder` `staticIndex` `subtract` `tupleLiteral`
+`add` `bitand` `bitor` `bitshl` `bitshr` `bitxor` `call` `cat` `dereference` `divide` `equals?` `fieldRef` `greater?` `greaterEquals?` `index` `infixOperator` `lesser?` `lesserEquals?` `minus` `multiply` `notEquals?` `plus` `prefixOperator` `quotient` `remainder` `staticIndex` `subtract` `tupleLiteral`
 
 **Literals:**
-`Char` `StringConstant`
+`charLiteral` `stringLiteral`
 
 **Value lifecycle:**
 `copy` `destroy` `move`

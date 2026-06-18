@@ -47,8 +47,8 @@ foo(..xs:TT) {
 | `true` / `false` | `Bool`                        | (none)                                          |
 | `1`, `0xFF`      | `Int32` (or module default)   | `ss` `s` `i` `l` `ll` `uss` `us` `u` `ul` `ull` |
 | `1.0`, `1e2`     | `Float64` (or module default) | `f` `ff` `fl` `fj` `j` `ffj` `flj`              |
-| `'x'`            | via `Char` operator           | (none)                                          |
-| `"hello"`        | via `StringConstant` operator | (none)                                          |
+| `'x'`            | via `charLiteral` operator    | (none)                                          |
+| `"hello"`        | via `stringLiteral` operator  | (none)                                          |
 | `#foo`, `#"foo"` | `Static[#foo]`                | (none)                                          |
 
 ```ceramic
