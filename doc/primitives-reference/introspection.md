@@ -26,25 +26,94 @@ main() {
 }
 ```
 
-### `CallDefined?`
+### `Symbol?`
+
+```ceramic
+[x]
+Symbol?(#x) : Bool;
+```
+
+`true` if `x` names a symbol: a type, record, variant, procedure, intrinsic, or global alias. `false` for static values such as numbers or static strings.
+
+### `Operator?`
+
+```ceramic
+[x]
+Operator?(#x) : Bool;
+```
+
+`true` if `x` is a symbol declared as an operator (with `define (op)`). `false` for ordinary symbols and non-symbols.
+
+### `StaticCallDefined?`
 
 ```ceramic
 [F, ..T]
-CallDefined?(#F, #..T) : Bool;
+StaticCallDefined?(#F, #..T) : Bool;
 ```
 
-`true` if `F` has an overload matching input types `..T`.
+`true` if symbol `F` has an overload matching input types `..T`. The first argument must be a symbol (not a callable value).
 
-To probe a non-symbol callable type, use `CallDefined?(call, FunctionType, ..T)`.
+The library function `CallDefined?` (from `core.operators`) wraps this primitive and additionally handles callable record types via `StaticCallDefined?(call, F, ..T)`.
+
+### `StaticCallOutputTypes`
+
+```ceramic
+[F, ..T]
+StaticCallOutputTypes(#F, #..T);         // static types
+```
+
+A multiple-value list of the output types that symbol `F` would return when called with input types `..T`. Errors if no matching overload exists.
+
+The library alias `CallOutputTypes` (from `core.operators`) wraps this for both symbols and callable types.
+
+### `StaticMono?`
+
+```ceramic
+[F]
+StaticMono?(#F) : Bool;
+```
+
+`true` if symbol `F` has exactly one monomorphic overload (no pattern variables). The counterpart to `LambdaMono?` for symbols.
+
+### `StaticMonoInputTypes`
+
+```ceramic
+[F when StaticMono?(F)]
+StaticMonoInputTypes(#F);                // static types
+```
+
+A multiple-value list of the argument types of the single monomorphic overload of symbol `F`. Errors if `F` is not monomorphic.
+
+### `MainModule`
+
+```ceramic
+MainModule() : module;
+```
+
+Returns the module object for the entry-point (main) module of the current compilation. Useful for writing module-generic test runners:
+
+```ceramic
+import test.module.(testMainModule);
+main() = testMainModule();
+```
+
+### `StaticModule`
+
+```ceramic
+[S]
+StaticModule(#S) : module;
+```
+
+Returns the module object containing symbol `S`. Errors if `S` has no associated module.
 
 ### `ModuleName`
 
 ```ceramic
 [S]
-ModuleName(#S) : StringConstant;
+ModuleName(#S);                           // static string
 ```
 
-Generates a string literal containing the fully-qualified module name containing the symbol `S`. Evaluated via the `StringConstant` operator function. If `S` is itself a module, returns the module's own name. Errors if `S` is not a symbol.
+Returns a static string containing the fully-qualified module name containing the symbol `S`. If `S` is itself a module, returns the module's own name. Errors if `S` is not a symbol.
 
 ```ceramic
 import foo;
