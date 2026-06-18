@@ -324,8 +324,8 @@ Any function or overload definition may be preceded by an inline qualifier and/o
 
 Inline qualifiers:
 
-- **`forceinline`**: always inlined at every call site. A compile-time error if inlining is impossible (e.g., a recursive function).
-- **`inline`**: requests inlining; the compiler may decline (e.g., in debug builds).
+- **`forceinline`**: always inlined at every call site. A compile-time error if the function has an LLVM body.
+- **`inline`**: hints to the optimizer to inline. The optimizer may decline based on its own heuristics.
 - **`noinline`**: suppresses inlining even when the optimizer would otherwise inline the function.
 
 `alias`:
