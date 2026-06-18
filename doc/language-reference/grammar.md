@@ -189,6 +189,14 @@ Instance -> PatternGuard? "instance" Pattern "(" ExprList ")" ";"
 Enumeration -> Visibility? "enum" Identifier "(" comma_list(Identifier) ")" ";"
 ```
 
+### New Types
+
+[→ context in types.md](types.md#new-types)
+
+```text
+NewTypeDecl -> Visibility? "newtype" Identifier "=" Expression ";"
+```
+
 ## Function Definitions
 
 ### Simple Function Definitions

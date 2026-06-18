@@ -76,7 +76,7 @@ variant Fruit (..RainbowTypes(Apple), ..RainbowTypes(Banana));
 Variants are **open**. New instance types are added with `instance`:
 
 ```ceramic
-variant Exception ();
+variant Exception;
 
 record RangeError (lowerBound:Int, upperBound:Int, attemptedValue:Int);
 record TypeError  (expectedTypeName:String, attemptedTypeName:String);
@@ -85,12 +85,12 @@ instance Exception (RangeError, TypeError);
 `instance` binds to variants by pattern matching, so parameterized variants can be extended selectively:
 
 ```ceramic
-[C | Color?(C)]
-variant Fruit[C] ();
+[C when Color?(C)]
+variant Fruit[C];
 
 instance Fruit[Yellow] (Banana);          // only Yellow
 
-[C | C == Red or C == Green]
+[C when C == Red or C == Green]
 instance Fruit[C] (Apple);               // Red and Green only
 
 [C]
