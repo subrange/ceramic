@@ -157,7 +157,7 @@ a.field +: c;   // → fieldRefUpdateAssign(add, a, #"field", c)
 An operator symbol followed by `:` may also appear as the **first** token of a statement, with the target on the right. This is a prefix update assignment:
 
 ```ceramic
-++: x;   // → prefixUpdateAssign(#(++), x) → x = ++(x)
+-: x;   // → prefixUpdateAssign(#(-), x) → x = -(x)
 ```
 
 Desugars to `prefixUpdateAssign(#op, x)`, which by default sets `x` to the result of `op(x)` via `prefixOperator`. To implement a custom prefix update, overload `prefixUpdateAssign`.
