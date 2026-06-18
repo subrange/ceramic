@@ -172,6 +172,7 @@ Transforms a call into dynamic dispatch on a variant type. Each instance type of
 ```ceramic
 variant Shape (Circle, Square);
 
+define draw;
 overload draw(s:Circle) { println("()"); }
 overload draw(s:Square) { println("[]"); }
 
