@@ -12,37 +12,50 @@ boolNot(x:Bool) : Bool;
 
 Returns the complement of `x`. Equivalent to the `not` operator.
 
-## `numericEquals?`
+## `integerEquals?` / `integerLesser?`
 
 ```ceramic
-[T | Numeric?(T)]
-numericEquals?(a:T, b:T) : Bool;
+[T when Integer?(T)]
+integerEquals?(a:T, b:T) : Bool;
+integerLesser?(a:T, b:T) : Bool;
 ```
 
-Numeric equality.
+Integer comparison.
 
-- Integer: LLVM `icmp eq`.
-- Floating-point: LLVM `fcmp ueq` (IEEE 754 unordered). `+0.0 == -0.0`. Any comparison with NaN is false.
+- `integerEquals?`: LLVM `icmp eq`.
+- `integerLesser?`: `true` if `a < b`. Signed: `icmp slt`. Unsigned: `icmp ult`.
 
-## `numericLesser?`
+## Floating-point comparison
 
 ```ceramic
-[T | Numeric?(T)]
-numericLesser?(a:T, b:T) : Bool;
+[T when Float?(T)]
+floatOrderedEquals?(a:T, b:T)        : Bool;
+floatOrderedNotEquals?(a:T, b:T)     : Bool;
+floatOrderedLesser?(a:T, b:T)        : Bool;
+floatOrderedLesserEquals?(a:T, b:T)  : Bool;
+floatOrderedGreater?(a:T, b:T)       : Bool;
+floatOrderedGreaterEquals?(a:T, b:T) : Bool;
+floatOrdered?(a:T, b:T)              : Bool;
+
+floatUnorderedEquals?(a:T, b:T)        : Bool;
+floatUnorderedNotEquals?(a:T, b:T)     : Bool;
+floatUnorderedLesser?(a:T, b:T)        : Bool;
+floatUnorderedLesserEquals?(a:T, b:T)  : Bool;
+floatUnorderedGreater?(a:T, b:T)       : Bool;
+floatUnorderedGreaterEquals?(a:T, b:T) : Bool;
+floatUnordered?(a:T, b:T)              : Bool;
 ```
 
-`true` if `a < b`.
-
-- Signed integer: LLVM `icmp slt`.
-- Unsigned integer: LLVM `icmp ult`.
-- Floating-point: LLVM `fcmp ult` (IEEE 754 unordered). `-0.0 < +0.0` is false. NaN comparisons are false.
-
-`__primitives__` does not expose the full set of FP comparisons. The library implements ordered and unordered FP comparison via inline LLVM. These primitives are only used during compile-time evaluation, which cannot run inline LLVM.
+- `floatOrdered*`: LLVM `fcmp o…`; `false` if either operand is NaN.
+- `floatUnordered*`: LLVM `fcmp u…`; `true` if either operand is NaN.
+- `floatOrdered?`: `true` if neither operand is NaN.
+- `floatUnordered?`: `true` if either operand is NaN.
+- `+0.0` and `-0.0` compare equal.
 
 ## `numericAdd` / `numericSubtract` / `numericMultiply`
 
 ```ceramic
-[T | Numeric?(T)]
+[T when Numeric?(T)]
 numericAdd(a:T, b:T) : T;
 numericSubtract(a:T, b:T) : T;
 numericMultiply(a:T, b:T) : T;
@@ -50,21 +63,30 @@ numericMultiply(a:T, b:T) : T;
 
 Standard arithmetic. Integer overflow wraps (two's-complement). Integer ops lower to `add`, `sub`, `mul`. Floating-point ops lower to `fadd`, `fsub`, `fmul`.
 
-## `numericDivide`
+## `floatDivide`
 
 ```ceramic
-[T | Numeric?(T)]
-numericDivide(a:T, b:T) : T;
+[T when Float?(T)]
+floatDivide(a:T, b:T) : T;
 ```
 
-Integer division truncates toward zero. Integer division by zero is **undefined**, as is signed overflow (e.g. `-0x8000_0000 / -1`). Floating-point division follows IEEE 754.
+Floating-point division following IEEE 754. Lowers to LLVM `fdiv`.
 
-- Signed: `sdiv`. Unsigned: `udiv`. Floating-point: `fdiv`.
+## `integerQuotient`
+
+```ceramic
+[T when Integer?(T)]
+integerQuotient(a:T, b:T) : T;
+```
+
+Integer division truncating toward zero. Division by zero is **undefined**, as is signed overflow (e.g. `-0x8000_0000 / -1`).
+
+- Signed: `sdiv`. Unsigned: `udiv`.
 
 ## `numericNegate`
 
 ```ceramic
-[T | Numeric?(T)]
+[T when Numeric?(T)]
 numericNegate(a:T) : T;
 ```
 
@@ -152,18 +174,18 @@ Converts `a` to type `T` while preserving its numeric value. If `T == U`, the va
 
 ## Checked Integer Operations
 
-Variants of the integer primitives that also return a `Bool` overflow flag. On overflow, the numeric result is **undefined** and the flag is `true`. Otherwise the result matches the unchecked version and the flag is `false`. None may be overloaded.
+Variants of the integer primitives that detect overflow at runtime. They return the result `T` and, on overflow, raise a runtime error (`invalid integer math: ...`) instead of wrapping or producing an undefined value. None may be overloaded.
 
 ```ceramic
-[T | Integer?(T)]
-integerAddChecked(a:T, b:T)      : T, Bool;
-integerSubtractChecked(a:T, b:T) : T, Bool;
-integerMultiplyChecked(a:T, b:T) : T, Bool;
-integerDivideChecked(a:T, b:T)   : T, Bool;
-integerNegateChecked(a:T)        : T, Bool;
-integerRemainderChecked(a:T, b:T): T, Bool;
-integerShiftLeftChecked(a:T, b:T): T, Bool;
+[T when Integer?(T)]
+integerAddChecked(a:T, b:T)      : T;
+integerSubtractChecked(a:T, b:T) : T;
+integerMultiplyChecked(a:T, b:T) : T;
+integerQuotientChecked(a:T, b:T) : T;
+integerNegateChecked(a:T)        : T;
+integerRemainderChecked(a:T, b:T): T;
+integerShiftLeftChecked(a:T, b:T): T;
 
-[T, U | Integer?(T) and Integer?(U)]
-integerConvertChecked(#T, a:U) : T, Bool;
+[T, U when Integer?(T) and Integer?(U)]
+integerConvertChecked(#T, a:U) : T;
 ```
