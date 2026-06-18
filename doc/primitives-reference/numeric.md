@@ -76,7 +76,7 @@ Negation.
 ## `integerRemainder`
 
 ```ceramic
-[T | Integer?(T)]
+[T when Integer?(T)]
 integerRemainder(a:T, b:T) : T;
 ```
 
@@ -87,7 +87,7 @@ Remainder of `a / b`. For signed types, a nonzero remainder takes the sign of `a
 ## `integerShiftLeft` / `integerShiftRight`
 
 ```ceramic
-[T | Integer?(T)]
+[T when Integer?(T)]
 integerShiftLeft(a:T, b:T) : T;
 integerShiftRight(a:T, b:T) : T;
 ```
@@ -100,7 +100,7 @@ Shift `a` by `b` bits. Undefined if `b` is negative or `>= bitwidth(T)`.
 ## `integerBitwiseAnd` / `Or` / `Xor`
 
 ```ceramic
-[T | Integer?(T)]
+[T when Integer?(T)]
 integerBitwiseAnd(a:T, b:T) : T;
 integerBitwiseOr(a:T, b:T)  : T;
 integerBitwiseXor(a:T, b:T) : T;
@@ -111,7 +111,7 @@ Bitwise AND, OR, XOR. Lower to LLVM `and`, `or`, `xor`.
 ## `integerBitwiseNot`
 
 ```ceramic
-[T | Integer?(T)]
+[T when Integer?(T)]
 integerBitwiseNot(a:T) : T;
 ```
 
@@ -120,7 +120,7 @@ Bitwise complement. Lowers to LLVM `xor %T %a, -1`.
 ## `numericConvert`
 
 ```ceramic
-[T, U | Numeric?(T) and Numeric?(U)]
+[T, U when Numeric?(T) and Numeric?(U)]
 numericConvert(#T, a:U) : T;
 ```
 

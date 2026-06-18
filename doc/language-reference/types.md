@@ -19,7 +19,7 @@ Records may be parameterized. When no predicate is needed, the pattern guard is 
 ```ceramic
 record Point[T] (x:T, y:T);          // [T] guard is implied
 
-[T | Float?(T)]
+[T when Float?(T)]
 record FloatPoint[T] (x:T, y:T);     // explicit predicate
 ```
 
@@ -58,7 +58,7 @@ Variants may be parameterized (pattern guard optional when no predicate is neede
 variant Maybe[T] (Nothing, T);          // [T] implied
 variant Either[T, U] (T, U);           // [T, U] implied
 
-[C | Color?(C)]
+[C when Color?(C)]
 variant Fruit[C] (Apple[C], Orange[C], Banana[C]);
 ```
 The instance list may be any expression evaluated at compile time:

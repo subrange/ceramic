@@ -43,7 +43,7 @@ Returns a pointer offset from `p` by `i * TypeSize(T)` bytes. Lowers to LLVM `ge
 ## `pointerToInt`
 
 ```ceramic
-[T, I | Integer?(I)]
+[T, I when Integer?(I)]
 pointerToInt(#I, p:Pointer[T]) : I;
 ```
 

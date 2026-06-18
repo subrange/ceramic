@@ -35,7 +35,7 @@ Returns a multiple-value list of references to every element of `array` in order
 ## `tupleRef`
 
 ```ceramic
-[..T, n | n >= 0 and n < countValues(..T)]
+[..T, n when n >= 0 and n < countValues(..T)]
 tupleRef(tuple:Tuple[..T], #n) : ref nthValue(#n, ..T);
 ```
 
@@ -56,7 +56,7 @@ Returns a multiple-value list of references to every tuple element in order.
 ## `recordFieldRef`
 
 ```ceramic
-[R, n | Record?(R) and n >= 0 and n < RecordFieldCount(R)]
+[R, n when Record?(R) and n >= 0 and n < RecordFieldCount(R)]
 recordFieldRef(rec:R, #n) : ref RecordFieldType(R, #n);
 ```
 
@@ -95,7 +95,7 @@ Returns the ordinal of `en` as an `Int32`.
 ## `intToEnum`
 
 ```ceramic
-[E | Enum?(E)]
+[E when Enum?(E)]
 intToEnum(#E, n:Int32) : E;
 ```
 
