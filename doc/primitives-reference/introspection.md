@@ -349,13 +349,36 @@ VariantMemberIndex(#V, #n);
 [E]
 Enum?(#E) : Bool;
 
-[E | Enum?(E)]
+[E when Enum?(E)]
 EnumMemberCount(#E) : SizeT;
 
-[E, n | Enum?(E) and n >= 0 and n < EnumMemberCount(E)]
-EnumMemberName(#E, #n) : StringConstant;
+[E, n when Enum?(E) and n >= 0 and n < EnumMemberCount(E)]
+EnumMemberName(#E, #n);                  // static string
 ```
 
 - `Enum?`: `true` if `E` names an enum type.
 - `EnumMemberCount`: number of values.
-- `EnumMemberName`: string literal naming the `n`th value, evaluated via `StringConstant`.
+- `EnumMemberName`: static string naming the `n`th value.
+
+## Lambda Introspection
+
+Compile-time predicates over lambda types. A **lambda record** is the anonymous record type created when a lambda expression captures variables. A **lambda symbol** is a non-capturing lambda equivalent to a named function.
+
+```ceramic
+[F]
+LambdaRecord?(#F) : Bool;
+
+[F]
+LambdaSymbol?(#F) : Bool;
+
+[F]
+LambdaMono?(#F) : Bool;
+
+[F when LambdaMono?(F)]
+LambdaMonoInputTypes(#F);                // static types
+```
+
+- `LambdaRecord?`: `true` if `F` is the type of a capturing lambda.
+- `LambdaSymbol?`: `true` if `F` is a procedure symbol created from a non-capturing lambda.
+- `LambdaMono?`: `true` if the lambda record type `F` is monomorphic (its single overload has no pattern variables).
+- `LambdaMonoInputTypes`: a multiple-value list of the argument types of the monomorphic overload of lambda record type `F`.
