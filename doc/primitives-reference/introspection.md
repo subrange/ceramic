@@ -97,7 +97,7 @@ Like `StaticName`, but returns a static string.
 ### `staticFieldRef`
 
 ```ceramic
-[M, name when Identifier?(name)]
+[M, name | Identifier?(name)]
 staticFieldRef(#M, #name);
 ```
 
@@ -117,7 +117,7 @@ Identifier?(#S) : Bool;
 ### `IdentifierSize`
 
 ```ceramic
-[S when Identifier?(S)]
+[S | Identifier?(S)]
 IdentifierSize(#S) : SizeT;
 ```
 
@@ -126,7 +126,7 @@ Number of characters in static string `S`.
 ### `IdentifierConcat`
 
 ```ceramic
-[..SS when allValues?(Identifier?, ..SS)]
+[..SS | allValues?(Identifier?, ..SS)]
 IdentifierConcat(#..SS);
 ```
 
@@ -150,7 +150,7 @@ Substring of `S` from index `n` up to (but not including) `m`.
 ### `TypeSize`
 
 ```ceramic
-[T when Type?(T)]
+[T | Type?(T)]
 TypeSize(#T) : SizeT;
 ```
 
@@ -159,7 +159,7 @@ Size in bytes of a value of type `T`.
 ### `TypeAlignment`
 
 ```ceramic
-[T when Type?(T)]
+[T | Type?(T)]
 TypeAlignment(#T) : SizeT;
 ```
 
@@ -198,13 +198,13 @@ Number of member types in the union type.
 [R]
 Record?(#R) : Bool;
 
-[R when Record?(R)]
+[R | Record?(R)]
 RecordFieldCount(#R) : SizeT;
 
-[R, n when Record?(R) and n >= 0 and n < RecordFieldCount(R)]
+[R, n | Record?(R) and n >= 0 and n < RecordFieldCount(R)]
 RecordFieldName(#R, #n);                // static string
 
-[R, name when Record?(R) and Identifier?(name)]
+[R, name | Record?(R) and Identifier?(name)]
 RecordWithField?(#R, #name) : Bool;
 ```
 
@@ -219,10 +219,10 @@ RecordWithField?(#R, #name) : Bool;
 [V]
 Variant?(#V) : Bool;
 
-[V when Variant?(V)]
+[V | Variant?(V)]
 VariantMemberCount(#V) : SizeT;
 
-[V, n when Variant?(V) and n >= 0 and n < VariantMemberCount(V)]
+[V, n | Variant?(V) and n >= 0 and n < VariantMemberCount(V)]
 VariantMemberIndex(#V, #n);
 ```
 
@@ -236,10 +236,10 @@ VariantMemberIndex(#V, #n);
 [E]
 Enum?(#E) : Bool;
 
-[E when Enum?(E)]
+[E | Enum?(E)]
 EnumMemberCount(#E) : SizeT;
 
-[E, n when Enum?(E) and n >= 0 and n < EnumMemberCount(E)]
+[E, n | Enum?(E) and n >= 0 and n < EnumMemberCount(E)]
 EnumMemberName(#E, #n) : StringConstant;
 ```
 
