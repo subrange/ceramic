@@ -144,7 +144,7 @@ LLVMBlock    -> "__llvm__" "{" /.*/ "}"
 [→ context in modules.md](modules.md#pattern-guards)
 
 ```text
-PatternGuard -> "[" comma_list(PatternVar) ("|" Expression)? "]"
+PatternGuard -> "[" comma_list(PatternVar) ("when" Expression)? "]"
 PatternVar   -> Identifier | ".." Identifier
 ```
 
