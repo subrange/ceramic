@@ -9,7 +9,7 @@ Fundamental operations on aggregates and enums. None may be overloaded.
 bitcopy(dest:T, src:T) :;
 ```
 
-Bitwise copies `TypeSize(T)` bytes from `src` into `dest`. Lowers to an LLVM `load` followed by `store`. `T` must be a primitive type: `Bool`, an integer or float or complex type, a pointer or code pointer type, an enum, a newtype, or `Static[x]`. Records, arrays, tuples, unions, and vectors are not supported.
+Bitwise copies `TypeSize(T)` bytes from `src` into `dest`. Lowers to an LLVM `load` followed by `store`. `T` must be a primitive type (`Bool`, integer, float, complex, any pointer type, enum, newtype, or `Static[x]`). Records, arrays, tuples, unions, and vectors are not supported.
 
 ## `arrayRef`
 
