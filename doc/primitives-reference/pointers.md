@@ -1,6 +1,6 @@
 # Pointer Operations
 
-Create, dereference, compare, and convert pointers, plus function-pointer construction and invocation. None of these may be overloaded.
+Create, dereference, and convert pointers, plus function-pointer construction and invocation. None of these may be overloaded. Pointer comparison is library-provided (the `equals?` and `lesser?` operators).
 
 ## `addressOf`
 
@@ -20,21 +20,10 @@ pointerDereference(p:Pointer[T]) : ref T;
 
 Returns a reference to the object pointed to by `p`. Effectively a no-op at the LLVM level (references are pointers).
 
-## `pointerEquals?` / `pointerLesser?`
-
-```ceramic
-[T, U]
-pointerEquals?(p:Pointer[T], q:Pointer[U]) : Bool;
-pointerLesser?(p:Pointer[T], q:Pointer[U]) : Bool;
-```
-
-- `pointerEquals?`: `true` if `p` and `q` hold the same address. Lowers to LLVM `icmp eq`.
-- `pointerLesser?`: `true` if `p`'s address is numerically less than `q`'s. Lowers to LLVM `icmp lt`.
-
 ## `pointerOffset`
 
 ```ceramic
-[T, I | Integer?(I)]
+[T, I when Integer?(I)]
 pointerOffset(p:Pointer[T], i:I) : Pointer[T];
 ```
 

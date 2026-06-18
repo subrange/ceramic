@@ -115,6 +115,27 @@ private enum SecurityLevel (
 ```
 Enumerations cannot currently be parameterized and do not allow pattern guards.
 
+### New Types
+
+`newtype` declares a distinct type with the same memory representation as an existing type. The new type is **not** assignment-compatible with the original; only `bitcast` bridges them.
+
+```ceramic
+newtype Celsius = Float64;
+newtype Fahrenheit = Float64;
+
+// Type-safe: cannot accidentally add Celsius and Fahrenheit
+main() {
+    var boiling = bitcast(Celsius, Float64(100.0));
+    println(Type(boiling));       // Celsius
+    println(BaseType(#Celsius));  // Float64
+    println(NewType?(Celsius));   // true
+}
+```
+
+`BaseType` (from `__primitives__`) returns the underlying type. `NewType?` (from `core.types`) tests whether a type is a newtype. Both types have the same size and alignment; `bitcast` converts between them.
+
+Newtypes cannot be parameterized (no pattern guard).
+
 ### Lambda Types
 
 Lambda types are record-like types that capture values from their enclosing scope. They are created implicitly by the compiler when [lambda expressions](expressions.md#lambda-expressions) capture variables: there is no explicit syntax for defining them.
