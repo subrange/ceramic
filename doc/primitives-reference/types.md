@@ -113,3 +113,26 @@ Static[x]
 A stateless type representing a compile-time value. Ceramic symbols, static strings, and `static` expressions evaluate to instances of `Static[…]`.
 
 `Static` values emit as LLVM `i8 undef` and still take space inside tuples and records.
+
+## `ByRef`
+
+```ceramic
+ByRef[T]
+```
+
+A return-type marker that declares a function returns a reference to `T` rather than a value. It appears only in return type specs — it has no runtime representation.
+
+```ceramic
+[T]
+overload index(a:Array[T, n], i:Int) : ByRef[T] = ref arrayRef(a, i);
+```
+
+A function declared to return `ByRef[T]` must use `return ref`. Callers receive a reference; the returned address must outlive the call. All `return` statements in the function must use the same ref qualification.
+
+## `RecordWithProperties`
+
+```ceramic
+RecordWithProperties[Properties, Fields]
+```
+
+A compiler-internal record type. When used as the result of a computed record body, it attaches compile-time `Properties` metadata to the record layout described by `Fields`. Library wrappers `recordWithProperties`, `recordWithProperty`, and `recordWithPredicate` (from `core.records`) are the intended API; using `RecordWithProperties` directly is rarely necessary.
