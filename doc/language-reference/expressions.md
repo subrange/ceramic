@@ -6,9 +6,12 @@ Ceramic's expression hierarchy, from highest to lowest precedence:
 | --------------------- | ---------------------------------------------------- | ----------------------------------------------------- |
 | Atomic                | names, literals, `()`, `[]`, `__FILE__` etc., `eval` | (none)                                                |
 | Suffix                | `a(b)` `a[b]` `a.0` `a.field` `a^`                   | `call` `index` `staticIndex` `fieldRef` `dereference` |
-| Prefix                | `+a` `-a` `&a` `*a`                                  | `plus` `minus`, address and dispatch are primitive    |
-| Multiplicative        | `a*b` `a/b` `a%b`                                    | `multiply` `divide` `remainder`                       |
+| Prefix                | `+a` `-a` `@a` `*a`                                  | `plus` `minus`, address and dispatch are primitive    |
+| Multiplicative        | `a*b` `a/b` `a\b` `a%b`                              | `multiply` `divide` `quotient` `remainder`            |
 | Additive              | `a+b` `a-b`                                          | `add` `subtract`                                      |
+| Shift                 | `a<<b` `a>>b`                                        | `bitshl` `bitshr`                                     |
+| Bitwise               | `a&b` `a~b` `a\|b`                                   | `bitand` `bitxor` `bitor`                             |
+| Concatenation         | `a++b`                                               | `cat`                                                 |
 | Ordered comparison    | `<=` `<` `>` `>=`                                    | `lesserEquals?` `lesser?` `greater?` `greaterEquals?` |
 | Equality              | `==` `!=`                                            | `equals?` `notEquals?`                                |
 | Boolean               | `not a` `a and b` `a or b`                           | primitive, not overloadable                           |
@@ -184,11 +187,27 @@ drawShapes(ss:Vector[Shape]) {
 | -------- | ----------------- |
 | `a * b`  | `multiply(a, b)`  |
 | `a / b`  | `divide(a, b)`    |
+| `a \ b`  | `quotient(a, b)`  |
 | `a % b`  | `remainder(a, b)` |
 | `a + b`  | `add(a, b)`       |
 | `a - b`  | `subtract(a, b)`  |
 
-All arithmetic operators are left-associative within their precedence group.
+`\` is integer division truncating toward zero. All arithmetic operators are left-associative within their precedence group.
+
+### Bitwise and Shift Operators
+
+These are user-defined operators with predefined precedence (shift tighter than bitwise):
+
+| Operator | Desugars to      |
+| -------- | ---------------- |
+| `a << b` | `bitshl(a, b)`   |
+| `a >> b` | `bitshr(a, b)`   |
+| `a & b`  | `bitand(a, b)`   |
+| `a ~ b`  | `bitxor(a, b)`   |
+| `a \| b` | `bitor(a, b)`    |
+| `a ++ b` | `cat(a, b)`      |
+
+`~` is also the unary bitwise complement: `~a` desugars to `prefixOperator(#(~), a)`, which calls `(~)(a)` = `bitnot(a)` by default.
 
 ### Comparison Operators
 
