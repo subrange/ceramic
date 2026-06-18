@@ -2,19 +2,19 @@
 
 Fundamental operations on aggregates and enums. None may be overloaded.
 
-## `primitiveCopy`
+## `bitcopy`
 
 ```ceramic
-[T]
-primitiveCopy(dest:T, src:T) :;
+[T when Primitive?(T)]
+bitcopy(dest:T, src:T) :;
 ```
 
-Bitwise copies `TypeSize(T)` bytes from `src` into `dest`. Lowers to an LLVM `load` followed by `store`.
+Bitwise copies `TypeSize(T)` bytes from `src` into `dest`. Lowers to an LLVM `load` followed by `store`. `T` must be a primitive type: `Bool`, an integer or float or complex type, a pointer or code pointer type, an enum, a newtype, or `Static[x]`. Records, arrays, tuples, unions, and vectors are not supported.
 
 ## `arrayRef`
 
 ```ceramic
-[T, n, I | Integer?(I)]
+[T, n, I when Integer?(I)]
 arrayRef(array:Array[T, n], i:I) : ref T;
 ```
 
@@ -27,7 +27,7 @@ Returns a reference to element `i` of `array`.
 
 ```ceramic
 [T, n]
-arrayElements(array:Array[T, n]) : ref ..repeatValue(#n, T);
+arrayElements(array:Array[T, n]) : ref ..replicateValue(T, #n);
 ```
 
 Returns a multiple-value list of references to every element of `array` in order.
@@ -77,16 +77,37 @@ Returns a reference to the field named `name` (a static string) in `rec`.
 ## `recordFields`
 
 ```ceramic
-[R | Record?(R)]
+[R when Record?(R)]
 recordFields(rec:R) : ref ..RecordFieldTypes(R);
 ```
 
 Returns a multiple-value list of references to all fields of `rec` in declaration order.
 
+## `recordVariadicField`
+
+```ceramic
+[R when Record?(R)]
+recordVariadicField(rec:R) : ref ..VariadicFieldTypes(R);
+```
+
+Returns a multiple-value list of references to the variadic field elements of `rec`. Errors at compile time if `R` has no variadic field. The number of references equals the number of variadic field elements captured in the record.
+
+```ceramic
+record Packet[..T] (header:Int32, ..body:T, checksum:UInt32);
+
+[..T]
+overload Packet(h:Int32, ..body:T, cs:UInt32) = Packet[..T](h, ..body, cs);
+
+main() {
+    var p = Packet(1, "hello", 42, 0xDEADBEEFu);
+    println(..recordVariadicField(p));  // hello42
+}
+```
+
 ## `enumToInt`
 
 ```ceramic
-[E | Enum?(E)]
+[E when Enum?(E)]
 enumToInt(en:E) : Int32;
 ```
 
