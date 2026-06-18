@@ -1,6 +1,6 @@
 # The Ceramic Programming Language Reference
 
-**Version 0.1**
+**Version 0.2**
 
 ---
 

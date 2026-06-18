@@ -1,6 +1,6 @@
 # Primitives Reference
 
-**Version 0.1**
+**Version 0.2**
 
 The `__primitives__` module is synthesized by the compiler and implicitly available to every Ceramic program. It provides primitive types, fundamental operations, and compile-time introspection.
 
