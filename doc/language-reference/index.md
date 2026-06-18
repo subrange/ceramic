@@ -1,6 +1,6 @@
 # The Ceramic Programming Language Reference
 
-**Version 0.1**
+**Version 0.2**
 
 ---
 
@@ -20,7 +20,7 @@ This reference uses two kinds of code blocks:
 | [Tokenization](tokenization.md)        | Source encoding, whitespace, comments, literals                               |
 | [Compilation Strategy](compilation.md) | Whole-program compilation, compile-time evaluation, pattern matching          |
 | [Modules & Source Layout](modules.md)  | Modules, imports, symbols, static strings                                     |
-| [Type Definitions](types.md)           | Records, variants, enumerations, lambda types                                 |
+| [Type Definitions](types.md)           | Records, variants, enumerations, new types, lambda types                      |
 | [Function Definitions](functions.md)   | Simple and overloaded functions, arguments, external functions, global values |
 | [Statements](statements.md)            | Blocks, assignment, control flow, loops, exceptions                           |
 | [Expressions](expressions.md)          | Operators, precedence, lambdas, multiple values                               |

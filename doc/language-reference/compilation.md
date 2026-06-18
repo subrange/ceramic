@@ -11,8 +11,6 @@ Ceramic uses **whole-program compilation**. Starting from an entry-point source 
 
 If the entry-point module contains a public symbol named `main`, it is passed to the `callMain` operator function. `callMain` is responsible for calling `main` with its command-line arguments. The instantiated `callMain(#main)` becomes the program's entry point and corresponds to the C ABI `main` symbol.
 
-For a `main` entry point, the `setArgcArgv(argc:Int32, argv:Pointer[Pointer[Int8]])` operator function is also instantiated. It is called with the `argc` and `argv` parameters from the C `main` function before `callMain` runs.
-
 `external` function definitions also become entry points and are emitted with C linkage.
 
 ### Compile-Time Evaluation
@@ -21,7 +19,7 @@ The compiler includes an evaluator that runs certain things at compile time:
 
 - Pattern guard predicates
 - Parameters of parameterized symbols
-- Operands of `static`, `eval` statements, and `eval` expressions
+- Operands of `#` static expressions and `eval` statements and expressions
 - Declared return types in function definitions
 - Declared instance types in variant definitions
 - Computed record layouts

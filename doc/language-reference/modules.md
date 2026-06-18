@@ -19,10 +19,10 @@ Modules are the basis of Ceramic's namespacing and encapsulation. Each module ha
 Operator functions are symbols in library code that the language uses internally to implement syntactic forms. They must be publicly reachable through the `prelude` module.
 
 **Overloadable operators:**
-`add` `call` `dereference` `divide` `equals?` `fieldRef` `greater?` `greaterEquals?` `index` `lesser?` `lesserEquals?` `minus` `multiply` `notEquals?` `plus` `remainder` `staticIndex` `subtract` `tupleLiteral`
+`add` `bitand` `bitor` `bitshl` `bitshr` `bitxor` `call` `cat` `dereference` `divide` `equals?` `fieldRef` `greater?` `greaterEquals?` `index` `infixOperator` `lesser?` `lesserEquals?` `minus` `multiply` `notEquals?` `plus` `prefixOperator` `quotient` `remainder` `staticIndex` `subtract` `tupleLiteral`
 
 **Literals:**
-`Char` `StringConstant`
+`charLiteral` `stringLiteral`
 
 **Value lifecycle:**
 `copy` `destroy` `move`
@@ -30,11 +30,11 @@ Operator functions are symbols in library code that the language uses internally
 **Switch:** `case?`
 
 **Assignment:**
-`assign` `fieldRefAssign` `fieldRefUpdateAssign` `indexAssign` `indexUpdateAssign` `staticIndexAssign` `staticIndexUpdateAssign` `updateAssign`
+`assign` `fieldRefAssign` `fieldRefUpdateAssign` `indexAssign` `indexUpdateAssign` `prefixUpdateAssign` `staticIndexAssign` `staticIndexUpdateAssign` `updateAssign`
 
-**For loops:** `hasNext?` `iterator` `next`
+**For loops:** `iterator` `nextValue` `hasValue?` `getValue`
 
-**Entry point:** `callMain` `setArgcArgv`
+**Entry point:** `callMain`
 
 **Exceptions:**
 `continueException` `exceptionIs?` `exceptionAs` `exceptionAsAny` `throwValue`
@@ -214,14 +214,14 @@ printlnTwice(file:File, ..x:TT) {
     printlnTo(file, ..x);
 }
 ```
-A `|` after the variables adds a **predicate**, constraining which values are valid:
+A `when` after the variables adds a **predicate**, constraining which values are valid:
 
 ```ceramic
-[T | Numeric?(T)]
+[T when Numeric?(T)]
 record Point[T] (x:T, y:T);
 
 // No variables: just a platform condition
-[| TypeSize(Pointer[Int]) < 4]
+[when TypeSize(Pointer[Int]) < 4]
 overload platformCheck() { error("Time for a new computer"); }
 ```
 

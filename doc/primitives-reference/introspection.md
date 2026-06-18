@@ -26,25 +26,94 @@ main() {
 }
 ```
 
-### `CallDefined?`
+### `Symbol?`
+
+```ceramic
+[x]
+Symbol?(#x) : Bool;
+```
+
+`true` if `x` names a symbol: a type, record, variant, procedure, intrinsic, or global alias. `false` for static values such as numbers or static strings.
+
+### `Operator?`
+
+```ceramic
+[x]
+Operator?(#x) : Bool;
+```
+
+`true` if `x` is a symbol declared as an operator (with `define (op)`). `false` for ordinary symbols and non-symbols.
+
+### `StaticCallDefined?`
 
 ```ceramic
 [F, ..T]
-CallDefined?(#F, #..T) : Bool;
+StaticCallDefined?(#F, #..T) : Bool;
 ```
 
-`true` if `F` has an overload matching input types `..T`.
+`true` if symbol `F` has an overload matching input types `..T`. The first argument must be a symbol (not a callable value).
 
-To probe a non-symbol callable type, use `CallDefined?(call, FunctionType, ..T)`.
+The library function `CallDefined?` (from `core.operators`) wraps this primitive and additionally handles callable record types via `StaticCallDefined?(call, F, ..T)`.
+
+### `StaticCallOutputTypes`
+
+```ceramic
+[F, ..T]
+StaticCallOutputTypes(#F, #..T);         // static types
+```
+
+A multiple-value list of the output types that symbol `F` would return when called with input types `..T`. Errors if no matching overload exists.
+
+The library alias `CallOutputTypes` (from `core.operators`) wraps this for both symbols and callable types.
+
+### `StaticMono?`
+
+```ceramic
+[F]
+StaticMono?(#F) : Bool;
+```
+
+`true` if symbol `F` has exactly one monomorphic overload (no pattern variables). The counterpart to `LambdaMono?` for symbols.
+
+### `StaticMonoInputTypes`
+
+```ceramic
+[F when StaticMono?(F)]
+StaticMonoInputTypes(#F);                // static types
+```
+
+A multiple-value list of the argument types of the single monomorphic overload of symbol `F`. Errors if `F` is not monomorphic.
+
+### `MainModule`
+
+```ceramic
+MainModule() : module;
+```
+
+Returns the module object for the entry-point (main) module of the current compilation. Useful for writing module-generic test runners:
+
+```ceramic
+import test.module.(testMainModule);
+main() = testMainModule();
+```
+
+### `StaticModule`
+
+```ceramic
+[S]
+StaticModule(#S) : module;
+```
+
+Returns the module object containing symbol `S`. Errors if `S` has no associated module.
 
 ### `ModuleName`
 
 ```ceramic
 [S]
-ModuleName(#S) : StringConstant;
+ModuleName(#S);                           // static string
 ```
 
-Generates a string literal containing the fully-qualified module name containing the symbol `S`. Evaluated via the `StringConstant` operator function. If `S` is itself a module, returns the module's own name. Errors if `S` is not a symbol.
+Returns a static string containing the fully-qualified module name containing the symbol `S`. If `S` is itself a module, returns the module's own name. Errors if `S` is not a symbol.
 
 ```ceramic
 import foo;
@@ -60,44 +129,61 @@ main() {
 }
 ```
 
-### `IdentifierModuleName`
+### `ModuleMemberNames`
 
 ```ceramic
-[S]
-IdentifierModuleName(#S);
+[M]
+ModuleMemberNames(#M);                    // static strings
 ```
 
-Like `ModuleName`, but returns a static string instead of a string literal.
+A multiple-value list of static strings naming every public global in module `M`, in alphabetical order. `M` must be a module object (e.g., from `MainModule()` or `StaticModule(S)`).
+
+```ceramic
+import __primitives__.(MainModule, ModuleMemberNames);
+import printer.*;
+
+main() {
+    println(..ModuleMemberNames(MainModule()));
+}
+```
 
 ### `StaticName`
 
 ```ceramic
 [x]
-StaticName(#x) : StringConstant;
+StaticName(#x);                           // static string
 ```
 
-Generates a string literal naming the static value `x`:
+Returns a static string naming the static value `x`:
 
 - Symbol: its name (without module, with parameters).
 - Static string: its string value.
 - Numeric value: its decimal representation.
 - Tuple: comma-delimited inside square brackets (`[a, b, c]`).
 
-Evaluated via `StringConstant`.
-
-### `IdentifierStaticName`
+### `GetOverload`
 
 ```ceramic
-[x]
-IdentifierStaticName(#x);
+[F, ..T]
+GetOverload(#F, #..T);
 ```
 
-Like `StaticName`, but returns a static string.
+Selects the overload of symbol `F` that matches argument types `..T` and returns it as a new callable procedure. The returned value can be called like any function. Unlike `makeCodePointer`, the result is still a fully generic Ceramic callable, not a fixed function pointer.
+
+```ceramic
+define foo;
+overload foo(x:Int)   { println("Int ",   x); }
+overload foo(x:Float) { println("Float ", x); }
+
+main() {
+    GetOverload(foo, Float)(123);  // prints: Float 123
+}
+```
 
 ### `staticFieldRef`
 
 ```ceramic
-[M, name | Identifier?(name)]
+[M, name when StringLiteral?(name)]
 staticFieldRef(#M, #name);
 ```
 
@@ -105,52 +191,79 @@ Looks up a public global value named `name` in module `M` and evaluates as if it
 
 ## Static String Manipulation
 
-### `Identifier?`
+### `StringLiteral?`
 
 ```ceramic
 [S]
-Identifier?(#S) : Bool;
+StringLiteral?(#S) : Bool;
 ```
 
 `true` if `S` is a static string.
 
-### `IdentifierSize`
+### `stringLiteralByteSize`
 
 ```ceramic
-[S | Identifier?(S)]
-IdentifierSize(#S) : SizeT;
+[S when StringLiteral?(S)]
+stringLiteralByteSize(#S) : SizeT;
 ```
 
 Number of characters in static string `S`.
 
-### `IdentifierConcat`
+### `stringLiteralConcat`
 
 ```ceramic
-[..SS | allValues?(Identifier?, ..SS)]
-IdentifierConcat(#..SS);
+[..SS when allValues?(StringLiteral?, ..SS)]
+stringLiteralConcat(#..SS);
 ```
 
 Concatenation of all argument static strings.
 
-### `IdentifierSlice`
+### `stringLiteralByteSlice`
 
 ```ceramic
-[S, n, m |
-    Identifier?(S)
-    and n >= 0 and n < IdentifierSize(S)
-    and m >= 0 and m < IdentifierSize(S)
+[S, n, m when
+    StringLiteral?(S)
+    and n >= 0 and n < stringLiteralByteSize(S)
+    and m >= 0 and m < stringLiteralByteSize(S)
 ]
-IdentifierSlice(#S, #n, #m);
+stringLiteralByteSlice(#S, #n, #m);
 ```
 
 Substring of `S` from index `n` up to (but not including) `m`.
+
+### `stringLiteralByteIndex`
+
+```ceramic
+[S, n when StringLiteral?(S) and n >= 0 and n < stringLiteralByteSize(S)]
+stringLiteralByteIndex(#S, #n) : Int32;
+```
+
+The byte at index `n` of static string `S`, as an `Int32`.
+
+### `stringLiteralBytes`
+
+```ceramic
+[S when StringLiteral?(S)]
+stringLiteralBytes(#S) : ..Int32;
+```
+
+A multiple-value list of every byte of `S` in order, each an `Int32`.
+
+### `stringLiteralFromBytes`
+
+```ceramic
+[..bytes]
+stringLiteralFromBytes(#..bytes);         // static string
+```
+
+Builds a static string from the given byte values. Each argument is a static integer in `0 .. 255`.
 
 ## Type Introspection
 
 ### `TypeSize`
 
 ```ceramic
-[T | Type?(T)]
+[T when Type?(T)]
 TypeSize(#T) : SizeT;
 ```
 
@@ -159,20 +272,20 @@ Size in bytes of a value of type `T`.
 ### `TypeAlignment`
 
 ```ceramic
-[T | Type?(T)]
+[T when Type?(T)]
 TypeAlignment(#T) : SizeT;
 ```
 
 Natural alignment in bytes of a value of type `T`.
 
-### `CCodePointer?`
+### `BaseType`
 
 ```ceramic
-[T]
-CCodePointer?(#T) : Bool;
+[T when Type?(T)]
+BaseType(#T);                           // static type
 ```
 
-`true` if `T` is a symbol and an instance of one of the [external code pointer types](types.md#external-code-pointer-types) (`CCodePointer`, `LLVMCodePointer`, …).
+The underlying representation type of `T`. For a new type, this is the type it wraps. For any other type, it is `T` itself.
 
 ### `TupleElementCount`
 
@@ -198,13 +311,13 @@ Number of member types in the union type.
 [R]
 Record?(#R) : Bool;
 
-[R | Record?(R)]
+[R when Record?(R)]
 RecordFieldCount(#R) : SizeT;
 
-[R, n | Record?(R) and n >= 0 and n < RecordFieldCount(R)]
+[R, n when Record?(R) and n >= 0 and n < RecordFieldCount(R)]
 RecordFieldName(#R, #n);                // static string
 
-[R, name | Record?(R) and Identifier?(name)]
+[R, name when Record?(R) and StringLiteral?(name)]
 RecordWithField?(#R, #name) : Bool;
 ```
 
@@ -219,16 +332,20 @@ RecordWithField?(#R, #name) : Bool;
 [V]
 Variant?(#V) : Bool;
 
-[V | Variant?(V)]
+[V when Variant?(V)]
 VariantMemberCount(#V) : SizeT;
 
-[V, n | Variant?(V) and n >= 0 and n < VariantMemberCount(V)]
-VariantMemberIndex(#V, #n);
+[V, M when Variant?(V)]
+VariantMemberIndex(#V, #M) : SizeT;
+
+[V when Variant?(V)]
+VariantMembers(#V);                      // static types
 ```
 
 - `Variant?`: `true` if `V` names a variant type.
 - `VariantMemberCount`: number of instance types.
-- `VariantMemberIndex`: the `n`th instance type. The mapping from index to instance is unspecified, but iterating `0 .. VariantMemberCount(V)` visits each instance exactly once.
+- `VariantMemberIndex`: the ordinal index of instance type `M` within `V`. Each instance maps to a distinct index in `0 .. VariantMemberCount(V)`; the mapping is unspecified but stable.
+- `VariantMembers`: a multiple-value list of the instance types of `V`, in index order.
 
 ### Enum Introspection
 
@@ -236,13 +353,36 @@ VariantMemberIndex(#V, #n);
 [E]
 Enum?(#E) : Bool;
 
-[E | Enum?(E)]
+[E when Enum?(E)]
 EnumMemberCount(#E) : SizeT;
 
-[E, n | Enum?(E) and n >= 0 and n < EnumMemberCount(E)]
-EnumMemberName(#E, #n) : StringConstant;
+[E, n when Enum?(E) and n >= 0 and n < EnumMemberCount(E)]
+EnumMemberName(#E, #n);                  // static string
 ```
 
 - `Enum?`: `true` if `E` names an enum type.
 - `EnumMemberCount`: number of values.
-- `EnumMemberName`: string literal naming the `n`th value, evaluated via `StringConstant`.
+- `EnumMemberName`: static string naming the `n`th value.
+
+## Lambda Introspection
+
+Compile-time predicates over lambda types. A **lambda record** is the anonymous record type created when a lambda expression captures variables. A **lambda symbol** is a non-capturing lambda equivalent to a named function.
+
+```ceramic
+[F]
+LambdaRecord?(#F) : Bool;
+
+[F]
+LambdaSymbol?(#F) : Bool;
+
+[F]
+LambdaMono?(#F) : Bool;
+
+[F when LambdaMono?(F)]
+LambdaMonoInputTypes(#F);                // static types
+```
+
+- `LambdaRecord?`: `true` if `F` is the type of a capturing lambda.
+- `LambdaSymbol?`: `true` if `F` is a procedure symbol created from a non-capturing lambda.
+- `LambdaMono?`: `true` if the lambda record type `F` is monomorphic (its single overload has no pattern variables).
+- `LambdaMonoInputTypes`: a multiple-value list of the argument types of the monomorphic overload of lambda record type `F`.

@@ -44,6 +44,7 @@ nav:
     - Overview: primitives-reference/index.md
     - Primitive Types: primitives-reference/types.md
     - Data Access: primitives-reference/data-access.md
+    - Multiple Values: primitives-reference/multiple-values.md
     - Numeric Operations: primitives-reference/numeric.md
     - Pointer Operations: primitives-reference/pointers.md
     - Atomic Operations: primitives-reference/atomic.md

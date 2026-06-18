@@ -6,9 +6,12 @@ Ceramic's expression hierarchy, from highest to lowest precedence:
 | --------------------- | ---------------------------------------------------- | ----------------------------------------------------- |
 | Atomic                | names, literals, `()`, `[]`, `__FILE__` etc., `eval` | (none)                                                |
 | Suffix                | `a(b)` `a[b]` `a.0` `a.field` `a^`                   | `call` `index` `staticIndex` `fieldRef` `dereference` |
-| Prefix                | `+a` `-a` `&a` `*a`                                  | `plus` `minus`, address and dispatch are primitive    |
-| Multiplicative        | `a*b` `a/b` `a%b`                                    | `multiply` `divide` `remainder`                       |
+| Prefix                | `+a` `-a` `@a` `*a`                                  | `plus` `minus`, address and dispatch are primitive    |
+| Multiplicative        | `a*b` `a/b` `a\b` `a%b`                              | `multiply` `divide` `quotient` `remainder`            |
 | Additive              | `a+b` `a-b`                                          | `add` `subtract`                                      |
+| Shift                 | `a<<b` `a>>b`                                        | `bitshl` `bitshr`                                     |
+| Bitwise               | `a&b` `a~b` `a\|b`                                   | `bitand` `bitxor` `bitor`                             |
+| Concatenation         | `a++b`                                               | `cat`                                                 |
 | Ordered comparison    | `<=` `<` `>` `>=`                                    | `lesserEquals?` `lesser?` `greater?` `greaterEquals?` |
 | Equality              | `==` `!=`                                            | `equals?` `notEquals?`                                |
 | Boolean               | `not a` `a and b` `a or b`                           | primitive, not overloadable                           |
@@ -31,6 +34,7 @@ foo(d) {
     println(a, b, c, d, e);
 }
 ```
+
 Names bound to multiple values (variadic variables, variadic arguments) must be referenced with the `..` unpack operator:
 
 ```ceramic
@@ -47,8 +51,8 @@ foo(..xs:TT) {
 | `true` / `false` | `Bool`                        | (none)                                          |
 | `1`, `0xFF`      | `Int32` (or module default)   | `ss` `s` `i` `l` `ll` `uss` `us` `u` `ul` `ull` |
 | `1.0`, `1e2`     | `Float64` (or module default) | `f` `ff` `fl` `fj` `j` `ffj` `flj`              |
-| `'x'`            | via `Char` operator           | (none)                                          |
-| `"hello"`        | via `StringConstant` operator | (none)                                          |
+| `'x'`            | via `charLiteral` operator    | (none)                                          |
+| `"hello"`        | via `stringLiteral` operator  | (none)                                          |
 | `#foo`, `#"foo"` | `Static[#foo]`                | (none)                                          |
 
 ```ceramic
@@ -58,6 +62,7 @@ println(Type(+1ul));   // UInt64
 println(Type(1.0f));   // Float32
 println(Type(1.j));    // Imag64
 ```
+
 Integer type suffixes may be applied to floating-point literal tokens to produce a float of that type. Floating-point suffixes may not be applied to integer literal tokens.
 
 #### Parentheses
@@ -104,15 +109,14 @@ println(eval #""" "hello world" """);
 
 If `a` is a symbol, argument types are matched to its overloads and the matching one is called. If `a` is a `CodePointer`, the pointed-to function is invoked. Otherwise, the call desugars to `call(a, b, c)`.
 
-Lambda expressions can be passed as trailing arguments with `:` / `::` separators:
+Lambda expressions can be passed as call arguments, including block lambdas:
 
 ```ceramic
-ifZero(rand()): () -> {
-    println("Reply hazy; try again")
-} :: x -> {
-    println("Lucky number: ", x);
-}
+ifZero(rand(),
+    () -> { println("Reply hazy; try again"); },
+    x -> { println("Lucky number: ", x); });
 ```
+
 If any argument is prefixed with `*`, the call becomes a [dynamic dispatch](#dispatch-a) on a variant type.
 
 #### Index (`a[b, c]`)
@@ -126,7 +130,7 @@ println(xs[2]);  // → index(xs, 2)
 
 #### Static Index (`a.0`)
 
-Desugars to `staticIndex(a, static 0)`. Used for positional tuple field access.
+Desugars to `staticIndex(a, #0)`. Used for positional tuple field access.
 
 ```ceramic
 var x = ["hello", "cruel", "world"];
@@ -147,7 +151,7 @@ var p = Point(array(1.0, 2.0));
 println(p.x, p.y);  // fieldRef(p, #"x"), fieldRef(p, #"y")
 
 // Custom swizzle accessors:
-overload fieldRef(p:Point, static #"xy") = ref p.coords[0], p.coords[1];
+overload fieldRef(p:Point, #"xy") = ref p.coords[0], p.coords[1];
 ```
 
 #### Dereference (`a^`)
@@ -160,7 +164,7 @@ Desugars to `dereference(a)`. Used to get a reference to the value behind a poin
 | -------- | --------------------------------------------------------------------------------- |
 | `+a`     | desugars to `plus(a)`                                                             |
 | `-a`     | desugars to `minus(a)`                                                            |
-| `&a`     | primitive: returns `Pointer[T]` to `a`, which must be an lvalue. Not overloadable |
+| `@a`     | primitive: returns `Pointer[T]` to `a`, which must be an lvalue. Not overloadable |
 | `*a`     | dispatch operator. Only valid as an argument to a call expression                 |
 
 #### Dispatch (`*a`)
@@ -170,6 +174,7 @@ Transforms a call into dynamic dispatch on a variant type. Each instance type of
 ```ceramic
 variant Shape (Circle, Square);
 
+define draw;
 overload draw(s:Circle) { println("()"); }
 overload draw(s:Square) { println("[]"); }
 
@@ -185,11 +190,27 @@ drawShapes(ss:Vector[Shape]) {
 | -------- | ----------------- |
 | `a * b`  | `multiply(a, b)`  |
 | `a / b`  | `divide(a, b)`    |
+| `a \ b`  | `quotient(a, b)`  |
 | `a % b`  | `remainder(a, b)` |
 | `a + b`  | `add(a, b)`       |
 | `a - b`  | `subtract(a, b)`  |
 
-All arithmetic operators are left-associative within their precedence group.
+`\` is integer division truncating toward zero. All arithmetic operators are left-associative within their precedence group.
+
+### Bitwise and Shift Operators
+
+These are user-defined operators with predefined precedence (shift tighter than bitwise):
+
+| Operator | Desugars to      |
+| -------- | ---------------- |
+| `a << b` | `bitshl(a, b)`   |
+| `a >> b` | `bitshr(a, b)`   |
+| `a & b`  | `bitand(a, b)`   |
+| `a ~ b`  | `bitxor(a, b)`   |
+| `a \| b` | `bitor(a, b)`    |
+| `a ++ b` | `cat(a, b)`      |
+
+`~` is also the unary bitwise complement: `~a` desugars to `prefixOperator(#(~), a)`, which calls `(~)(a)` = `bitnot(a)` by default.
 
 ### Comparison Operators
 
@@ -239,6 +260,7 @@ Both `and` and `or` require `Bool` operands and are not overloadable.
 ```ceramic
 if (condition) thenExpr else elseExpr
 ```
+
 Both branches must have the same type. Unlike `if` statements, the `else` clause is required.
 
 #### Keyword Pair Expressions
@@ -269,6 +291,7 @@ An anonymous function: argument list, arrow, body.
 ```ceramic
 var squares = mapped(x -> x*x, range(10));
 ```
+
 Two capture modes:
 
 - **`->`**: captures by reference. Mutations are visible outside the lambda. The lambda must not outlive its enclosing scope.
@@ -277,12 +300,13 @@ Two capture modes:
 ```ceramic
 // by reference; sum accumulates outside
 var sum = 0;
-var squares = mapped(x -> { var sq = x*x; sum += sq; return sq; }, range(10));
+var squares = mapped(x -> { var sq = x*x; sum +: sq; return sq; }, range(10));
 
 // by value; closure is self-contained
 curriedAdd(x) = y => x + y;
 var plus3 = curriedAdd(3);
 ```
+
 A lambda with a single untyped argument may omit parentheses: `x -> x*x`. A lambda that does not capture is equivalent to an anonymous named function.
 
 Lambda has higher precedence than the multi-value comma. `a -> b, c` parses as `(a -> b), c`. To return multiple values from a lambda, use a block body or explicit parentheses: `a -> (b, c)`.
@@ -294,12 +318,14 @@ Most Ceramic functions can return multiple values. The comma operator builds a m
 ```ceramic
 twoThroughFour() = 2, 3, 4;
 ```
+
 Expressions are normally constrained to a **single value**. To use a multiple-value expression inside another expression, unpack it with `..`:
 
 ```ceramic
 oneThroughFive() = 1, ..twoThroughFour(), 5;  // ok
 oneThroughFive() = 1, twoThroughFour(), 5;    // ERROR
 ```
+
 The following contexts provide **implicit** multiple-value context at the outermost level. No `..` is needed there:
 
 - Expression statements

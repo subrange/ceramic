@@ -19,7 +19,7 @@ Records may be parameterized. When no predicate is needed, the pattern guard is 
 ```ceramic
 record Point[T] (x:T, y:T);          // [T] guard is implied
 
-[T | Float?(T)]
+[T when Float?(T)]
 record FloatPoint[T] (x:T, y:T);     // explicit predicate
 ```
 
@@ -29,20 +29,20 @@ A record's layout can be computed from an expression that evaluates to a list of
 
 ```ceramic
 // Equivalent to: record Point[T] (x:T, y:T)
-record Point[T] = [[#"x", T], [#"y", T]];
+record Point[T] = [#"x", T], [#"y", T];
 
 // Custom coordinate names
-record PointWithCoordinates[T, xy] = [[xy.0, T], [xy.1, T]];
+record PointWithCoordinates[T, xy] = [xy.0, T], [xy.1, T];
 ```
 This pattern also enables template specialization via an overloaded helper function:
 
 ```ceramic
-record Vec3D[T] = Vec3DBody(T);
+record Vec3D[T] = ..Vec3DBody(T);
 
 private define Vec3DBody;
-[T | T != Double]
-overload Vec3DBody(#T) = [[#"coords", Array[T, 3]]];
-overload Vec3DBody(#Float) = [[#"coords", Vec[Float, 4]]];  // SIMD path
+[T when T != Double]
+overload Vec3DBody(#T) = [#"coords", Array[T, 3]];
+overload Vec3DBody(#Float) = [#"coords", Vec[Float, 4]];  // SIMD path
 ```
 
 ### Variants
@@ -58,7 +58,7 @@ Variants may be parameterized (pattern guard optional when no predicate is neede
 variant Maybe[T] (Nothing, T);          // [T] implied
 variant Either[T, U] (T, U);           // [T, U] implied
 
-[C | Color?(C)]
+[C when Color?(C)]
 variant Fruit[C] (Apple[C], Orange[C], Banana[C]);
 ```
 The instance list may be any expression evaluated at compile time:
@@ -76,7 +76,7 @@ variant Fruit (..RainbowTypes(Apple), ..RainbowTypes(Banana));
 Variants are **open**. New instance types are added with `instance`:
 
 ```ceramic
-variant Exception ();
+variant Exception;
 
 record RangeError (lowerBound:Int, upperBound:Int, attemptedValue:Int);
 record TypeError  (expectedTypeName:String, attemptedTypeName:String);
@@ -85,12 +85,12 @@ instance Exception (RangeError, TypeError);
 `instance` binds to variants by pattern matching, so parameterized variants can be extended selectively:
 
 ```ceramic
-[C | Color?(C)]
-variant Fruit[C] ();
+[C when Color?(C)]
+variant Fruit[C];
 
 instance Fruit[Yellow] (Banana);          // only Yellow
 
-[C | C == Red or C == Green]
+[C when C == Red or C == Green]
 instance Fruit[C] (Apple);               // Red and Green only
 
 [C]
@@ -114,6 +114,27 @@ private enum SecurityLevel (
 );
 ```
 Enumerations cannot currently be parameterized and do not allow pattern guards.
+
+### New Types
+
+`newtype` declares a distinct type with the same memory representation as an existing type. The new type is **not** assignment-compatible with the original; only `bitcast` bridges them.
+
+```ceramic
+newtype Celsius = Float64;
+newtype Fahrenheit = Float64;
+
+// Type-safe: cannot accidentally add Celsius and Fahrenheit
+main() {
+    var boiling = bitcast(Celsius, Float64(100.0));
+    println(Type(boiling));       // Celsius
+    println(BaseType(#Celsius));  // Float64
+    println(NewType?(Celsius));   // true
+}
+```
+
+`BaseType` (from `__primitives__`) returns the underlying type. `NewType?` (from `core.types`) tests whether a type is a newtype. Both types have the same size and alignment; `bitcast` converts between them.
+
+Newtypes cannot be parameterized (no pattern guard).
 
 ### Lambda Types
 

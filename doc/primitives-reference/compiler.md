@@ -18,7 +18,7 @@ A global alias set to `true` when exceptions are enabled for the current compila
 ### `Flag?`
 
 ```ceramic
-[name | Identifier?(name)]
+[name when StringLiteral?(name)]
 Flag?(#name) : Bool;
 ```
 
@@ -27,7 +27,7 @@ Flag?(#name) : Bool;
 ### `Flag`
 
 ```ceramic
-[name | Identifier?(name)]
+[name when StringLiteral?(name)]
 Flag(#name);
 ```
 
@@ -54,13 +54,22 @@ These symbols may be used as attributes on external function declarations.
 | `AttributeDLLImport` | `__dllimport` linkage on Windows targets |
 | `AttributeDLLExport` | `__dllexport` linkage on Windows targets |
 
-## Miscellaneous
+## Branch Prediction
 
-### `staticIntegers`
+### `usuallyEquals`
 
 ```ceramic
-[n | n >= 0]
-staticIntegers(#n);
+[T when Primitive?(T)]
+usuallyEquals(value:T, #expected:T) : T;
 ```
 
-Returns a multiple-value list of static integers from `#0` up to `#(n - 1)`. `staticIntegers(#0)` returns no values.
+Returns `value` unchanged, but annotates the LLVM branch weight so the compiler treats `expected` as the likely outcome. Lowers to an LLVM `expect` intrinsic call. The second argument must be a static value.
+
+Used by the standard library's `likely` and `unlikely` wrappers (in `hints`):
+
+```ceramic
+likely(x:Bool)   : Bool = usuallyEquals(x, #true);
+unlikely(x:Bool) : Bool = usuallyEquals(x, #false);
+```
+
+The compile-time evaluator returns `value` without any branch annotation.

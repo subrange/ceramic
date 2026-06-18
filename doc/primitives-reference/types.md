@@ -41,7 +41,7 @@ For each floating-point width:
 Pointer[T]
 ```
 
-A pointer to a value of type `T`. Corresponds to LLVM `%T*` or C `T*`. Created with prefix `&` or [`addressOf`](pointers.md#addressof).
+A pointer to a value of type `T`. Corresponds to LLVM `%T*` or C `T*`. Created with prefix `@` or [`addressOf`](pointers.md#addressof).
 
 ## `CodePointer`
 
@@ -54,18 +54,19 @@ A pointer to a Ceramic function instance. Created with [`makeCodePointer`](point
 ## External Code Pointer Types
 
 ```ceramic
-CCodePointer[[..In], [..Out]]
+ExternalCodePointer[CC, V?, [..In], [..Out]]
 ```
 
-A pointer to a C function. `CCodePointer[[A,B,C],[]]` corresponds to `void (*)(A,B,C)`. `CCodePointer[[A,B,C],[D]]` corresponds to `D (*)(A,B,C)`.
+A pointer to a function using a foreign calling convention `CC`, optionally variadic (`V?`). `ExternalCodePointer[cdecl, false, [A,B,C], []]` corresponds to `void (*)(A,B,C)`; with `[D]` outputs, `D (*)(A,B,C)`.
 
-Variants for other conventions:
+The common conventions have aliases:
 
-- `LLVMCodePointer[[..In],[..Out]]`: LLVM `ccc` convention.
-- `VarArgsCCodePointer[[..In],[..Out]]`: variadic C: `D (*)(A,B,C,...)`.
+- `CCodePointer[[..In],[..Out]]` = `ExternalCodePointer[cdecl, false, …]`.
+- `VarArgsCCodePointer[[..In],[..Out]]` = `ExternalCodePointer[cdecl, true, …]`: variadic C, `D (*)(A,B,C,...)`.
+- `LLVMCodePointer[[..In],[..Out]]` = `ExternalCodePointer[llvm, false, …]`.
 - `StdCallCodePointer`, `FastCallCodePointer`, `ThisCallCodePointer`: legacy Windows x86 conventions.
 
-These pointers are obtained by evaluating external function names, returning them from C functions, or via [`makeCCodePointer`](pointers.md#makeccodepointer). They are invoked through [`callCCodePointer`](pointers.md#callccodepointer).
+These pointers are obtained by evaluating external function names, returning them from C functions, or via [`makeExternalCodePointer`](pointers.md#makeexternalcodepointer). They are invoked through [`callExternalCodePointer`](pointers.md#callexternalcodepointer).
 
 ## `Array`
 
@@ -112,3 +113,26 @@ Static[x]
 A stateless type representing a compile-time value. Ceramic symbols, static strings, and `static` expressions evaluate to instances of `Static[…]`.
 
 `Static` values emit as LLVM `i8 undef` and still take space inside tuples and records.
+
+## `ByRef`
+
+```ceramic
+ByRef[T]
+```
+
+A return-type marker that declares a function returns a reference to `T` rather than a value. It appears only in return type specs — it has no runtime representation.
+
+```ceramic
+[T]
+overload index(a:Array[T, n], i:Int) : ByRef[T] = ref arrayRef(a, i);
+```
+
+A function declared to return `ByRef[T]` must use `return ref`. Callers receive a reference; the returned address must outlive the call. All `return` statements in the function must use the same ref qualification.
+
+## `RecordWithProperties`
+
+```ceramic
+RecordWithProperties[Properties, Fields]
+```
+
+A compiler-internal record type. When used as the result of a computed record body, it attaches compile-time `Properties` metadata to the record layout described by `Fields`. Library wrappers `recordWithProperties`, `recordWithProperty`, and `recordWithPredicate` (from `core.records`) are the intended API; using `RecordWithProperties` directly is rarely necessary.

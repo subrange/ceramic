@@ -25,14 +25,12 @@ main() {
     println("Hi");
 }
 ```
-If a call's final argument is a block lambda, the trailing `;` may be omitted:
+Block lambdas can be passed as call arguments:
 
 ```ceramic
-maybe(maybeMode): mode -> {
-    println(mode.name, " mode selected");
-} :: () -> {
-    println("Please select a mode");
-}
+maybe(maybeMode,
+    mode -> { println(mode.name, " mode selected"); },
+    () -> { println("Please select a mode"); });
 ```
 
 ### Return Statements
@@ -133,7 +131,7 @@ Special property assignment desugars differently when the left-hand side is an i
 
 ```ceramic
 a[..b]  = c;     // → indexAssign(a, ..b, c)
-a.0     = c;     // → staticIndexAssign(a, static 0, c)
+a.0     = c;     // → staticIndexAssign(a, #0, c)
 a.field = c;     // → fieldRefAssign(a, #"field", c)
 ```
 
@@ -150,8 +148,19 @@ Property update forms also exist:
 
 ```ceramic
 a[..b]  +: c;   // → indexUpdateAssign(add, a, ..b, c)
+a.0     +: c;   // → staticIndexUpdateAssign(add, a, #0, c)
 a.field +: c;   // → fieldRefUpdateAssign(add, a, #"field", c)
 ```
+
+#### Prefix Update Assignment
+
+An operator symbol followed by `:` may also appear as the **first** token of a statement, with the target on the right. This is a prefix update assignment:
+
+```ceramic
+-: x;   // → prefixUpdateAssign(#(-), x) → x = -(x)
+```
+
+Desugars to `prefixUpdateAssign(#op, x)`, which by default sets `x` to the result of `op(x)` via `prefixOperator`. To implement a custom prefix update, overload `prefixUpdateAssign`.
 
 <!-- TODO: document that updateAssign can be overloaded for user-defined ops, e.g. overload updateAssign(#(**), ref x, exp) { ... } -->
 
@@ -211,23 +220,33 @@ Loops while a `Bool` expression is true.
 var x = 0;
 while (x < 10) {
     println(x);
-    x += 1;
+    x +: 1;
+}
+```
+
+The condition position may include a binding or assignment before the test expression, separated by `;`. The binding is re-evaluated at the top of each iteration:
+
+```ceramic
+while (var v = nextValue(iter); hasValue?(v)) {
+    forward x = getValue(v);
+    println(x);
 }
 ```
 
 #### `for`
 
-Iterates over a sequence using the `iterator`, `hasNext?`, and `next` operator functions.
+Iterates over a sequence using the `iterator`, `nextValue`, `hasValue?`, and `getValue` operator functions.
 
 ```ceramic
 for (x in range(10))
     println(x);
 
-// desugars to:
+// desugars to (% names are compiler-internal, not user-writable):
 {
-    forward _iter = iterator(range(10));
-    while (hasNext?(_iter)) {
-        forward x = next(_iter);
+    forward %expr = range(10);
+    forward %iter = iterator(%expr);
+    while (var %value = nextValue(%iter); hasValue?(%value)) {
+        forward x = getValue(%value);
         println(x);
     }
 }
@@ -238,7 +257,7 @@ for (x in range(10))
 Unrolls over each value of a multiple-value expression at **compile time**. The loop variable's type may differ between iterations.
 
 ```ceramic
-[..TT | countValues(..TT) != 1]
+[..TT when countValues(..TT) != 1]
 overload printTo(stream, ..xs:TT) {
     ..for (x in xs)
         printTo(stream, x);

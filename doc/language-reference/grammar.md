@@ -144,7 +144,7 @@ LLVMBlock    -> "__llvm__" "{" /.*/ "}"
 [→ context in modules.md](modules.md#pattern-guards)
 
 ```text
-PatternGuard -> "[" comma_list(PatternVar) ("|" Expression)? "]"
+PatternGuard -> "[" comma_list(PatternVar) ("when" Expression)? "]"
 PatternVar   -> Identifier | ".." Identifier
 ```
 
@@ -189,6 +189,14 @@ Instance -> PatternGuard? "instance" Pattern "(" ExprList ")" ";"
 Enumeration -> Visibility? "enum" Identifier "(" comma_list(Identifier) ")" ";"
 ```
 
+### New Types
+
+[→ context in types.md](types.md#new-types)
+
+```text
+NewTypeDecl -> Visibility? "newtype" Identifier "=" Expression ";"
+```
+
 ## Function Definitions
 
 ### Simple Function Definitions
@@ -198,6 +206,10 @@ Enumeration -> Visibility? "enum" Identifier "(" comma_list(Identifier) ")" ";"
 ```text
 Function -> PatternGuard? Visibility? CodegenAttribute?
             Identifier Arguments ReturnSpec? FunctionBody
+
+CodegenAttribute -> DiagnosticAttrList? InlineAttr? "alias"?
+DiagnosticAttrList -> "[[" Identifier ("," Identifier)* "]]"
+InlineAttr -> "inline" | "forceinline" | "noinline"
 ```
 
 ### Universal Overloads
@@ -325,9 +337,10 @@ BindingKind -> "var" | "ref" | "forward" | "alias"
 [→ context in statements.md](statements.md#initialization-statements)
 
 ```text
-Assignment   -> ExprList AssignmentOp ExprList ";"
-AssignmentOp -> "=" | OpChars ":" | "<--"
-OpChars      -> /[=!<>+\-*\/\\%~|&]+/
+Assignment        -> ExprList AssignmentOp ExprList ";"
+                   | OpChars ":" ExprList ";"
+AssignmentOp      -> "=" | OpChars ":" | "<--"
+OpChars           -> /[=!<>+\-*\/\\%~|&]+/
 ```
 
 ### `switch`
@@ -335,7 +348,7 @@ OpChars      -> /[=!<>+\-*\/\\%~|&]+/
 [→ context in statements.md](statements.md#switch)
 
 ```text
-IfStatement     -> "if" "(" Expression ")" Statement ("else" Statement)?
+IfStatement     -> "if" "(" StatementExpression ")" Statement ("else" Statement)?
 SwitchStatement -> "switch" "(" Expression ")"
                    ("case" "(" ExprList ")" Statement)*
                    ("else" Statement)?
@@ -346,9 +359,12 @@ SwitchStatement -> "switch" "(" Expression ")"
 [→ context in statements.md](statements.md#for-multiple-value-for)
 
 ```text
-WhileStatement         -> "while" "(" Expression ")" Statement
+WhileStatement         -> "while" "(" StatementExpression ")" Statement
 ForStatement           -> "for" "(" comma_list(Identifier) "in" Expression ")" Statement
 MultiValueForStatement -> ".." "for" "(" Identifier "in" ExprList ")" Statement
+
+StatementExpression    -> (StatementExprStatement ";")* Expression
+StatementExprStatement -> Binding | Assignment
 ```
 
 ### `goto`
