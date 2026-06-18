@@ -209,34 +209,46 @@ Loops while a `Bool` expression is true.
 var x = 0;
 while (x < 10) {
     println(x);
-    x += 1;
+    x +: 1;
+}
+```
+
+The condition position may include a binding or assignment before the test expression, separated by `;`. The binding is re-evaluated at the top of each iteration:
+
+```ceramic
+while (var v = nextValue(iter); hasValue?(v)) {
+    forward x = getValue(v);
+    println(x);
 }
 ```
 
 #### `for`
 
-Iterates over a sequence using the `iterator`, `hasNext?`, and `next` operator functions.
+Iterates over a sequence using the `iterator`, `nextValue`, `hasValue?`, and `getValue` operator functions.
 
 ```ceramic
 for (x in range(10))
     println(x);
 
-// desugars to:
+// desugars to (% names are compiler-internal, not user-writable):
 {
-    forward _iter = iterator(range(10));
-    while (hasNext?(_iter)) {
-        forward x = next(_iter);
+    forward %expr = range(10);
+    forward %iter = iterator(%expr);
+    while (var %value = nextValue(%iter); hasValue?(%value)) {
+        forward x = getValue(%value);
         println(x);
     }
 }
 ```
+
+To make a type iterable, provide overloads for `iterator`, `nextValue`, `hasValue?`, and `getValue`. `nextValue` advances the iterator and returns a coordinate value. `hasValue?` checks whether the coordinate is valid. `getValue` extracts the element from the coordinate.
 
 #### `..for`: Multiple-Value For
 
 Unrolls over each value of a multiple-value expression at **compile time**. The loop variable's type may differ between iterations.
 
 ```ceramic
-[..TT | countValues(..TT) != 1]
+[..TT when countValues(..TT) != 1]
 overload printTo(stream, ..xs:TT) {
     ..for (x in xs)
         printTo(stream, x);

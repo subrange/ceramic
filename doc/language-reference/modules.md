@@ -30,11 +30,11 @@ Operator functions are symbols in library code that the language uses internally
 **Switch:** `case?`
 
 **Assignment:**
-`assign` `fieldRefAssign` `fieldRefUpdateAssign` `indexAssign` `indexUpdateAssign` `staticIndexAssign` `staticIndexUpdateAssign` `updateAssign`
+`assign` `fieldRefAssign` `fieldRefUpdateAssign` `indexAssign` `indexUpdateAssign` `prefixUpdateAssign` `staticIndexAssign` `staticIndexUpdateAssign` `updateAssign`
 
-**For loops:** `hasNext?` `iterator` `next`
+**For loops:** `iterator` `nextValue` `hasValue?` `getValue`
 
-**Entry point:** `callMain` `setArgcArgv`
+**Entry point:** `callMain`
 
 **Exceptions:**
 `continueException` `exceptionIs?` `exceptionAs` `exceptionAsAny` `throwValue`
