@@ -133,7 +133,7 @@ Special property assignment desugars differently when the left-hand side is an i
 
 ```ceramic
 a[..b]  = c;     // → indexAssign(a, ..b, c)
-a.0     = c;     // → staticIndexAssign(a, static 0, c)
+a.0     = c;     // → staticIndexAssign(a, #0, c)
 a.field = c;     // → fieldRefAssign(a, #"field", c)
 ```
 

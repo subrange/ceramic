@@ -126,7 +126,7 @@ println(xs[2]);  // → index(xs, 2)
 
 #### Static Index (`a.0`)
 
-Desugars to `staticIndex(a, static 0)`. Used for positional tuple field access.
+Desugars to `staticIndex(a, #0)`. Used for positional tuple field access.
 
 ```ceramic
 var x = ["hello", "cruel", "world"];
@@ -147,7 +147,7 @@ var p = Point(array(1.0, 2.0));
 println(p.x, p.y);  // fieldRef(p, #"x"), fieldRef(p, #"y")
 
 // Custom swizzle accessors:
-overload fieldRef(p:Point, static #"xy") = ref p.coords[0], p.coords[1];
+overload fieldRef(p:Point, #"xy") = ref p.coords[0], p.coords[1];
 ```
 
 #### Dereference (`a^`)
