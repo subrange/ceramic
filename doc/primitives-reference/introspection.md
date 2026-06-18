@@ -332,16 +332,20 @@ RecordWithField?(#R, #name) : Bool;
 [V]
 Variant?(#V) : Bool;
 
-[V | Variant?(V)]
+[V when Variant?(V)]
 VariantMemberCount(#V) : SizeT;
 
-[V, n | Variant?(V) and n >= 0 and n < VariantMemberCount(V)]
-VariantMemberIndex(#V, #n);
+[V, M when Variant?(V)]
+VariantMemberIndex(#V, #M) : SizeT;
+
+[V when Variant?(V)]
+VariantMembers(#V);                      // static types
 ```
 
 - `Variant?`: `true` if `V` names a variant type.
 - `VariantMemberCount`: number of instance types.
-- `VariantMemberIndex`: the `n`th instance type. The mapping from index to instance is unspecified, but iterating `0 .. VariantMemberCount(V)` visits each instance exactly once.
+- `VariantMemberIndex`: the ordinal index of instance type `M` within `V`. Each instance maps to a distinct index in `0 .. VariantMemberCount(V)`; the mapping is unspecified but stable.
+- `VariantMembers`: a multiple-value list of the instance types of `V`, in index order.
 
 ### Enum Introspection
 
