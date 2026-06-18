@@ -320,9 +320,15 @@ Any LLVM intrinsics or globals referenced must be declared in a [top-level LLVM 
 
 ### Inline and Alias Qualifiers
 
-Any function or overload definition may be preceded by `inline` or `alias`.
+Any function or overload definition may be preceded by an inline qualifier and/or `alias`.
 
-- **`inline`**: the function is always compiled directly into its call site. If inlining is impossible (e.g., a recursive function), it is a compile-time error. This is a hard guarantee, not a hint like C's `inline`.
+Inline qualifiers:
+
+- **`forceinline`**: always inlined at every call site. A compile-time error if inlining is impossible (e.g., a recursive function).
+- **`inline`**: requests inlining; the compiler may decline (e.g., in debug builds).
+- **`noinline`**: suppresses inlining even when the optimizer would otherwise inline the function.
+
+`alias`:
 
 - **`alias`**: arguments are received unevaluated and re-evaluated in the caller's scope each time they are used inside the function. Equivalent to a hygienic, precedence-safe C preprocessor macro. Alias functions can query their call site's source location via `__FILE__`, `__LINE__`, `__COLUMN__`, and `__ARG__`.
 

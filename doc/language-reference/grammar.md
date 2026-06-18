@@ -198,6 +198,10 @@ Enumeration -> Visibility? "enum" Identifier "(" comma_list(Identifier) ")" ";"
 ```text
 Function -> PatternGuard? Visibility? CodegenAttribute?
             Identifier Arguments ReturnSpec? FunctionBody
+
+CodegenAttribute -> DiagnosticAttrList? InlineAttr? "alias"?
+DiagnosticAttrList -> "[[" Identifier ("," Identifier)* "]]"
+InlineAttr -> "inline" | "forceinline" | "noinline"
 ```
 
 ### Universal Overloads
