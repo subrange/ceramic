@@ -60,44 +60,61 @@ main() {
 }
 ```
 
-### `IdentifierModuleName`
+### `ModuleMemberNames`
 
 ```ceramic
-[S]
-IdentifierModuleName(#S);
+[M]
+ModuleMemberNames(#M);                    // static strings
 ```
 
-Like `ModuleName`, but returns a static string instead of a string literal.
+A multiple-value list of static strings naming every public global in module `M`, in alphabetical order. `M` must be a module object (e.g., from `MainModule()` or `StaticModule(S)`).
+
+```ceramic
+import __primitives__.(MainModule, ModuleMemberNames);
+import printer.*;
+
+main() {
+    println(..ModuleMemberNames(MainModule()));
+}
+```
 
 ### `StaticName`
 
 ```ceramic
 [x]
-StaticName(#x) : StringConstant;
+StaticName(#x);                           // static string
 ```
 
-Generates a string literal naming the static value `x`:
+Returns a static string naming the static value `x`:
 
 - Symbol: its name (without module, with parameters).
 - Static string: its string value.
 - Numeric value: its decimal representation.
 - Tuple: comma-delimited inside square brackets (`[a, b, c]`).
 
-Evaluated via `StringConstant`.
-
-### `IdentifierStaticName`
+### `GetOverload`
 
 ```ceramic
-[x]
-IdentifierStaticName(#x);
+[F, ..T]
+GetOverload(#F, #..T);
 ```
 
-Like `StaticName`, but returns a static string.
+Selects the overload of symbol `F` that matches argument types `..T` and returns it as a new callable procedure. The returned value can be called like any function. Unlike `makeCodePointer`, the result is still a fully generic Ceramic callable, not a fixed function pointer.
+
+```ceramic
+define foo;
+overload foo(x:Int)   { println("Int ",   x); }
+overload foo(x:Float) { println("Float ", x); }
+
+main() {
+    GetOverload(foo, Float)(123);  // prints: Float 123
+}
+```
 
 ### `staticFieldRef`
 
 ```ceramic
-[M, name | Identifier?(name)]
+[M, name when StringLiteral?(name)]
 staticFieldRef(#M, #name);
 ```
 
@@ -105,52 +122,79 @@ Looks up a public global value named `name` in module `M` and evaluates as if it
 
 ## Static String Manipulation
 
-### `Identifier?`
+### `StringLiteral?`
 
 ```ceramic
 [S]
-Identifier?(#S) : Bool;
+StringLiteral?(#S) : Bool;
 ```
 
 `true` if `S` is a static string.
 
-### `IdentifierSize`
+### `stringLiteralByteSize`
 
 ```ceramic
-[S | Identifier?(S)]
-IdentifierSize(#S) : SizeT;
+[S when StringLiteral?(S)]
+stringLiteralByteSize(#S) : SizeT;
 ```
 
 Number of characters in static string `S`.
 
-### `IdentifierConcat`
+### `stringLiteralConcat`
 
 ```ceramic
-[..SS | allValues?(Identifier?, ..SS)]
-IdentifierConcat(#..SS);
+[..SS when allValues?(StringLiteral?, ..SS)]
+stringLiteralConcat(#..SS);
 ```
 
 Concatenation of all argument static strings.
 
-### `IdentifierSlice`
+### `stringLiteralByteSlice`
 
 ```ceramic
-[S, n, m |
-    Identifier?(S)
-    and n >= 0 and n < IdentifierSize(S)
-    and m >= 0 and m < IdentifierSize(S)
+[S, n, m when
+    StringLiteral?(S)
+    and n >= 0 and n < stringLiteralByteSize(S)
+    and m >= 0 and m < stringLiteralByteSize(S)
 ]
-IdentifierSlice(#S, #n, #m);
+stringLiteralByteSlice(#S, #n, #m);
 ```
 
 Substring of `S` from index `n` up to (but not including) `m`.
+
+### `stringLiteralByteIndex`
+
+```ceramic
+[S, n when StringLiteral?(S) and n >= 0 and n < stringLiteralByteSize(S)]
+stringLiteralByteIndex(#S, #n) : Int32;
+```
+
+The byte at index `n` of static string `S`, as an `Int32`.
+
+### `stringLiteralBytes`
+
+```ceramic
+[S when StringLiteral?(S)]
+stringLiteralBytes(#S) : ..Int32;
+```
+
+A multiple-value list of every byte of `S` in order, each an `Int32`.
+
+### `stringLiteralFromBytes`
+
+```ceramic
+[..bytes]
+stringLiteralFromBytes(#..bytes);         // static string
+```
+
+Builds a static string from the given byte values. Each argument is a static integer in `0 .. 255`.
 
 ## Type Introspection
 
 ### `TypeSize`
 
 ```ceramic
-[T | Type?(T)]
+[T when Type?(T)]
 TypeSize(#T) : SizeT;
 ```
 
@@ -198,13 +242,13 @@ Number of member types in the union type.
 [R]
 Record?(#R) : Bool;
 
-[R | Record?(R)]
+[R when Record?(R)]
 RecordFieldCount(#R) : SizeT;
 
-[R, n | Record?(R) and n >= 0 and n < RecordFieldCount(R)]
+[R, n when Record?(R) and n >= 0 and n < RecordFieldCount(R)]
 RecordFieldName(#R, #n);                // static string
 
-[R, name | Record?(R) and Identifier?(name)]
+[R, name when Record?(R) and StringLiteral?(name)]
 RecordWithField?(#R, #name) : Bool;
 ```
 

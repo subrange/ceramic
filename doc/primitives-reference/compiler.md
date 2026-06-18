@@ -18,7 +18,7 @@ A global alias set to `true` when exceptions are enabled for the current compila
 ### `Flag?`
 
 ```ceramic
-[name | Identifier?(name)]
+[name when StringLiteral?(name)]
 Flag?(#name) : Bool;
 ```
 
@@ -27,7 +27,7 @@ Flag?(#name) : Bool;
 ### `Flag`
 
 ```ceramic
-[name | Identifier?(name)]
+[name when StringLiteral?(name)]
 Flag(#name);
 ```
 

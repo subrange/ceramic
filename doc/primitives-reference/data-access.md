@@ -68,8 +68,8 @@ Returns a reference to the `n`th field of a record value.
 ## `recordFieldRefByName`
 
 ```ceramic
-[R, name | Record?(R) and Identifier?(name) and RecordWithField?(R, name)]
-recordFieldRefByName(rec:R, #name) : ref RecordFieldTypeByName(R, name);
+[R, name when Record?(R) and StringLiteral?(name) and RecordWithField?(R, name)]
+recordFieldRefByName(rec:R, #name) : ref;
 ```
 
 Returns a reference to the field named `name` (a static string) in `rec`.
