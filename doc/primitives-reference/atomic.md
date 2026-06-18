@@ -29,7 +29,7 @@ Every atomic operation takes one of these as a `static` parameter. They correspo
 ## `atomicLoad`
 
 ```ceramic
-[Order, T | Order?(Order)]
+[Order, T]
 atomicLoad(#Order, p:Pointer[T]) : T;
 ```
 
@@ -38,7 +38,7 @@ Atomically loads the value at `p`. Bitwise-copied. Errors if the target does not
 ## `atomicStore`
 
 ```ceramic
-[Order, T | Order?(Order)]
+[Order, T]
 atomicStore(#Order, p:Pointer[T], value:T) :;
 ```
 
@@ -54,7 +54,7 @@ define RMWOr;      define RMWXor;
 define RMWMin;     define RMWMax;
 define RMWUMin;    define RMWUMax;
 
-[Order, Op, T | Order?(Order) and RMWOp?(Op)]
+[Order, Op, T]
 atomicRMW(#Order, #Op, p:Pointer[T], operand:T) : T;
 ```
 
@@ -74,7 +74,7 @@ The update semantics for each `Op`:
 ## `atomicCompareExchange`
 
 ```ceramic
-[Order, T | Order?(Order)]
+[Order, T]
 atomicCompareExchange(#Order, p:Pointer[T], old:T, new:T) : T;
 ```
 
@@ -83,7 +83,7 @@ Atomic compare-and-swap. If `p^` is bitwise equal to `old`, `new` is written to 
 ## `atomicFence`
 
 ```ceramic
-[Order | Order?(Order)]
+[Order]
 atomicFence(#Order);
 ```
 
