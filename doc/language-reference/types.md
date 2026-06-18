@@ -29,20 +29,20 @@ A record's layout can be computed from an expression that evaluates to a list of
 
 ```ceramic
 // Equivalent to: record Point[T] (x:T, y:T)
-record Point[T] = [[#"x", T], [#"y", T]];
+record Point[T] = [#"x", T], [#"y", T];
 
 // Custom coordinate names
-record PointWithCoordinates[T, xy] = [[xy.0, T], [xy.1, T]];
+record PointWithCoordinates[T, xy] = [xy.0, T], [xy.1, T];
 ```
 This pattern also enables template specialization via an overloaded helper function:
 
 ```ceramic
-record Vec3D[T] = Vec3DBody(T);
+record Vec3D[T] = ..Vec3DBody(T);
 
 private define Vec3DBody;
-[T | T != Double]
-overload Vec3DBody(#T) = [[#"coords", Array[T, 3]]];
-overload Vec3DBody(#Float) = [[#"coords", Vec[Float, 4]]];  // SIMD path
+[T when T != Double]
+overload Vec3DBody(#T) = [#"coords", Array[T, 3]];
+overload Vec3DBody(#Float) = [#"coords", Vec[Float, 4]];  // SIMD path
 ```
 
 ### Variants
