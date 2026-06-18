@@ -148,8 +148,19 @@ Property update forms also exist:
 
 ```ceramic
 a[..b]  +: c;   // → indexUpdateAssign(add, a, ..b, c)
+a.0     +: c;   // → staticIndexUpdateAssign(add, a, #0, c)
 a.field +: c;   // → fieldRefUpdateAssign(add, a, #"field", c)
 ```
+
+#### Prefix Update Assignment
+
+An operator symbol followed by `:` may also appear as the **first** token of a statement, with the target on the right. This is a prefix update assignment:
+
+```ceramic
+++: x;   // → prefixUpdateAssign(#(++), x) → x = ++(x)
+```
+
+Desugars to `prefixUpdateAssign(#op, x)`, which by default sets `x` to the result of `op(x)` via `prefixOperator`. To implement a custom prefix update, overload `prefixUpdateAssign`.
 
 <!-- TODO: document that updateAssign can be overloaded for user-defined ops, e.g. overload updateAssign(#(**), ref x, exp) { ... } -->
 
