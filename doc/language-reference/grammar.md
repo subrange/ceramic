@@ -337,9 +337,10 @@ BindingKind -> "var" | "ref" | "forward" | "alias"
 [→ context in statements.md](statements.md#initialization-statements)
 
 ```text
-Assignment   -> ExprList AssignmentOp ExprList ";"
-AssignmentOp -> "=" | OpChars ":" | "<--"
-OpChars      -> /[=!<>+\-*\/\\%~|&]+/
+Assignment        -> ExprList AssignmentOp ExprList ";"
+                   | OpChars ":" ExprList ";"
+AssignmentOp      -> "=" | OpChars ":" | "<--"
+OpChars           -> /[=!<>+\-*\/\\%~|&]+/
 ```
 
 ### `switch`
