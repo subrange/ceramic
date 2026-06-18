@@ -252,8 +252,6 @@ for (x in range(10))
 }
 ```
 
-To make a type iterable, provide overloads for `iterator`, `nextValue`, `hasValue?`, and `getValue`. `nextValue` advances the iterator and returns a coordinate value. `hasValue?` checks whether the coordinate is valid. `getValue` extracts the element from the coordinate.
-
 #### `..for`: Multiple-Value For
 
 Unrolls over each value of a multiple-value expression at **compile time**. The loop variable's type may differ between iterations.
