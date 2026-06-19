@@ -168,6 +168,7 @@ using size64_t = unsigned long long;
     XX(FORMAL_ARG)                                                             \
     XX(RETURN_SPEC)                                                            \
     XX(LLVM_CODE)                                                              \
+    XX(ASM_CODE)                                                               \
     XX(CODE)                                                                   \
                                                                                \
     XX(RECORD_DECL)                                                            \
