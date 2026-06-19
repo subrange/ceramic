@@ -4,6 +4,9 @@
 #include <utility>
 #include <vector>
 
+#include <llvm/Support/DynamicLibrary.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Path.h>
 #include <llvm/Support/Signals.h>
 
 #include "ceramic.hpp"
@@ -67,6 +70,38 @@ static bool runModule(llvm::Module *module,
         std::move(*Generator_expected);
 
     mainDylib.addGenerator(std::move(Generator));
+
+// TODO: Windows uses <name>.dll not lib<name>.dll and needs separate handling
+#ifdef __APPLE__
+    const std::string libExt = ".dylib";
+#else
+    const std::string libExt = ".so";
+#endif
+
+    for (const auto &lib : libs) {
+        std::string filename = "lib" + lib + libExt;
+        std::string path;
+
+        for (const auto &dir : libSearchPaths) {
+            llvm::SmallString<256> candidate(dir);
+            llvm::sys::path::append(candidate, filename);
+            if (llvm::sys::fs::exists(candidate)) {
+                path = std::string(candidate);
+                break;
+            }
+        }
+
+        if (path.empty())
+            path = filename;
+
+        std::string errMsg;
+        if (llvm::sys::DynamicLibrary::LoadLibraryPermanently(path.c_str(),
+                                                              &errMsg)) {
+            llvm::errs() << "error: cannot load library '" << lib
+                         << "': " << errMsg << "\n";
+            return false;
+        }
+    }
 
     module->setDataLayout(jit.getDataLayout());
 
