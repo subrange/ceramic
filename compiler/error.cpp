@@ -286,9 +286,7 @@ static void appendContextNotes(Diagnostic &diag, Location primaryLocation,
         if (frame.overload.ptr() != nullptr &&
             frame.overload->isDiagnosticTransparent)
             continue;
-        if (primaryLocation.ok() &&
-            frame.location.source == primaryLocation.source &&
-            frame.location.offset == primaryLocation.offset)
+        if (!frame.hasParams)
             continue;
         diag.notes.emplace_back(Severity::Note, compileFrameHeadline(frame),
                                 Span(frame.location));
