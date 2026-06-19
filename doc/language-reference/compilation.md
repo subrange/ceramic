@@ -13,6 +13,29 @@ If the entry-point module contains a public symbol named `main`, it is passed to
 
 `external` function definitions also become entry points and are emitted with C linkage.
 
+#### Command-Line Arguments
+
+The signature of `main` determines what arguments it receives. Three forms are supported:
+
+```ceramic
+// no arguments
+main() { ... }
+```
+
+```ceramic
+// receives all arguments as a sequence of strings, including argv[0]
+main(args) {
+    println(size(args));   // number of arguments
+    println(args[0]);      // program name
+    println(args[1]);      // first user argument
+}
+```
+
+```ceramic
+// receives raw C-style argc and argv
+main(argc, argv) { ... }
+```
+
 ### Compile-Time Evaluation
 
 The compiler includes an evaluator that runs certain things at compile time:
