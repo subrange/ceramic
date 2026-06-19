@@ -1022,6 +1022,7 @@ MultiPValuePtr analyzePrimOp(PrimOpPtr x, MultiPValuePtr args) {
 
         code->body = origCode->body;
         code->llvmBody = origCode->llvmBody;
+        code->asmBody = origCode->asmBody;
 
         OverloadPtr overload =
             new Overload(nullptr, new ObjectExpr(proc.ptr()), code,
