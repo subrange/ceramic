@@ -29,7 +29,7 @@ a    a1    a_1    abc123    a?    ?a    ?
 ```
 The following are **reserved keywords** and may not be used as identifiers:
 
-`__ARG__` `__COLUMN__` `__FILE__` `__LINE__` `__llvm__` `alias` `and` `as` `break` `case` `catch` `continue` `define` `else` `enum` `eval` `external` `false` `finally` `for` `forward` `goto` `if` `import` `in` `inline` `instance` `not` `onerror` `or` `overload` `private` `public` `record` `ref` `return` `rvalue` `switch` `throw` `true` `try` `var` `variant` `while` `default` `noinline` `forceinline` `staticassert` `when` `newtype`
+`__ARG__` `__COLUMN__` `__FILE__` `__LINE__` `__asm__` `__llvm__` `alias` `and` `as` `break` `case` `catch` `continue` `define` `else` `enum` `eval` `external` `false` `finally` `for` `forward` `goto` `if` `import` `in` `inline` `instance` `not` `onerror` `or` `overload` `private` `public` `record` `ref` `return` `rvalue` `switch` `throw` `true` `try` `var` `variant` `while` `default` `noinline` `forceinline` `staticassert` `when` `newtype`
 
 ### Integer Literals
 

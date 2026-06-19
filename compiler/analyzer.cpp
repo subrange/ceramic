@@ -2170,7 +2170,7 @@ void analyzeCodeBody(InvokeEntry *entry) {
     CodePtr code = entry->code;
     assert(code->hasBody());
 
-    if (code->isLLVMBody() || code->hasReturnSpecs()) {
+    if (code->isLiteralBody() || code->hasReturnSpecs()) {
         evaluateReturnSpecs(code->returnSpecs, code->varReturnSpec, entry->env,
                             entry->returnIsRef, entry->returnTypes);
         entry->analyzed = true;
