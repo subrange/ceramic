@@ -51,7 +51,7 @@ struct RefCounted {
   public:
     RefCounted() : refCount(0) {}
 
-    RefCounted(const RefCounted &that) : refCount(0) {}
+    RefCounted(const RefCounted &) : refCount(0) {}
 
     void incRef() { ++refCount; }
 

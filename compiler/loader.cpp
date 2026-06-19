@@ -32,7 +32,7 @@ Source::Source(llvm::StringRef fileName) : Object(SOURCE), fileName(fileName) {
         buffer = std::move(bufferOrErr.get());
 }
 
-Source::Source(llvm::StringRef lineOfCode, int dummy) : Object(SOURCE) {
+Source::Source(llvm::StringRef lineOfCode, int) : Object(SOURCE) {
     buffer = llvm::MemoryBuffer::getMemBufferCopy(lineOfCode);
 }
 
