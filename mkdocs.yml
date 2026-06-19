@@ -6,6 +6,7 @@ repo_name: subrange/ceramic
 theme:
   name: material
   favicon: assets/favicon.svg
+  logo: assets/favicon.svg
   font:
     text: Inter
     code: JetBrains Mono
