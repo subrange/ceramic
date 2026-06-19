@@ -17,6 +17,7 @@ CodePtr clone(CodePtr x) {
     y->varReturnSpec = cloneOpt(x->varReturnSpec);
     y->body = cloneOpt(x->body);
     y->llvmBody = x->llvmBody;
+    y->asmBody = x->asmBody;
     return y;
 }
 
