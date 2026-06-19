@@ -151,7 +151,8 @@ static void initKeywords() {
         "break",    "continue",     "for",         "in",       "true",
         "false",    "try",          "catch",       "throw",    "finally",
         "onerror",  "staticassert", "eval",        "when",     "newtype",
-        "__FILE__", "__LINE__",     "__COLUMN__",  "__ARG__",  nullptr};
+        "__FILE__", "__LINE__",     "__COLUMN__",  "__ARG__",  "__asm__",
+        nullptr};
     keywords = new std::set<llvm::StringRef>();
     for (const char **p = s; *p; ++p)
         keywords->insert(*p);
