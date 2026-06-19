@@ -9,7 +9,7 @@ Ceramic has four kinds of user-defined types:
 
 ### Records
 
-A **record** is a type that groups named fields together into a single value, similar to a struct in C or a class with only data members.
+A **record** is a general-purpose aggregate that groups named fields together into a single value, similar to a struct in C.
 
 ```ceramic
 record Point (x:Int, y:Int);
@@ -47,7 +47,7 @@ overload Vec3DBody(#Float) = [#"coords", Vec[Float, 4]];  // SIMD path
 
 ### Variants
 
-A **variant** is a type that can hold a value of exactly one of several possible types. It always knows which type it currently holds, so you can dispatch on it safely at runtime without casts.
+A **variant** is a discriminated union. A variant value holds exactly one of its instance types and knows which one at runtime, enabling type-safe dynamic dispatch.
 
 ```ceramic
 variant Fruit (Apple, Orange, Banana);

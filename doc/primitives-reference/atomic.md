@@ -95,4 +95,4 @@ Errors at compile time if the target platform does not support compare-and-swap 
 atomicFence(#Order);
 ```
 
-Establishes a memory ordering constraint without reading or writing any particular value. It prevents the compiler and CPU from reordering memory accesses across this point. `Order` must be `OrderAcquire`, `OrderRelease`, `OrderAcqRel`, or `OrderSeqCst`.
+Introduces a happens-before edge without an associated memory operation. It prevents the compiler and CPU from reordering memory accesses across this point. `Order` must be `OrderAcquire`, `OrderRelease`, `OrderAcqRel`, or `OrderSeqCst`.

@@ -102,7 +102,7 @@ An anonymous, ordered grouping of values of different types. `Tuple[A,B,C]` is l
 Union[..T]
 ```
 
-An anonymous union type that can hold a value of any of its member types. Unlike a variant, it does not track which type it currently holds. Laid out like a naturally-aligned C `union`.
+An anonymous, non-discriminated union. Unlike a variant, it does not track which type it currently holds. Laid out like a naturally-aligned C `union`.
 
 ## `Static`
 
