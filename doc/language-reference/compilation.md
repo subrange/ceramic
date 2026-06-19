@@ -23,8 +23,6 @@ main() { ... }
 ```
 
 ```ceramic
-import core.system.(commandLine);
-
 // receives all arguments as a sequence of strings, including argv[0]
 main(args) {
     println(size(args));   // number of arguments
@@ -37,8 +35,6 @@ main(args) {
 // receives raw C-style argc and argv
 main(argc, argv) { ... }
 ```
-
-`commandLine()` from `core.system` returns the same sequence and is available anywhere in the program after `main` starts.
 
 ### Compile-Time Evaluation
 
