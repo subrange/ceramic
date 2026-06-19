@@ -263,12 +263,10 @@ static string compileFrameHeadline(CompileContextEntry const &frame) {
         }
     } else {
         printName(sout, obj);
-        if (frame.hasParams) {
-            sout << "(";
-            printNameList(sout, llvm::ArrayRef<ObjectPtr>(frame.params),
-                          llvm::ArrayRef<unsigned>(frame.dispatchIndices));
-            sout << ")";
-        }
+        sout << "(";
+        printNameList(sout, llvm::ArrayRef<ObjectPtr>(frame.params),
+                      llvm::ArrayRef<unsigned>(frame.dispatchIndices));
+        sout << ")";
     }
     sout.flush();
     return buf;
