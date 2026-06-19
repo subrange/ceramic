@@ -1,6 +1,6 @@
 # Multiple Values
 
-Compile-time operations over multiple-value lists. A multiple-value list is the sequence of values produced by a variadic argument, a comma expression, or another primitive. These primitives select, count, and slice such lists. All selection is resolved at compile time. None may be overloaded.
+Compile-time operations over multiple-value lists. A multiple-value list is the sequence of values produced by a variadic argument, a comma expression, or another primitive. These primitives let you select, count, and slice such lists at compile time. None may be overloaded.
 
 ## `countValues`
 
@@ -9,7 +9,7 @@ Compile-time operations over multiple-value lists. A multiple-value list is the 
 countValues(..xs) : Int32;
 ```
 
-The number of values in `..xs`, as an `Int32`.
+The number of values in `..xs` is available as an `Int32` via `countValues`.
 
 ## `nthValue`
 
@@ -18,7 +18,7 @@ The number of values in `..xs`, as an `Int32`.
 nthValue(#n, ..xs);
 ```
 
-The `n`th value of `..xs`, zero-based.
+To pick a single value out of a list by position, use `nthValue`. Positions are zero-based.
 
 ## `withoutNthValue`
 
@@ -27,7 +27,7 @@ The `n`th value of `..xs`, zero-based.
 withoutNthValue(#n, ..xs);
 ```
 
-All values of `..xs` except the `n`th, in order.
+To drop one value from a list by position, use `withoutNthValue`. It returns all values of `..xs` except the one at position `n`, in order.
 
 ## `takeValues` / `dropValues`
 
@@ -37,7 +37,7 @@ takeValues(#n, ..xs);
 dropValues(#n, ..xs);
 ```
 
-`takeValues` returns the first `n` values of `..xs`. `dropValues` returns the rest. `n` is clamped to the list length.
+`takeValues` returns the first `n` values of `..xs`. `dropValues` returns everything after the first `n`. Both clamp `n` to the list length, so asking for more values than exist is not an error.
 
 ## `integers`
 
@@ -46,7 +46,7 @@ dropValues(#n, ..xs);
 integers(#n);
 ```
 
-Runtime integers from `0` to `n - 1`, typed as `Int32` or `SizeT` to match `n`. Returns no values when `n` is `0`.
+`integers` produces runtime integer values from `0` to `n - 1`, typed as `Int32` or `SizeT` to match the type of `n`. When `n` is `0`, it produces no values.
 
 Typical use with `..for`:
 
@@ -62,9 +62,9 @@ Typical use with `..for`:
 staticIntegers(#n);
 ```
 
-Like `integers`, but each value is a static integer (`#0` through `#(n - 1)`).
+`staticIntegers` works like `integers`, but each value is a static integer (`#0` through `#(n - 1)`).
 
-Useful when the index itself must be a static value (e.g., for `tupleRef` or `staticIndex`):
+Use this when the index itself needs to be a static value, for example with `tupleRef` or `staticIndex`:
 
 ```ceramic
 ..for (i in staticIntegers(#3))

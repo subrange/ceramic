@@ -2,7 +2,7 @@
 
 ## `Bool`
 
-A boolean value: `true` or `false`. Corresponds to LLVM `i1`, C99 `_Bool`, C++ `bool`.
+A boolean value: either `true` or `false`. Equivalent to `bool` in C++ and `_Bool` in C99.
 
 ## Integer Types
 
@@ -32,8 +32,8 @@ The unsigned integer type whose width matches a pointer is internally referred t
 
 For each floating-point width:
 
-- `Imag32`, `Imag64`, `Imag80`: share LLVM/C representation with their floating type but are semantically imaginary.
-- `Complex32`, `Complex64`, `Complex80`: LLVM `{float, float}` etc., C99 `_Complex float` etc.
+- `Imag32`, `Imag64`, `Imag80`: use the same memory layout as their corresponding float type but are treated as imaginary numbers by the type system.
+- `Complex32`, `Complex64`, `Complex80`: a pair of floats representing a complex number. Equivalent to `_Complex float` and friends in C99.
 
 ## `Pointer`
 
@@ -41,7 +41,7 @@ For each floating-point width:
 Pointer[T]
 ```
 
-A pointer to a value of type `T`. Corresponds to LLVM `%T*` or C `T*`. Created with prefix `@` or [`addressOf`](pointers.md#addressof).
+A pointer to a value of type `T`, equivalent to `T*` in C. You create one with the prefix `@` operator or with [`addressOf`](pointers.md#addressof).
 
 ## `CodePointer`
 
@@ -49,7 +49,7 @@ A pointer to a value of type `T`. Corresponds to LLVM `%T*` or C `T*`. Created w
 CodePointer[[..In], [..Out]]
 ```
 
-A pointer to a Ceramic function instance. Created with [`makeCodePointer`](pointers.md#makecodepointer). The Ceramic calling convention is unspecified, so it has no fixed LLVM/C equivalent.
+A pointer to a specific compiled instance of a Ceramic function. You create one with [`makeCodePointer`](pointers.md#makecodepointer). Because Ceramic's internal calling convention is unspecified, `CodePointer` has no C equivalent and cannot be passed directly to C code.
 
 ## External Code Pointer Types
 
@@ -74,9 +74,9 @@ These pointers are obtained by evaluating external function names, returning the
 Array[T, n]
 ```
 
-Fixed-size, locally-allocated array of `n` elements of type `T`. `n` must be `Int32`. Corresponds to LLVM `[n x %T]` or C `T[n]`.
+A fixed-size array of `n` elements of type `T`, equivalent to `T[n]` in C. `n` must be `Int32`.
 
-Unlike C arrays, Ceramic arrays do **not** decay to pointers. Use [`arrayRef`](data-access.md#arrayref) and [`arrayElements`](data-access.md#arrayelements) for access.
+Unlike C arrays, Ceramic arrays do **not** decay to pointers. Use [`arrayRef`](data-access.md#arrayref) and [`arrayElements`](data-access.md#arrayelements) to access elements.
 
 ## `Vec`
 
@@ -84,9 +84,9 @@ Unlike C arrays, Ceramic arrays do **not** decay to pointers. Use [`arrayRef`](d
 Vec[T, n]
 ```
 
-SIMD vector of `n` elements of type `T`. `n` must be `Int32`. Corresponds to LLVM `<n x %T>` or the GCC extension `T __attribute__((vector_size(...)))`.
+A SIMD vector of `n` elements of type `T`. `n` must be `Int32`. Equivalent to the GCC extension `T __attribute__((vector_size(...)))`.
 
-No high-level primitives are provided. Use `Vec` with LLVM vector intrinsics.
+No high-level primitives are provided for `Vec`. You use it together with LLVM vector intrinsics declared in a top-level `__llvm__` block.
 
 ## `Tuple`
 
@@ -94,7 +94,7 @@ No high-level primitives are provided. Use `Vec` with LLVM vector intrinsics.
 Tuple[..T]
 ```
 
-Anonymous, ordered aggregate. Laid out like a naturally-aligned C `struct`. `Tuple[A,B,C]` corresponds to the LLVM struct `{%A, %B, %C}`.
+An anonymous, ordered grouping of values of different types. `Tuple[A,B,C]` is laid out in memory like a naturally-aligned C `struct` with three fields of types `A`, `B`, and `C`.
 
 ## `Union`
 
@@ -102,7 +102,7 @@ Anonymous, ordered aggregate. Laid out like a naturally-aligned C `struct`. `Tup
 Union[..T]
 ```
 
-Anonymous, non-discriminated union. Laid out like a naturally-aligned C `union`. LLVM has no union type. The compiler picks an LLVM type with the correct size and alignment.
+An anonymous union type that can hold a value of any of its member types. Unlike a variant, it does not track which type it currently holds. Laid out like a naturally-aligned C `union`.
 
 ## `Static`
 
@@ -110,9 +110,7 @@ Anonymous, non-discriminated union. Laid out like a naturally-aligned C `union`.
 Static[x]
 ```
 
-A stateless type representing a compile-time value. Ceramic symbols, static strings, and `static` expressions evaluate to instances of `Static[…]`.
-
-`Static` values emit as LLVM `i8 undef` and still take space inside tuples and records.
+A stateless type that carries a compile-time value. Ceramic symbols, static strings, and `#` static expressions all have a `Static[…]` type. `Static` values have no meaningful runtime representation but still occupy space inside tuples and records.
 
 ## `ByRef`
 
@@ -120,7 +118,7 @@ A stateless type representing a compile-time value. Ceramic symbols, static stri
 ByRef[T]
 ```
 
-A return-type marker that declares a function returns a reference to `T` rather than a value. It appears only in return type specs — it has no runtime representation.
+A marker used in return type declarations to say that a function returns a reference to a `T` rather than a copy of one. It only appears in return type specifications and has no runtime representation.
 
 ```ceramic
 [T]

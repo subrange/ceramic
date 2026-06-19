@@ -62,7 +62,7 @@ The library function `CallDefined?` (from `core.operators`) wraps this primitive
 StaticCallOutputTypes(#F, #..T);         // static types
 ```
 
-A multiple-value list of the output types that symbol `F` would return when called with input types `..T`. Errors if no matching overload exists.
+When you need the output types of a call at compile time, use `StaticCallOutputTypes`. It resolves which overload of `F` matches `..T` and returns the output types as a multiple-value list. It is a compile error if no matching overload exists.
 
 The library alias `CallOutputTypes` (from `core.operators`) wraps this for both symbols and callable types.
 
@@ -82,7 +82,7 @@ StaticMono?(#F) : Bool;
 StaticMonoInputTypes(#F);                // static types
 ```
 
-A multiple-value list of the argument types of the single monomorphic overload of symbol `F`. Errors if `F` is not monomorphic.
+For a symbol with exactly one monomorphic overload, the argument types of that overload are available at compile time via `StaticMonoInputTypes`. It is a compile error if `F` is not monomorphic.
 
 ### `MainModule`
 
@@ -90,7 +90,7 @@ A multiple-value list of the argument types of the single monomorphic overload o
 MainModule() : module;
 ```
 
-Returns the module object for the entry-point (main) module of the current compilation. Useful for writing module-generic test runners:
+Every Ceramic program has a designated entry-point module. `MainModule()` returns the module object for it. Useful for writing module-generic test runners:
 
 ```ceramic
 import test.module.(testMainModule);
@@ -104,7 +104,7 @@ main() = testMainModule();
 StaticModule(#S) : module;
 ```
 
-Returns the module object containing symbol `S`. Errors if `S` has no associated module.
+To find which module owns a given symbol, call `StaticModule`. The result is the module object for the module that contains `S`. It is a compile error if `S` has no associated module.
 
 ### `ModuleName`
 
@@ -113,7 +113,7 @@ Returns the module object containing symbol `S`. Errors if `S` has no associated
 ModuleName(#S);                           // static string
 ```
 
-Returns a static string containing the fully-qualified module name containing the symbol `S`. If `S` is itself a module, returns the module's own name. Errors if `S` is not a symbol.
+The fully-qualified module name for the module that contains `S` is available at compile time as a static string. If `S` is itself a module, you get that module's own name. It is a compile error if `S` is not a symbol.
 
 ```ceramic
 import foo;
@@ -136,7 +136,7 @@ main() {
 ModuleMemberNames(#M);                    // static strings
 ```
 
-A multiple-value list of static strings naming every public global in module `M`, in alphabetical order. `M` must be a module object (e.g., from `MainModule()` or `StaticModule(S)`).
+To enumerate the public globals of a module, use `ModuleMemberNames`. It returns every public global in `M` as a multiple-value list of static strings, in alphabetical order. `M` must be a module object, for example one obtained from `MainModule()` or `StaticModule(S)`.
 
 ```ceramic
 import __primitives__.(MainModule, ModuleMemberNames);
@@ -154,7 +154,7 @@ main() {
 StaticName(#x);                           // static string
 ```
 
-Returns a static string naming the static value `x`:
+The name of any compile-time value is available as a static string via `StaticName`. What the string contains depends on what `x` is:
 
 - Symbol: its name (without module, with parameters).
 - Static string: its string value.
@@ -168,7 +168,7 @@ Returns a static string naming the static value `x`:
 GetOverload(#F, #..T);
 ```
 
-Selects the overload of symbol `F` that matches argument types `..T` and returns it as a new callable procedure. The returned value can be called like any function. Unlike `makeCodePointer`, the result is still a fully generic Ceramic callable, not a fixed function pointer.
+When you want to capture a specific overload of a symbol as a callable value, use `GetOverload`. It selects the overload of `F` that matches argument types `..T` and returns it as a new callable procedure. You can call the result just like any other function. Unlike `makeCodePointer`, the result is still a fully generic Ceramic callable rather than a fixed function pointer.
 
 ```ceramic
 define foo;
@@ -187,7 +187,7 @@ main() {
 staticFieldRef(#M, #name);
 ```
 
-Looks up a public global value named `name` in module `M` and evaluates as if it were referenced by name directly. Errors if `name` is not a public member of `M`.
+To look up a public global by a name that is only known at compile time, use `staticFieldRef`. The result is the global's value, exactly as if you had written the name directly in code. It is a compile error if `name` is not a public member of `M`.
 
 ## Static String Manipulation
 
@@ -207,7 +207,7 @@ StringLiteral?(#S) : Bool;
 stringLiteralByteSize(#S) : SizeT;
 ```
 
-Number of characters in static string `S`.
+The length in bytes of static string `S` is available at compile time via `stringLiteralByteSize`.
 
 ### `stringLiteralConcat`
 
@@ -216,7 +216,7 @@ Number of characters in static string `S`.
 stringLiteralConcat(#..SS);
 ```
 
-Concatenation of all argument static strings.
+To join several static strings into one at compile time, use `stringLiteralConcat`. It concatenates all its arguments in order and returns the result as a new static string.
 
 ### `stringLiteralByteSlice`
 
@@ -229,7 +229,7 @@ Concatenation of all argument static strings.
 stringLiteralByteSlice(#S, #n, #m);
 ```
 
-Substring of `S` from index `n` up to (but not including) `m`.
+To extract a substring at compile time, use `stringLiteralByteSlice`. It returns the bytes of `S` from index `n` up to but not including `m`.
 
 ### `stringLiteralByteIndex`
 
@@ -238,7 +238,7 @@ Substring of `S` from index `n` up to (but not including) `m`.
 stringLiteralByteIndex(#S, #n) : Int32;
 ```
 
-The byte at index `n` of static string `S`, as an `Int32`.
+The byte at position `n` of `S` is available at compile time as an `Int32`.
 
 ### `stringLiteralBytes`
 
@@ -247,7 +247,7 @@ The byte at index `n` of static string `S`, as an `Int32`.
 stringLiteralBytes(#S) : ..Int32;
 ```
 
-A multiple-value list of every byte of `S` in order, each an `Int32`.
+To iterate over the bytes of a static string at compile time, use `stringLiteralBytes`. It returns the contents of `S` as a multiple-value list of `Int32` values, one per byte, in order.
 
 ### `stringLiteralFromBytes`
 
@@ -256,7 +256,16 @@ A multiple-value list of every byte of `S` in order, each an `Int32`.
 stringLiteralFromBytes(#..bytes);         // static string
 ```
 
-Builds a static string from the given byte values. Each argument is a static integer in `0 .. 255`.
+When you need to construct a static string from individual bytes at compile time, `stringLiteralFromBytes` assembles a list of static integer arguments (each in `0 .. 255`) into a static string.
+
+### `stringTableConstant`
+
+```ceramic
+[S when StringLiteral?(S)]
+stringTableConstant(#S) : Pointer[SizeT];
+```
+
+Static strings only exist at compile time. To access one from running code, use `stringTableConstant`. It returns a pointer into the program's string table, where the data is laid out as a `SizeT` length prefix followed by the string's bytes. In practice you won't call this directly — `StringLiteralRef` does it for you.
 
 ## Type Introspection
 
@@ -267,7 +276,7 @@ Builds a static string from the given byte values. Each argument is a static int
 TypeSize(#T) : SizeT;
 ```
 
-Size in bytes of a value of type `T`.
+The size in bytes of a value of type `T` is available at compile time via `TypeSize`.
 
 ### `TypeAlignment`
 
@@ -276,7 +285,7 @@ Size in bytes of a value of type `T`.
 TypeAlignment(#T) : SizeT;
 ```
 
-Natural alignment in bytes of a value of type `T`.
+The natural alignment of type `T`, in bytes, is available at compile time via `TypeAlignment`.
 
 ### `BaseType`
 
@@ -285,7 +294,7 @@ Natural alignment in bytes of a value of type `T`.
 BaseType(#T);                           // static type
 ```
 
-The underlying representation type of `T`. For a new type, this is the type it wraps. For any other type, it is `T` itself.
+For a newtype, the underlying representation type is available via `BaseType`. For any other type, `BaseType(T)` is just `T` itself.
 
 ### `TupleElementCount`
 
@@ -294,7 +303,7 @@ The underlying representation type of `T`. For a new type, this is the type it w
 TupleElementCount(#Tuple[..T]) : SizeT;
 ```
 
-Number of elements in the tuple type.
+The number of elements in a tuple type is available at compile time via `TupleElementCount`.
 
 ### `UnionMemberCount`
 
@@ -303,7 +312,7 @@ Number of elements in the tuple type.
 UnionMemberCount(#Union[..T]) : SizeT;
 ```
 
-Number of member types in the union type.
+The number of member types in a union is available at compile time via `UnionMemberCount`.
 
 ### Record Introspection
 
@@ -322,8 +331,8 @@ RecordWithField?(#R, #name) : Bool;
 ```
 
 - `Record?`: `true` if `R` names a record type.
-- `RecordFieldCount`: field count for record type `R`.
-- `RecordFieldName`: name of the `n`th field as a static string.
+- `RecordFieldCount`: the number of fields in record type `R`.
+- `RecordFieldName`: the name of the `n`th field as a static string.
 - `RecordWithField?`: `true` if `R` has a field named `name`.
 
 ### Variant Introspection
@@ -343,7 +352,7 @@ VariantMembers(#V);                      // static types
 ```
 
 - `Variant?`: `true` if `V` names a variant type.
-- `VariantMemberCount`: number of instance types.
+- `VariantMemberCount`: the number of instance types.
 - `VariantMemberIndex`: the ordinal index of instance type `M` within `V`. Each instance maps to a distinct index in `0 .. VariantMemberCount(V)`; the mapping is unspecified but stable.
 - `VariantMembers`: a multiple-value list of the instance types of `V`, in index order.
 
@@ -361,8 +370,8 @@ EnumMemberName(#E, #n);                  // static string
 ```
 
 - `Enum?`: `true` if `E` names an enum type.
-- `EnumMemberCount`: number of values.
-- `EnumMemberName`: static string naming the `n`th value.
+- `EnumMemberCount`: the number of values.
+- `EnumMemberName`: the name of the `n`th value as a static string.
 
 ## Lambda Introspection
 
@@ -385,4 +394,4 @@ LambdaMonoInputTypes(#F);                // static types
 - `LambdaRecord?`: `true` if `F` is the type of a capturing lambda.
 - `LambdaSymbol?`: `true` if `F` is a procedure symbol created from a non-capturing lambda.
 - `LambdaMono?`: `true` if the lambda record type `F` is monomorphic (its single overload has no pattern variables).
-- `LambdaMonoInputTypes`: a multiple-value list of the argument types of the monomorphic overload of lambda record type `F`.
+- `LambdaMonoInputTypes`: the argument types of the monomorphic overload of lambda record type `F`, as a multiple-value list.

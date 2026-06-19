@@ -233,7 +233,6 @@ Every definition that creates a new symbol may be marked `public` or `private`. 
 - `private`: not importable by default (but can be force-imported).
 
 Visibility modifiers are not valid on `overload` or `instance` forms, which modify existing symbols rather than creating new ones.
----
 
 ## Symbols
 
@@ -279,6 +278,6 @@ main() {
 }
 ```
 
-Static strings are the operands to `fieldRef`, which implements the `.` field access operator. The `__primitives__` module provides operations for indexing, composing, and slicing them.
+They are also the operands to `fieldRef`, which implements the `.` field access operator. The `__primitives__` module provides operations for indexing, composing, and slicing them.
 
 ---
