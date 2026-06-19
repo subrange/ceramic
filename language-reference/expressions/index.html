@@ -1,0 +1,2151 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subrange.github.io/ceramic/language-reference/expressions/">
+      
+      
+        <link rel="prev" href="../statements/">
+      
+      
+        <link rel="next" href="../grammar/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Expressions - Ceramic</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#expressions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Ceramic" class="md-header__button md-logo" aria-label="Ceramic" data-md-component="logo">
+      
+  <img src="../../assets/favicon.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Ceramic
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Expressions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subrange/ceramic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subrange/ceramic
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Ceramic" class="md-nav__button md-logo" aria-label="Ceramic" data-md-component="logo">
+      
+  <img src="../../assets/favicon.svg" alt="logo">
+
+    </a>
+    Ceramic
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subrange/ceramic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subrange/ceramic
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tokenization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tokenization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compilation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compilation Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules & Source Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type Definitions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function Definitions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../statements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Statements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expressions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expressions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#atomic-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Atomic Expressions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Atomic Expressions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#name-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Name References
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#literal-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Literal Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parentheses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parentheses
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuple-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tuple Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compilation-context-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compilation Context Operators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eval-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eval Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#suffix-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suffix Operators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Suffix Operators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#call-ab-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Call (a(b, c))
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-ab-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Index (a[b, c])
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-index-a0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static Index (a.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#field-reference-afield" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field Reference (a.field)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dereference-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dereference (a^)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefix-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefix Operators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prefix Operators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dispatch-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dispatch (*a)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arithmetic-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arithmetic Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bitwise-and-shift-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bitwise and Shift Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-defined-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User-Defined Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#boolean-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boolean Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#low-precedence-prefix-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Low-Precedence Prefix Operators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Low-Precedence Prefix Operators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#if-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        If Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyword-pair-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keyword Pair Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unpack-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unpack (..a)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lambda-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lambda Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multiple-value-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Value Expressions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Grammar Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primitives Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primitives Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primitive Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/data-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/multiple-values/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multiple Values
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/numeric/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numeric Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/pointers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pointer Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/atomic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Atomic Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/introspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/compiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compiler Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#atomic-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Atomic Expressions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Atomic Expressions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#name-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Name References
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#literal-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Literal Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parentheses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parentheses
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuple-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tuple Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compilation-context-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compilation Context Operators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eval-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eval Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#suffix-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suffix Operators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Suffix Operators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#call-ab-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Call (a(b, c))
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#index-ab-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Index (a[b, c])
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-index-a0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static Index (a.0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#field-reference-afield" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field Reference (a.field)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dereference-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dereference (a^)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefix-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefix Operators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prefix Operators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dispatch-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dispatch (*a)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arithmetic-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arithmetic Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bitwise-and-shift-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bitwise and Shift Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-defined-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User-Defined Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#boolean-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boolean Operators
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#low-precedence-prefix-operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Low-Precedence Prefix Operators
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Low-Precedence Prefix Operators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#if-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        If Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyword-pair-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keyword Pair Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unpack-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unpack (..a)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lambda-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lambda Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multiple-value-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Value Expressions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="expressions">Expressions</h1>
+<p>Ceramic's expression hierarchy, from highest to lowest precedence:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Forms</th>
+<th>Operator functions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Atomic</td>
+<td>names, literals, <code>()</code>, <code>[]</code>, <code>__FILE__</code> etc., <code>eval</code></td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>Suffix</td>
+<td><code>a(b)</code> <code>a[b]</code> <code>a.0</code> <code>a.field</code> <code>a^</code></td>
+<td><code>call</code> <code>index</code> <code>staticIndex</code> <code>fieldRef</code> <code>dereference</code></td>
+</tr>
+<tr>
+<td>Prefix</td>
+<td><code>+a</code> <code>-a</code> <code>@a</code> <code>*a</code></td>
+<td><code>plus</code> <code>minus</code>, address and dispatch are primitive</td>
+</tr>
+<tr>
+<td>Multiplicative</td>
+<td><code>a*b</code> <code>a/b</code> <code>a\b</code> <code>a%b</code></td>
+<td><code>multiply</code> <code>divide</code> <code>quotient</code> <code>remainder</code></td>
+</tr>
+<tr>
+<td>Additive</td>
+<td><code>a+b</code> <code>a-b</code></td>
+<td><code>add</code> <code>subtract</code></td>
+</tr>
+<tr>
+<td>Shift</td>
+<td><code>a&lt;&lt;b</code> <code>a&gt;&gt;b</code></td>
+<td><code>bitshl</code> <code>bitshr</code></td>
+</tr>
+<tr>
+<td>Bitwise</td>
+<td><code>a&amp;b</code> <code>a~b</code> <code>a\|b</code></td>
+<td><code>bitand</code> <code>bitxor</code> <code>bitor</code></td>
+</tr>
+<tr>
+<td>Concatenation</td>
+<td><code>a++b</code></td>
+<td><code>cat</code></td>
+</tr>
+<tr>
+<td>Ordered comparison</td>
+<td><code>&lt;=</code> <code>&lt;</code> <code>&gt;</code> <code>&gt;=</code></td>
+<td><code>lesserEquals?</code> <code>lesser?</code> <code>greater?</code> <code>greaterEquals?</code></td>
+</tr>
+<tr>
+<td>Equality</td>
+<td><code>==</code> <code>!=</code></td>
+<td><code>equals?</code> <code>notEquals?</code></td>
+</tr>
+<tr>
+<td>Boolean</td>
+<td><code>not a</code> <code>a and b</code> <code>a or b</code></td>
+<td>primitive, not overloadable</td>
+</tr>
+<tr>
+<td>Low-precedence prefix</td>
+<td><code>if (a) b else c</code>, <code>name: a</code>, <code>#a</code>, <code>..a</code>, <code>a -&gt; b</code></td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>Multiple value</td>
+<td><code>a, b, c</code></td>
+<td>(none)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="atomic-expressions">Atomic Expressions</h3>
+<h4 id="name-references">Name References</h4>
+<p>A bare identifier evaluates to the named local or global entity in the current scope. An error is raised if no match is found.</p>
+<pre class="highlight"><code class="language-ceramic">import a;
+import a.(b);
+var c = 0;
+
+foo(d) {
+    var e = 0;
+    println(a, b, c, d, e);
+}</code></pre>
+<p>Names bound to multiple values (variadic variables, variadic arguments) must be referenced with the <code>..</code> unpack operator:</p>
+<pre class="highlight"><code class="language-ceramic">[..TT]
+foo(..xs:TT) {
+    println(..xs, " have the types ", ..TT);
+}</code></pre>
+<h4 id="literal-expressions">Literal Expressions</h4>
+<table>
+<thead>
+<tr>
+<th>Literal</th>
+<th>Default type</th>
+<th>Type suffix examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>true</code> / <code>false</code></td>
+<td><code>Bool</code></td>
+<td>(none)</td>
+</tr>
+<tr>
+<td><code>1</code>, <code>0xFF</code></td>
+<td><code>Int32</code> (or module default)</td>
+<td><code>ss</code> <code>s</code> <code>i</code> <code>l</code> <code>ll</code> <code>uss</code> <code>us</code> <code>u</code> <code>ul</code> <code>ull</code></td>
+</tr>
+<tr>
+<td><code>1.0</code>, <code>1e2</code></td>
+<td><code>Float64</code> (or module default)</td>
+<td><code>f</code> <code>ff</code> <code>fl</code> <code>fj</code> <code>j</code> <code>ffj</code> <code>flj</code></td>
+</tr>
+<tr>
+<td><code>'x'</code></td>
+<td>via <code>charLiteral</code> operator</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td><code>"hello"</code></td>
+<td>via <code>stringLiteral</code> operator</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td><code>#foo</code>, <code>#"foo"</code></td>
+<td><code>Static[#foo]</code></td>
+<td>(none)</td>
+</tr>
+</tbody>
+</table>
+<pre class="highlight"><code class="language-ceramic">println(Type(1));      // Int32
+println(Type(-1ss));   // Int8
+println(Type(+1ul));   // UInt64
+println(Type(1.0f));   // Float32
+println(Type(1.j));    // Imag64</code></pre>
+<p>Integer type suffixes may be applied to floating-point literal tokens to produce a float of that type. Floating-point suffixes may not be applied to integer literal tokens.</p>
+<h4 id="parentheses">Parentheses</h4>
+<p><code>(expr)</code> overrides precedence. It has no other effect.</p>
+<h4 id="tuple-expressions">Tuple Expressions</h4>
+<p><code>[a, b, c]</code> constructs a tuple by calling the <code>tupleLiteral</code> operator function.</p>
+<h4 id="compilation-context-operators">Compilation Context Operators</h4>
+<p>These are only valid inside <strong>alias functions</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Evaluates to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>__FILE__</code></td>
+<td>Static string: the source file of the call site</td>
+</tr>
+<tr>
+<td><code>__LINE__</code></td>
+<td><code>Int32</code>: the source line</td>
+</tr>
+<tr>
+<td><code>__COLUMN__</code></td>
+<td><code>Int32</code>: the source column</td>
+</tr>
+<tr>
+<td><code>__ARG__ name</code></td>
+<td>Static string. Textual representation of argument <code>name</code>, not evaluated</td>
+</tr>
+</tbody>
+</table>
+<pre class="highlight"><code class="language-ceramic">alias assert(cond:Bool) {
+    if (not cond) {
+        println(stderr, "Assertion \"", __ARG__ cond, "\" failed at ",
+            __FILE__, ":", __LINE__, ":", __COLUMN__);
+        flush(stderr);
+        abort();
+    }
+}</code></pre>
+<h4 id="eval-expressions">Eval Expressions</h4>
+<p><code>eval expr</code> evaluates a compile-time expression to a static string, parses it as an expression, and substitutes the result in place. The generated string must be a complete, parsable expression.</p>
+<pre class="highlight"><code class="language-ceramic">println(eval #""" "hello world" """);</code></pre>
+<h3 id="suffix-operators">Suffix Operators</h3>
+<h4 id="call-ab-c">Call (<code>a(b, c)</code>)</h4>
+<p>If <code>a</code> is a symbol, argument types are matched to its overloads and the matching one is called. If <code>a</code> is a <code>CodePointer</code>, the pointed-to function is invoked. Otherwise, the call desugars to <code>call(a, b, c)</code>.</p>
+<p>Lambda expressions can be passed as call arguments, including block lambdas:</p>
+<pre class="highlight"><code class="language-ceramic">ifZero(rand(),
+    () -&gt; { println("Reply hazy; try again"); },
+    x -&gt; { println("Lucky number: ", x); });</code></pre>
+<p>If any argument is prefixed with <code>*</code>, the call becomes a <a href="#dispatch-a">dynamic dispatch</a> on a variant type.</p>
+<h4 id="index-ab-c">Index (<code>a[b, c]</code>)</h4>
+<p>Desugars to <code>index(a, b, c)</code>. If <code>a</code> is a parameterized symbol, the operation is primitive: the symbol is instantiated for compile-time parameters.</p>
+<pre class="highlight"><code class="language-ceramic">var xs = Array[Int, 3](0, 111, 222);
+println(xs[2]);  // → index(xs, 2)</code></pre>
+<h4 id="static-index-a0">Static Index (<code>a.0</code>)</h4>
+<p>Desugars to <code>staticIndex(a, #0)</code>. Used for positional tuple field access.</p>
+<pre class="highlight"><code class="language-ceramic">var x = ["hello", "cruel", "world"];
+println(x.0, ' ', x.2);</code></pre>
+<h4 id="field-reference-afield">Field Reference (<code>a.field</code>)</h4>
+<p>Desugars to <code>fieldRef(a, #"field")</code>. Used for named field access on records. Overloading <code>fieldRef</code> lets you add custom accessors.</p>
+<p>If <code>a</code> is an imported module name, the operation is primitive and looks up the name directly in that module's namespace.</p>
+<pre class="highlight"><code class="language-ceramic">import foo;
+foo.bar();  // module field reference; primitive
+
+var p = Point(array(1.0, 2.0));
+println(p.x, p.y);  // fieldRef(p, #"x"), fieldRef(p, #"y")
+
+// Custom swizzle accessors:
+overload fieldRef(p:Point, #"xy") = ref p.coords[0], p.coords[1];</code></pre>
+<h4 id="dereference-a">Dereference (<code>a^</code>)</h4>
+<p>Desugars to <code>dereference(a)</code>. Used to get a reference to the value behind a pointer.</p>
+<h3 id="prefix-operators">Prefix Operators</h3>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>+a</code></td>
+<td>desugars to <code>plus(a)</code></td>
+</tr>
+<tr>
+<td><code>-a</code></td>
+<td>desugars to <code>minus(a)</code></td>
+</tr>
+<tr>
+<td><code>@a</code></td>
+<td>primitive: returns <code>Pointer[T]</code> to <code>a</code>, which must be an lvalue. Not overloadable</td>
+</tr>
+<tr>
+<td><code>*a</code></td>
+<td>dispatch operator. Only valid as an argument to a call expression</td>
+</tr>
+</tbody>
+</table>
+<h4 id="dispatch-a">Dispatch (<code>*a</code>)</h4>
+<p>Transforms a call into dynamic dispatch on a variant type. Each instance type of the dispatched argument has an overload looked up and compiled into a dispatch table. All overloads must have matching return types and <code>ref</code>-ness.</p>
+<pre class="highlight"><code class="language-ceramic">variant Shape (Circle, Square);
+
+define draw;
+overload draw(s:Circle) { println("()"); }
+overload draw(s:Square) { println("[]"); }
+
+drawShapes(ss:Vector[Shape]) {
+    for (s in ss)
+        draw(*s);  // dispatches over Circle and Square
+}</code></pre>
+<h3 id="arithmetic-operators">Arithmetic Operators</h3>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Desugars to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>a * b</code></td>
+<td><code>multiply(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a / b</code></td>
+<td><code>divide(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a \ b</code></td>
+<td><code>quotient(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a % b</code></td>
+<td><code>remainder(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a + b</code></td>
+<td><code>add(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a - b</code></td>
+<td><code>subtract(a, b)</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>\</code> is integer division truncating toward zero. All arithmetic operators are left-associative within their precedence group.</p>
+<h3 id="bitwise-and-shift-operators">Bitwise and Shift Operators</h3>
+<p>These are user-defined operators with predefined precedence (shift tighter than bitwise):</p>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Desugars to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>a &lt;&lt; b</code></td>
+<td><code>bitshl(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a &gt;&gt; b</code></td>
+<td><code>bitshr(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a &amp; b</code></td>
+<td><code>bitand(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a ~ b</code></td>
+<td><code>bitxor(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a \| b</code></td>
+<td><code>bitor(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a ++ b</code></td>
+<td><code>cat(a, b)</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>~</code> is also the unary bitwise complement: <code>~a</code> desugars to <code>prefixOperator(#(~), a)</code>, which calls <code>(~)(a)</code> = <code>bitnot(a)</code> by default.</p>
+<h3 id="comparison-operators">Comparison Operators</h3>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Desugars to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>a &lt;= b</code></td>
+<td><code>lesserEquals?(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a &lt; b</code></td>
+<td><code>lesser?(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a &gt; b</code></td>
+<td><code>greater?(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a &gt;= b</code></td>
+<td><code>greaterEquals?(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a == b</code></td>
+<td><code>equals?(a, b)</code></td>
+</tr>
+<tr>
+<td><code>a != b</code></td>
+<td><code>notEquals?(a, b)</code></td>
+</tr>
+</tbody>
+</table>
+<p>All comparison operators are left-associative within their precedence group.</p>
+<h3 id="user-defined-operators">User-Defined Operators</h3>
+<p>Any sequence of the characters <code>= ! &lt; &gt; + - * / \ % ~ | &amp;</code> forms a valid operator token. The sequences <code>&lt;--</code>, <code>--&gt;</code>, <code>=&gt;</code>, <code>-&gt;</code>, <code>~&gt;</code>, and <code>=</code> are reserved and cannot be used as operator names.</p>
+<p><code>a op b</code> desugars to <code>infixOperator(a, #op, b)</code>, which calls <code>op(a, b)</code> by default. <code>op a</code> desugars to <code>prefixOperator(#op, a)</code>, which calls <code>op(a)</code> by default. Declare the operator with <code>define</code> and provide an implementation with <code>overload</code>:</p>
+<pre class="highlight"><code class="language-ceramic">define (**);
+overload (**)(base:Int32, exp:Int32) : Int32 {
+    var result = 1;
+    for (i in range(exp))
+        result *: base;
+    return result;
+}
+
+println(2 ** 10);  // 1024</code></pre>
+<h3 id="boolean-operators">Boolean Operators</h3>
+<table>
+<thead>
+<tr>
+<th>Operator</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>not a</code></td>
+<td>Complement. <code>a</code> must be <code>Bool</code>. Not overloadable</td>
+</tr>
+<tr>
+<td><code>a and b</code></td>
+<td>Short-circuit conjunction. Right-associative</td>
+</tr>
+<tr>
+<td><code>a or b</code></td>
+<td>Short-circuit disjunction. Right-associative</td>
+</tr>
+</tbody>
+</table>
+<p>Both <code>and</code> and <code>or</code> require <code>Bool</code> operands and are not overloadable.</p>
+<h3 id="low-precedence-prefix-operators">Low-Precedence Prefix Operators</h3>
+<h4 id="if-expressions">If Expressions</h4>
+<pre class="highlight"><code class="language-ceramic">if (condition) thenExpr else elseExpr</code></pre>
+<p>Both branches must have the same type. Unlike <code>if</code> statements, the <code>else</code> clause is required.</p>
+<h4 id="keyword-pair-expressions">Keyword Pair Expressions</h4>
+<p><code>name: expr</code> is sugar for <code>[#"name", expr]</code>: a tuple with a static string key. Useful for named-parameter style arguments to higher-order functions.</p>
+<h4 id="static-expressions">Static Expressions</h4>
+<p><code>#expr</code> evaluates <code>expr</code> at compile time and wraps the result in <code>Static[result]</code>. Used to pass compile-time values to <a href="../functions/#static-arguments">static arguments</a>. Applied to a symbol or static string, it is a no-op.</p>
+<pre class="highlight"><code class="language-ceramic">log(#LOG, "starting program");</code></pre>
+<h4 id="unpack-a">Unpack (<code>..a</code>)</h4>
+<p>Evaluates <code>a</code> in multiple-value context and interpolates its values into the surrounding expression list.</p>
+<pre class="highlight"><code class="language-ceramic">twoThroughFour() = 2, 3, 4;
+oneThroughFive() = 1, ..twoThroughFour(), 5;</code></pre>
+<h4 id="lambda-expressions">Lambda Expressions</h4>
+<p>An anonymous function: argument list, arrow, body.</p>
+<pre class="highlight"><code class="language-ceramic">var squares = mapped(x -&gt; x*x, range(10));</code></pre>
+<p>Two capture modes:</p>
+<ul>
+<li><strong><code>-&gt;</code></strong>: captures by reference. Mutations are visible outside the lambda. The lambda must not outlive its enclosing scope.</li>
+<li><strong><code>=&gt;</code></strong>: captures by copying. The lambda is independent of its origin scope.</li>
+</ul>
+<pre class="highlight"><code class="language-ceramic">// by reference; sum accumulates outside
+var sum = 0;
+var squares = mapped(x -&gt; { var sq = x*x; sum +: sq; return sq; }, range(10));
+
+// by value; closure is self-contained
+curriedAdd(x) = y =&gt; x + y;
+var plus3 = curriedAdd(3);</code></pre>
+<p>A lambda with a single untyped argument may omit parentheses: <code>x -&gt; x*x</code>. A lambda that does not capture is equivalent to an anonymous named function.</p>
+<p>Lambda has higher precedence than the multi-value comma. <code>a -&gt; b, c</code> parses as <code>(a -&gt; b), c</code>. To return multiple values from a lambda, use a block body or explicit parentheses: <code>a -&gt; (b, c)</code>.</p>
+<h3 id="multiple-value-expressions">Multiple Value Expressions</h3>
+<p>Most Ceramic functions can return multiple values. The comma operator builds a multiple-value list:</p>
+<pre class="highlight"><code class="language-ceramic">twoThroughFour() = 2, 3, 4;</code></pre>
+<p>Expressions are normally constrained to a <strong>single value</strong>. To use a multiple-value expression inside another expression, unpack it with <code>..</code>:</p>
+<pre class="highlight"><code class="language-ceramic">oneThroughFive() = 1, ..twoThroughFour(), 5;  // ok
+oneThroughFive() = 1, twoThroughFour(), 5;    // ERROR</code></pre>
+<p>The following contexts provide <strong>implicit</strong> multiple-value context at the outermost level. No <code>..</code> is needed there:</p>
+<ul>
+<li>Expression statements</li>
+<li>Local variable bindings with multiple variables</li>
+<li>Assignment with multiple left-hand values</li>
+<li><code>..for</code> value lists</li>
+</ul>
+<p>Within a concatenating expression, sub-expressions still require explicit <code>..</code>:</p>
+<pre class="highlight"><code class="language-ceramic">var a, b, c, d = 0, ..oneTwoThree();          // .. required inside concat
+..for (i in ..oneTwoThree(), ..fourFiveSix())
+    println(i);</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../js/ceramic-highlight.js" type="module"></script>
+      
+    
+  </body>
+</html>

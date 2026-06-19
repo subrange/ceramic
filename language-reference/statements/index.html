@@ -1,0 +1,1973 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subrange.github.io/ceramic/language-reference/statements/">
+      
+      
+        <link rel="prev" href="../functions/">
+      
+      
+        <link rel="next" href="../expressions/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Statements - Ceramic</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#statements" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Ceramic" class="md-header__button md-logo" aria-label="Ceramic" data-md-component="logo">
+      
+  <img src="../../assets/favicon.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Ceramic
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Statements
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subrange/ceramic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subrange/ceramic
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Ceramic" class="md-nav__button md-logo" aria-label="Ceramic" data-md-component="logo">
+      
+  <img src="../../assets/favicon.svg" alt="logo">
+
+    </a>
+    Ceramic
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subrange/ceramic" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subrange/ceramic
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tokenization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tokenization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compilation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compilation Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../modules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modules & Source Layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Type Definitions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Function Definitions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Statements
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Statements
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blocks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#expression-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expression Statements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#return-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Return Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Return Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#return-by-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Return by Reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-variable-bindings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Variable Bindings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Local Variable Bindings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#var-new-independent-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        var: new independent value
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ref-reference-to-an-existing-lvalue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ref: reference to an existing lvalue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#forward-generic-over-lvaluervalue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward: generic over lvalue/rvalue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alias-call-by-name-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        alias: call-by-name binding
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assignment Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#update-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update Assignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefix-update-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefix Update Assignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialization-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialization Statements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conditional-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditional Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conditional Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#if" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        if
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#switch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        switch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loop-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loop Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Loop Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#while" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        while
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        for
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-multiple-value-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ..for: Multiple-Value For
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#branch-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Branch Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Branch Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#break-and-continue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        break and continue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#goto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        goto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exception-handling-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception Handling Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exception Handling Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#throw" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        throw
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#try-catch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        try / catch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finally-and-onerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        finally and onerror
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#eval-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eval Statements
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../expressions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expressions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../grammar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Grammar Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primitives Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Primitives Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Primitive Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/data-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Access
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/multiple-values/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multiple Values
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/numeric/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Numeric Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/pointers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pointer Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/atomic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Atomic Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/introspection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introspection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../primitives-reference/compiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compiler Interface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Blocks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#expression-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expression Statements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#return-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Return Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Return Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#return-by-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Return by Reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-variable-bindings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Variable Bindings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Local Variable Bindings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#var-new-independent-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        var: new independent value
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ref-reference-to-an-existing-lvalue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ref: reference to an existing lvalue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#forward-generic-over-lvaluervalue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward: generic over lvalue/rvalue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alias-call-by-name-binding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        alias: call-by-name binding
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assignment-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assignment Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assignment Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#update-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update Assignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefix-update-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefix Update Assignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialization-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialization Statements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conditional-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditional Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conditional Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#if" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        if
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#switch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        switch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loop-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loop Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Loop Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#while" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        while
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        for
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-multiple-value-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ..for: Multiple-Value For
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#branch-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Branch Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Branch Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#break-and-continue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        break and continue
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#goto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        goto
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exception-handling-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception Handling Statements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Exception Handling Statements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#throw" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        throw
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#try-catch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        try / catch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#finally-and-onerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        finally and onerror
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#eval-statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Eval Statements
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="statements">Statements</h1>
+<p>Statements form the basic unit of control flow within function bodies.</p>
+<h3 id="blocks">Blocks</h3>
+<p>A <strong>block</strong> groups statements and introduces a new scope for local variables. Statements execute sequentially unless modified by control flow.</p>
+<p><pre class="highlight"><code class="language-ceramic">main() {
+    println("VENI");
+    println("VIDI");
+    println("VICI");
+}</code></pre>
+Blocks may also contain labels for <a href="#goto"><code>goto</code></a> targets: a label is an identifier followed by <code>:</code>.</p>
+<h3 id="expression-statements">Expression Statements</h3>
+<p>An expression followed by <code>;</code>. Return values are discarded via the <code>destroy</code> operator. Reference returns are simply dropped: the referenced value is not destroyed.</p>
+<p><pre class="highlight"><code class="language-ceramic">main() {
+    1 + 2;         // computed, then discarded
+    println("Hi");
+}</code></pre>
+Block lambdas can be passed as call arguments:</p>
+<pre class="highlight"><code class="language-ceramic">maybe(maybeMode,
+    mode -&gt; { println(mode.name, " mode selected"); },
+    () -&gt; { println("Please select a mode"); });</code></pre>
+<h3 id="return-statements">Return Statements</h3>
+<p>Ends the current function and provides its return values.</p>
+<p><pre class="highlight"><code class="language-ceramic">foo(x, y) {
+    return x + y;
+}
+
+// Shorthand: a single return as the whole body:
+foo(x, y) = x + y;</code></pre>
+Multiple <code>return</code> statements are allowed. All must return the same types. Code after all return paths are covered is a compile-time error.</p>
+<h4 id="return-by-reference">Return by Reference</h4>
+<p><code>return ref</code> returns lvalue references. All returned values must be lvalues, and all <code>return</code> statements in the function must agree on <code>ref</code>-ness.</p>
+<p><pre class="highlight"><code class="language-ceramic">[T]
+overload index(pv:PitchedVector[T], n) {
+    return ref pv.vec[n*pv.pitch];
+}</code></pre>
+<code>return forward</code> generalizes this: each value is returned by reference if it is an lvalue, by value otherwise.</p>
+<h3 id="local-variable-bindings">Local Variable Bindings</h3>
+<p>Local variables are introduced with a binding statement. There are four kinds:</p>
+<h4 id="var-new-independent-value"><code>var</code>: new independent value</h4>
+<p><pre class="highlight"><code class="language-ceramic">var x = 1;
+var y = 2;</code></pre>
+<code>var</code>s are destroyed at the end of their enclosing block on any exit path: normal flow, <code>return</code>, <code>break</code>, <code>continue</code>, <code>goto</code>, or exception.</p>
+<h4 id="ref-reference-to-an-existing-lvalue"><code>ref</code>: reference to an existing lvalue</h4>
+<p><pre class="highlight"><code class="language-ceramic">var x = 1;
+ref y = x;
+y = 3;
+println(x);  // 3; same underlying value</code></pre>
+A <code>ref</code> does not affect the lifetime of the bound value. Accessing a <code>ref</code> after the underlying value is freed is undefined behavior.</p>
+<h4 id="forward-generic-over-lvaluervalue"><code>forward</code>: generic over lvalue/rvalue</h4>
+<p>Behaves like <code>ref</code> if the bound value is an lvalue, and like <code>var</code> if it is an rvalue.</p>
+<pre class="highlight"><code class="language-ceramic">forward x2, y2 = xs[2], ys[2];
+// xs[2] is an rvalue → x2 is a var
+// ys[2] is an lvalue → y2 is a ref</code></pre>
+<h4 id="alias-call-by-name-binding"><code>alias</code>: call-by-name binding</h4>
+<p>Like alias functions: the name expands to the bound expression, re-evaluated in the original lexical context each time it is referenced.</p>
+<hr />
+<p>Multiple variables can be bound from a multiple-value expression:</p>
+<p><pre class="highlight"><code class="language-ceramic">var x, y = 1, 2;
+var a, b, c, d = 1, ..twoAndThree(), 4;
+
+// A lone multi-value expression on the right is automatically unpacked:
+var x, y = oneAndTwo();</code></pre>
+Variable names come into scope after the right-hand side is evaluated, so a name may be shadowed by its own value:</p>
+<p><pre class="highlight"><code class="language-ceramic">var x = 1;
+var x = x + 1;   // right side sees the outer x; result: x = 2</code></pre>
+Binding statements must appear inside a block. They cannot be the single-statement body of <code>if</code>, <code>while</code>, or other compound statements.</p>
+<h3 id="assignment-statements">Assignment Statements</h3>
+<p>Assignment is a <strong>statement</strong> in Ceramic, not an expression. Using <code>=</code> in an expression context is a syntax error.</p>
+<p><pre class="highlight"><code class="language-ceramic">var x = 1;
+x = 2;     // desugars to: assign(x, 2)</code></pre>
+Multiple-value assignment evaluates the entire right-hand side into temporaries first, then assigns each. This makes shuffles safe:</p>
+<p><pre class="highlight"><code class="language-ceramic">x, y = y, x;  // safe swap: no aliasing issues</code></pre>
+Special property assignment desugars differently when the left-hand side is an index, static-index, or field reference:</p>
+<pre class="highlight"><code class="language-ceramic">a[..b]  = c;     // → indexAssign(a, ..b, c)
+a.0     = c;     // → staticIndexAssign(a, #0, c)
+a.field = c;     // → fieldRefAssign(a, #"field", c)</code></pre>
+<h4 id="update-assignment">Update Assignment</h4>
+<p>An operator symbol followed by <code>:</code> is an update assignment. The arithmetic forms <code>+:</code>, <code>-:</code>, <code>*:</code>, <code>/:</code>, <code>%:</code> desugar to calls to <code>updateAssign</code>:</p>
+<p><pre class="highlight"><code class="language-ceramic">x +: 1;   // updateAssign(add, x, 1)
+x -: 2;   // updateAssign(subtract, x, 2)
+x *: 4;   // updateAssign(multiply, x, 4)</code></pre>
+Property update forms also exist:</p>
+<pre class="highlight"><code class="language-ceramic">a[..b]  +: c;   // → indexUpdateAssign(add, a, ..b, c)
+a.0     +: c;   // → staticIndexUpdateAssign(add, a, #0, c)
+a.field +: c;   // → fieldRefUpdateAssign(add, a, #"field", c)</code></pre>
+<h4 id="prefix-update-assignment">Prefix Update Assignment</h4>
+<p>An operator symbol followed by <code>:</code> may also appear as the <strong>first</strong> token of a statement, with the target on the right. This is a prefix update assignment:</p>
+<pre class="highlight"><code class="language-ceramic">-: x;   // → prefixUpdateAssign(#(-), x) → x = -(x)</code></pre>
+<p>Desugars to <code>prefixUpdateAssign(#op, x)</code>, which by default sets <code>x</code> to the result of <code>op(x)</code> via <code>prefixOperator</code>. To implement a custom prefix update, overload <code>prefixUpdateAssign</code>.</p>
+<!-- TODO: document that updateAssign can be overloaded for user-defined ops, e.g. overload updateAssign(#(**), ref x, exp) { ... } -->
+
+<h4 id="initialization-statements">Initialization Statements</h4>
+<p>Use <code>&lt;--</code> to initialize <strong>uninitialized</strong> storage (from a raw allocator, a named return value, etc.). Unlike <code>=</code>, it assumes the destination has no prior state.</p>
+<p><pre class="highlight"><code class="language-ceramic">var p = allocateRawMemory(Foo);
+finally freeRawMemory(p);
+
+p^ &lt;-- Foo();</code></pre>
+If the right side is a function call that returns by value, the return value is written directly into the destination. If the right side is an lvalue, <code>copy</code> is called. If it is a <code>forward</code>-bound rvalue, <code>move</code> is called.</p>
+<p>Initializing an already-initialized value with <code>&lt;--</code>, or assigning an uninitialized value with <code>=</code>, is undefined behavior.</p>
+<h3 id="conditional-statements">Conditional Statements</h3>
+<h4 id="if"><code>if</code></h4>
+<p>Executes a branch based on a <code>Bool</code> expression.</p>
+<pre class="highlight"><code class="language-ceramic">if (asFoghornLeghorn?)
+    print(", I say, that");
+
+if (condition)
+    thenBranch();
+else
+    elseBranch();</code></pre>
+<h4 id="switch"><code>switch</code></h4>
+<p>Dispatches to the first matching <code>case</code> clause using the <code>case?</code> operator. If no case matches, the <code>else</code> clause runs if present. Unlike C, there is no fall-through between cases.</p>
+<pre class="highlight"><code class="language-ceramic">switch (card.rank)
+case (1)                        printTo(stream, "Ace");
+case (2)                        printTo(stream, "Deuce");
+case (3, 4, 5, 6, 7, 8, 9, 10) printTo(stream, card.rank);
+case (11)                       printTo(stream, "Jack");
+case (12)                       printTo(stream, "Queen");
+case (13)                       printTo(stream, "King");
+else                            assert(false);</code></pre>
+<h3 id="loop-statements">Loop Statements</h3>
+<h4 id="while"><code>while</code></h4>
+<p>Loops while a <code>Bool</code> expression is true.</p>
+<pre class="highlight"><code class="language-ceramic">var x = 0;
+while (x &lt; 10) {
+    println(x);
+    x +: 1;
+}</code></pre>
+<p>The condition position may include a binding or assignment before the test expression, separated by <code>;</code>. The binding is re-evaluated at the top of each iteration:</p>
+<pre class="highlight"><code class="language-ceramic">while (var v = nextValue(iter); hasValue?(v)) {
+    forward x = getValue(v);
+    println(x);
+}</code></pre>
+<h4 id="for"><code>for</code></h4>
+<p>Iterates over a sequence using the <code>iterator</code>, <code>nextValue</code>, <code>hasValue?</code>, and <code>getValue</code> operator functions.</p>
+<pre class="highlight"><code class="language-ceramic">for (x in range(10))
+    println(x);
+
+// desugars to (% names are compiler-internal, not user-writable):
+{
+    forward %expr = range(10);
+    forward %iter = iterator(%expr);
+    while (var %value = nextValue(%iter); hasValue?(%value)) {
+        forward x = getValue(%value);
+        println(x);
+    }
+}</code></pre>
+<h4 id="for-multiple-value-for"><code>..for</code>: Multiple-Value For</h4>
+<p>Unrolls over each value of a multiple-value expression at <strong>compile time</strong>. The loop variable's type may differ between iterations.</p>
+<p><pre class="highlight"><code class="language-ceramic">[..TT when countValues(..TT) != 1]
+overload printTo(stream, ..xs:TT) {
+    ..for (x in xs)
+        printTo(stream, x);
+}</code></pre>
+<code>..for</code> is not a runtime loop. The body is instantiated once per value at compile time, like template unrolling.</p>
+<h3 id="branch-statements">Branch Statements</h3>
+<h4 id="break-and-continue"><code>break</code> and <code>continue</code></h4>
+<p><code>break</code> exits the innermost loop. <code>continue</code> skips to the next iteration. Both are invalid outside a loop.</p>
+<h4 id="goto"><code>goto</code></h4>
+<p>Jumps to a label within the current function.</p>
+<p><pre class="highlight"><code class="language-ceramic">main() {
+second_verse:
+    println("I'm Henry VIII I am");
+    goto second_verse;
+}</code></pre>
+There are two restrictions. A <code>goto</code> cannot jump into a <code>var</code> binding's scope from outside it, since that would skip initialization. Jumping from an outer block into a label inside an inner block is also unsupported.</p>
+<h3 id="exception-handling-statements">Exception Handling Statements</h3>
+<p>Exception handling is optional. The <code>ExceptionsEnabled?</code> alias in <code>__primitives__</code> reports whether it is active for the current compilation. The compile-time evaluator always behaves as if exceptions are disabled.</p>
+<h4 id="throw"><code>throw</code></h4>
+<p>Throws an exception by calling <code>throwValue</code> with the given value. Unwinds the call stack to the nearest matching <code>catch</code> clause.</p>
+<pre class="highlight"><code class="language-ceramic">safeDivide(x:Int, y:Int) {
+    if (y == 0)
+        throw DivisionByZero();
+    return x/y;
+}</code></pre>
+<h4 id="try-catch"><code>try</code> / <code>catch</code></h4>
+<p>Executes the <code>try</code> block and, if an exception is thrown, tests it against each <code>catch</code> clause in order. A clause without a type is a catch-all. If no clause matches, the exception is rethrown to the next enclosing scope. A caught exception may be rethrown by re-throwing the bound exception object.</p>
+<p><pre class="highlight"><code class="language-ceramic">try {
+    var file = File("hello.txt", CREATE);
+    printlnTo(file, "hello world");
+}
+catch (ex:IOError) {
+    printlnTo(stderr, "Unable to open hello.txt: ", ex);
+}
+catch (ex) {
+    printlnTo(stderr, "Unexpected exception!");
+    abort();
+}</code></pre>
+When exceptions are disabled, the <code>try</code> body runs as a plain block and all <code>catch</code> clauses are ignored.</p>
+<h4 id="finally-and-onerror"><code>finally</code> and <code>onerror</code></h4>
+<p><strong><code>finally</code></strong>: runs when the enclosing block exits for <em>any</em> reason: normal flow, <code>return</code>, <code>break</code>, <code>continue</code>, <code>goto</code>, or exception.</p>
+<p><pre class="highlight"><code class="language-ceramic">var p = malloc(SizeT(128));
+finally free(p);</code></pre>
+<strong><code>onerror</code></strong>: runs only when the enclosing block exits due to an exception. Normal exits do not trigger it.</p>
+<p><pre class="highlight"><code class="language-ceramic">overload SomeType(size:SizeT) {
+    var p = malloc(size);
+    onerror free(p);       // only if potentiallyFail() throws
+
+    potentiallyFail();
+    return SomeType(p);
+}</code></pre>
+When exceptions are disabled, <code>onerror</code> guards are silently ignored. <code>finally</code> guards continue to work normally.</p>
+<h3 id="eval-statements">Eval Statements</h3>
+<p><code>eval</code> parses and expands a compile-time string as Ceramic source, then executes it in place of the <code>eval</code> statement. The string must be a complete, parsable statement or sequence of statements. Partial constructs are not allowed.</p>
+<p><pre class="highlight"><code class="language-ceramic">main() {
+    eval #"""var x = "hello world";""";
+    eval #"""println(x);""";
+}</code></pre>
+<a href="../expressions/#eval-expressions">Eval expressions</a> work the same way in expression context.</p>
+<hr />
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../js/ceramic-highlight.js" type="module"></script>
+      
+    
+  </body>
+</html>
