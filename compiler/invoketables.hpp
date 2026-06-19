@@ -58,9 +58,7 @@ struct InvokeEntry {
             llvmCWrapper = nullptr;
     }
 
-    void *operator new(size_t num_bytes) {
-        return invokeEntryAllocator->Allocate();
-    }
+    void *operator new(size_t) { return invokeEntryAllocator->Allocate(); }
 
     virtual void dealloc() {
         ANodeAllocator->Deallocate(this, sizeof(*this),
@@ -100,9 +98,7 @@ struct InvokeSet {
                          patternOverloads.end());
     }
 
-    void *operator new(size_t num_bytes) {
-        return invokeSetAllocator->Allocate();
-    }
+    void *operator new(size_t) { return invokeSetAllocator->Allocate(); }
 
     virtual void dealloc() {
         ANodeAllocator->Deallocate(this, sizeof(*this),

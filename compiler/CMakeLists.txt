@@ -73,7 +73,9 @@ foreach(tgt IN ITEMS compiler ceramic ceramicdoc ut)
     target_include_directories(${tgt} PRIVATE ${LLVM_INCLUDE_DIRS})
     target_compile_definitions(${tgt} PRIVATE ${_debug_def})
     if(NOT MSVC)
-        target_compile_options(${tgt} PRIVATE -fexceptions)
+        target_compile_options(${tgt} PRIVATE -fexceptions
+            -Wall -Wextra -Wconversion -Wdouble-promotion
+            -Wno-unused-parameter -Wno-unused-function -Wno-sign-conversion)
     endif()
 endforeach()
 

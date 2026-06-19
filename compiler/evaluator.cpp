@@ -443,9 +443,9 @@ static EValuePtr derefValueForPValue(EValuePtr ev, PVData const &pv) {
 // evaluate value ops
 //
 
-void evalValueInit(EValuePtr dest) {}
+void evalValueInit(EValuePtr) {}
 
-void evalValueDestroy(EValuePtr dest) {}
+void evalValueDestroy(EValuePtr) {}
 
 void evalValueCopy(EValuePtr dest, EValuePtr src) {
     if (dest->type == src->type) {
