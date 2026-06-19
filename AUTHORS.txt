@@ -1,7 +1,8 @@
 Clay was originally written by KS Sreeram <ks@ceramiclabs.com> and Tachyon Technologies.
-This fork is maintained by Joe Groff <joe@duriansoftware.com>. The following people
+This fork is maintained by Ramon Asuncion <asuncionbatista@gmail.com>. The following people
 have made contributions (in no particular order):
 
+Joe Groff <joe@duriansoftware.com>
 David R. MacIver <david@drmaciver.com>
 Marc Fauconneau (freenode prunedtree)
 Daniel Kolesa <quaker66@gmail.com>
