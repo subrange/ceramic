@@ -1,4 +1,6 @@
 import printer.(println, print);
+import numbers.parser.*;
+import data.vectors.(Vector);
 
 var fac = 0.0;
 var n = 0;
@@ -23,7 +25,7 @@ mandelbrot(n){
 }
 
 compute(y){
-    var bits = 0ss;
+    var bits = 0uss;
     var ycd = (y*fac - 1.0);//the resized coordinates
 
     for (x in range(n)) { // for each column x in the yth row

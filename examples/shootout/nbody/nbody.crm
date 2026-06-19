@@ -2,6 +2,7 @@ import printer.(println);
 import math.simd.*;
 import math.*;
 import numbers.parser.*;
+import math.native.constants.(M_PI);
 
 record Body (
     xy   : Vec[Float64, 2],

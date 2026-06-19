@@ -1,4 +1,8 @@
 import printer.(println);
+import numbers.parser.*;
+import data.vectors.(Vector);
+import io.files.(stdout);
+import io.streams.(write);
 import libc;
 import math.(sqrt);
 
