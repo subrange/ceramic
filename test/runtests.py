@@ -1,15 +1,14 @@
 import re
 import os
 import glob
-import pickle
-import platform
+import shutil
 import signal
 import sys
 import difflib
 import argparse
 from io import StringIO
 import subprocess
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool
 import time
 import tempfile
 import configparser
@@ -43,16 +42,6 @@ def indented(txt):
 #
 
 
-# stolen from http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
-def which(program):
-    for path in os.environ["PATH"].split(os.pathsep):
-        exe_file = os.path.join(path, program)
-        if os.path.exists(exe_file) and os.access(exe_file, os.X_OK):
-            return exe_file
-
-    return None
-
-
 def getCeramicCompiler(opt):
     buildPath = ["..", "build", "compiler"]
     ceramicexe = None
@@ -63,7 +52,7 @@ def getCeramicCompiler(opt):
 
     compiler = os.path.join(opt.testRoot, *(buildPath + [ceramicexe]))
     if not os.path.exists(compiler):
-        compiler = which(ceramicexe)
+        compiler = shutil.which(ceramicexe)
         if compiler is None:
             print("could not find the ceramic compiler")
             sys.exit(1)
@@ -176,7 +165,8 @@ class RefText(object):
 
     @staticmethod
     def load(name, path):
-        text = open(path).read().replace("\r", "")
+        with open(path, encoding="utf-8") as f:
+            text = f.read().replace("\r", "")
         return RefText(name=name, text=text)
 
     @staticmethod
@@ -233,7 +223,8 @@ class TestCase(object):
 
         buildflags = fileForPlatform(self.opt, folder, "buildflags", "txt")
         if os.path.isfile(buildflags):
-            self.buildflags = open(buildflags).read().split()
+            with open(buildflags, encoding="utf-8") as f:
+                self.buildflags = f.read().split()
         else:
             self.buildflags = []
 
@@ -272,7 +263,8 @@ class TestCase(object):
     def match(self, resultout, resulterr, returncode):
         compilererrfile = fileForPlatform(self.opt, ".", "compilererr", "txt")
         if os.path.isfile(compilererrfile):
-            errpattern = open(compilererrfile).read()
+            with open(compilererrfile, encoding="utf-8") as f:
+                errpattern = f.read()
             errpattern = errpattern.replace("\r", "").strip()
             resulterr = resulterr.replace("\r", "")
 
@@ -464,7 +456,7 @@ def runTest(t):
 def runTests(opt):
     testcases = findTestCases(opt)
     try:
-        pool = Pool(processes=cpu_count(), initializer=initWorker)
+        pool = Pool(initializer=initWorker)
         results = pool.imap(runTest, testcases)
     except ImportError:
         pool = None
