@@ -369,8 +369,6 @@ static void usage(const char *argv0) {
                  << "                        in module <module>\n";
 #ifdef __APPLE__
     llvm::errs()
-        << "  -arch <arch>          build for Darwin architecture <arch>\n";
-    llvm::errs()
         << "  -F<dir>               add <dir> to framework search path\n";
     llvm::errs() << "  -framework <name>     link with framework <name>\n";
 #endif
@@ -471,8 +469,6 @@ int main2(int argc, char **argv, char const *const *envp) {
 
 #ifdef __APPLE__
     genPIC = true;
-
-    string arch;
 #endif
 
     string ceramicFile;
@@ -621,42 +617,6 @@ int main2(int argc, char **argv, char const *const *envp) {
             }
             frameworks.emplace_back("-framework");
             frameworks.push_back(framework);
-        } else if (strcmp(argv[i], "-arch") == 0) {
-            if (i + 1 == argc) {
-                llvm::errs()
-                    << "error: architecture name missing after -arch\n";
-                return 1;
-            }
-            ++i;
-            if (!arch.empty()) {
-                llvm::errs()
-                    << "error: multiple -arch flags currently unsupported\n";
-                return 1;
-            }
-            arch = argv[i];
-            if (arch.empty() || (arch[0] == '-')) {
-                llvm::errs()
-                    << "error: architecture name missing after -arch\n";
-                return 1;
-            }
-
-            if (arch == "i386") {
-                targetTriple = "i386-apple-darwin10";
-            } else if (arch == "x86_64") {
-                targetTriple = "x86_64-apple-darwin10";
-            } else if (arch == "ppc") {
-                targetTriple = "powerpc-apple-darwin10";
-            } else if (arch == "ppc64") {
-                targetTriple = "powerpc64-apple-darwin10";
-            } else if (arch == "armv6") {
-                targetTriple = "armv6-apple-darwin4.1-iphoneos";
-            } else if (arch == "armv7") {
-                targetTriple = "thumbv7-apple-darwin4.1-iphoneos";
-            } else {
-                llvm::errs()
-                    << "error: unrecognized -arch value " << arch << "\n";
-                return 1;
-            }
         }
 #endif
         else if (strcmp(argv[i], "-target") == 0) {
@@ -865,11 +825,7 @@ int main2(int argc, char **argv, char const *const *envp) {
         return 1;
     }
 
-    if (crossCompiling && !(emitLLVM || emitAsm || emitObject)
-#ifdef __APPLE__
-        && arch.empty()
-#endif
-    ) {
+    if (crossCompiling && !(emitLLVM || emitAsm || emitObject)) {
         llvm::errs()
             << "error: must use -emit-llvm, -S, or -c when cross compiling\n";
         return 1;
@@ -1093,12 +1049,6 @@ int main2(int argc, char **argv, char const *const *envp) {
             const std::string &clangPath = clangPathOrErr.get();
 
             vector<string> arguments;
-#ifdef __APPLE__
-            if (!arch.empty()) {
-                arguments.emplace_back("-arch");
-                arguments.push_back(arch);
-            }
-#endif
             if (!linkerFlags.empty())
                 arguments.push_back("-Wl" + linkerFlags);
 #ifdef __APPLE__
