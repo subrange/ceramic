@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <llvm/Support/Signals.h>
+#include <llvm/TargetParser/Host.h>
 
 #include "ceramic.hpp"
 #include "codegen.hpp"
@@ -639,6 +640,8 @@ int main2(int argc, char **argv, char const *const *envp) {
             }
             ++i;
             targetCPU = argv[i];
+            if (targetCPU == "native")
+                targetCPU = llvm::sys::getHostCPUName().str();
             if (targetCPU.empty() || (targetCPU[0] == '-')) {
                 llvm::errs() << "error: CPU name missing after -mcpu\n";
                 return 1;
