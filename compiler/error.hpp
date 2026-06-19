@@ -28,12 +28,12 @@ struct CompileContextEntry {
         : callable(callable), hasParams(false) {}
 
     CompileContextEntry(ObjectPtr callable, llvm::ArrayRef<ObjectPtr> params)
-        : params(params), callable(callable), hasParams(true) {}
+        : params(params), callable(callable), hasParams(!params.empty()) {}
 
     CompileContextEntry(ObjectPtr callable, llvm::ArrayRef<ObjectPtr> params,
                         llvm::ArrayRef<unsigned> dispatchIndices)
         : params(params), dispatchIndices(dispatchIndices), callable(callable),
-          hasParams(true) {}
+          hasParams(!params.empty()) {}
 };
 
 void pushCompileContext(const ObjectPtr &obj);
