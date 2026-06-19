@@ -204,7 +204,7 @@
 
 		"special-identifiers": {
 			"name": "support.constant.ceramic",
-			"match": "\\b(__ARG__|__COLUMN__|__FILE__|__LINE__|__llvm__)\\b"
+			"match": "\\b(__ARG__|__COLUMN__|__FILE__|__LINE__|__asm__|__llvm__)\\b"
 		},
 
 		"goto-label": {
