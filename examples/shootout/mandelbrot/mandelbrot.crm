@@ -1,4 +1,5 @@
 import printer.(println);
+import data.vectors.(Vector);
 import math.simd.*;
 import math.*;
 import numbers.parser.*;
