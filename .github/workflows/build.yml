@@ -3,32 +3,42 @@ name: Build
 on:
   pull_request:
     branches: [main]
-    paths-ignore:
-      - 'doc/**'
-      - 'editor-support/**'
-      - 'mkdocs.yml'
-      - '**.md'
-      - 'LICENSE*'
-      - 'AUTHORS.txt'
-      - 'ChangeLog.txt'
 
 env:
   LLVM_DEPS: llvm-19 llvm-19-dev clang-19 python3 ninja-build cmake
 
 jobs:
-  build:
+  filter:
     runs-on: ubuntu-latest
-
+    outputs:
+      compiler: ${{ steps.filter.outputs.compiler }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            compiler:
+              - 'compiler/**'
+              - 'tools/**'
 
-      - name: Cache apt packages
+  build:
+    needs: filter
+    runs-on: ubuntu-latest
+    steps:
+      - if: needs.filter.outputs.compiler != 'true'
+        run: echo "No compiler changes, skipping build."
+
+      - if: needs.filter.outputs.compiler == 'true'
+        uses: actions/checkout@v4
+
+      - if: needs.filter.outputs.compiler == 'true'
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
           packages: ${{ env.LLVM_DEPS }}
           version: 1.0
 
-      - name: Configure
+      - if: needs.filter.outputs.compiler == 'true'
+        name: Configure
         run: |
           cmake -S . -B build \
             -G Ninja \
@@ -37,27 +47,34 @@ jobs:
             -DCMAKE_C_COMPILER=clang-19 \
             -DCMAKE_CXX_COMPILER=clang++-19
 
-      - name: Build
+      - if: needs.filter.outputs.compiler == 'true'
+        name: Build
         run: cmake --build build
 
-      - name: Test
+      - if: needs.filter.outputs.compiler == 'true'
+        name: Test
         run: cmake --build build --target test
 
   tidy:
+    needs: filter
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - if: needs.filter.outputs.compiler != 'true'
+        run: echo "No compiler changes, skipping tidy."
+
+      - if: needs.filter.outputs.compiler == 'true'
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Cache apt packages
+      - if: needs.filter.outputs.compiler == 'true'
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
           packages: ${{ env.LLVM_DEPS }} clang-tidy-19
           version: 1.0
 
-      - name: Configure
+      - if: needs.filter.outputs.compiler == 'true'
+        name: Configure
         run: |
           cmake -S . -B build \
             -G Ninja \
@@ -67,7 +84,8 @@ jobs:
             -DCMAKE_CXX_COMPILER=clang++-19 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      - name: Tidy changed files
+      - if: needs.filter.outputs.compiler == 'true'
+        name: Tidy changed files
         run: |
           git fetch origin "${{ github.base_ref }}"
           files=$(git diff --name-only --diff-filter=ACM \
@@ -80,18 +98,23 @@ jobs:
           echo "$files" | xargs -P "$(nproc)" -n 1 clang-tidy-19 -p build
 
   format:
+    needs: filter
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - if: needs.filter.outputs.compiler != 'true'
+        run: echo "No compiler changes, skipping format."
 
-      - name: Cache apt packages
+      - if: needs.filter.outputs.compiler == 'true'
+        uses: actions/checkout@v4
+
+      - if: needs.filter.outputs.compiler == 'true'
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
           packages: clang-format-19
           version: 1.0
 
-      - name: Check formatting
+      - if: needs.filter.outputs.compiler == 'true'
+        name: Check formatting
         run: |
           find compiler tools \( -name '*.cpp' -o -name '*.hpp' \) -print0 \
             | xargs -0 clang-format-19 --dry-run --Werror
