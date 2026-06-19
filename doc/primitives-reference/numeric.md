@@ -2,7 +2,7 @@
 
 Arithmetic, comparison, bitwise, and conversion primitives for [`Bool`](types.md#bool), [integer](types.md#integer-types), [floating-point](types.md#floating-point-types), and [imaginary](types.md#imaginary-and-complex-types) types.
 
-Binary numeric primitives require operands of matching types. Heterogeneous-type conversion is left to the library. Complex math is also library-provided. None of these primitives may be overloaded.
+Binary numeric primitives require both operands to have the same type. If you need to mix types, convert first with `numericConvert`. Complex arithmetic is provided by the standard library. None of these primitives may be overloaded.
 
 ## `boolNot`
 
@@ -10,7 +10,7 @@ Binary numeric primitives require operands of matching types. Heterogeneous-type
 boolNot(x:Bool) : Bool;
 ```
 
-Returns the complement of `x`. Equivalent to the `not` operator.
+`boolNot` is the same operation as the `not` operator. It gives you `true` when `x` is `false`, and `false` when `x` is `true`.
 
 ## `integerEquals?` / `integerLesser?`
 
@@ -20,10 +20,7 @@ integerEquals?(a:T, b:T) : Bool;
 integerLesser?(a:T, b:T) : Bool;
 ```
 
-Integer comparison.
-
-- `integerEquals?`: LLVM `icmp eq`.
-- `integerLesser?`: `true` if `a < b`. Signed: `icmp slt`. Unsigned: `icmp ult`.
+These are the two basic integer comparison primitives. `integerEquals?` checks whether `a` and `b` have the same value. `integerLesser?` checks whether `a` is less than `b`, treating signed integers as signed and unsigned integers as unsigned. That means `-1 < 0` is `true` for `Int32` but `false` for `UInt32`.
 
 ## Floating-point comparison
 
@@ -46,11 +43,11 @@ floatUnorderedGreaterEquals?(a:T, b:T) : Bool;
 floatUnordered?(a:T, b:T)              : Bool;
 ```
 
-- `floatOrdered*`: LLVM `fcmp o…`; `false` if either operand is NaN.
-- `floatUnordered*`: LLVM `fcmp u…`; `true` if either operand is NaN.
-- `floatOrdered?`: `true` if neither operand is NaN.
-- `floatUnordered?`: `true` if either operand is NaN.
-- `+0.0` and `-0.0` compare equal.
+Floating-point has two families of comparison primitives, and they differ in how they handle NaN.
+
+The `floatOrdered*` family gives you `false` if either operand is NaN. The `floatUnordered*` family gives you `true` if either operand is NaN. `floatOrdered?` tells you whether both operands are real numbers (neither is NaN). `floatUnordered?` tells you whether at least one operand is NaN.
+
+`+0.0` and `-0.0` compare as equal in both families.
 
 ## `numericAdd` / `numericSubtract` / `numericMultiply`
 
@@ -61,7 +58,7 @@ numericSubtract(a:T, b:T) : T;
 numericMultiply(a:T, b:T) : T;
 ```
 
-Standard arithmetic. Integer overflow wraps (two's-complement). Integer ops lower to `add`, `sub`, `mul`. Floating-point ops lower to `fadd`, `fsub`, `fmul`.
+Standard addition, subtraction, and multiplication. For integers, overflow wraps silently using two's-complement rules. If you want overflow to be an error at runtime rather than wrapping, use the checked variants below.
 
 ## `floatDivide`
 
@@ -70,7 +67,7 @@ Standard arithmetic. Integer overflow wraps (two's-complement). Integer ops lowe
 floatDivide(a:T, b:T) : T;
 ```
 
-Floating-point division following IEEE 754. Lowers to LLVM `fdiv`.
+Floating-point division following IEEE 754. Dividing by zero gives you infinity or NaN rather than an error.
 
 ## `integerQuotient`
 
@@ -79,9 +76,7 @@ Floating-point division following IEEE 754. Lowers to LLVM `fdiv`.
 integerQuotient(a:T, b:T) : T;
 ```
 
-Integer division truncating toward zero. Division by zero is **undefined**, as is signed overflow (e.g. `-0x8000_0000 / -1`).
-
-- Signed: `sdiv`. Unsigned: `udiv`.
+Integer division truncating toward zero. Dividing by zero is undefined behavior. So is dividing the minimum signed value by `-1` (for example, `-0x8000_0000 / -1` on `Int32`), because the result does not fit in the type.
 
 ## `numericNegate`
 
@@ -90,10 +85,7 @@ Integer division truncating toward zero. Division by zero is **undefined**, as i
 numericNegate(a:T) : T;
 ```
 
-Negation.
-
-- Integer: behaves as two's-complement subtraction from zero (LLVM `sub 0, %a`). Unsigned negation gives the two's complement. Signed overflow (negating `-0x8000_0000`) gives the original value.
-- Floating-point: LLVM `fsub -0.0, %a`. Negating a zero yields the other zero. Negating a NaN yields an unspecified other NaN.
+`numericNegate` gives you the negative of `a`. For integers, negating the minimum signed value wraps silently back to itself. For floating-point, negating zero gives you the other zero (`-0.0` becomes `+0.0` and vice versa), and negating a NaN gives an unspecified NaN.
 
 ## `integerRemainder`
 
@@ -102,9 +94,7 @@ Negation.
 integerRemainder(a:T, b:T) : T;
 ```
 
-Remainder of `a / b`. For signed types, a nonzero remainder takes the sign of `a`. Division by zero and signed overflow are undefined (LLVM defines the remainder of overflowing division as undefined as well).
-
-- Signed: `srem`. Unsigned: `urem`.
+The remainder after dividing `a` by `b`. For signed types, a nonzero result takes the sign of `a`. Division by zero and signed overflow are undefined behavior.
 
 ## `integerShiftLeft` / `integerShiftRight`
 
@@ -114,10 +104,9 @@ integerShiftLeft(a:T, b:T) : T;
 integerShiftRight(a:T, b:T) : T;
 ```
 
-Shift `a` by `b` bits. Undefined if `b` is negative or `>= bitwidth(T)`.
+These shift the bits of `a` by `b` positions. It is undefined behavior if `b` is negative or greater than or equal to the bit width of `T`.
 
-- `integerShiftLeft` → LLVM `shl`. Overflowed bits discarded.
-- `integerShiftRight` → arithmetic shift (`ashr`) for signed types, logical (`lshr`) for unsigned.
+`integerShiftLeft` fills the vacated low bits with zeros and discards any bits that shift out the top. `integerShiftRight` fills the vacated high bits with the sign bit for signed types and with zeros for unsigned types.
 
 ## `integerBitwiseAnd` / `Or` / `Xor`
 
@@ -128,7 +117,7 @@ integerBitwiseOr(a:T, b:T)  : T;
 integerBitwiseXor(a:T, b:T) : T;
 ```
 
-Bitwise AND, OR, XOR. Lower to LLVM `and`, `or`, `xor`.
+These operate on each bit of `a` and `b` independently: AND, OR, and XOR respectively.
 
 ## `integerBitwiseNot`
 
@@ -137,7 +126,7 @@ Bitwise AND, OR, XOR. Lower to LLVM `and`, `or`, `xor`.
 integerBitwiseNot(a:T) : T;
 ```
 
-Bitwise complement. Lowers to LLVM `xor %T %a, -1`.
+`integerBitwiseNot` flips every bit of `a`.
 
 ## `numericConvert`
 
@@ -146,45 +135,42 @@ Bitwise complement. Lowers to LLVM `xor %T %a, -1`.
 numericConvert(#T, a:U) : T;
 ```
 
-Converts `a` to type `T` while preserving its numeric value. If `T == U`, the value is copied. Otherwise, the conversion depends on the kinds of `T` and `U`:
+`numericConvert` converts `a` to type `T`, preserving its numeric value as closely as possible. If `T` and `U` are the same type, the value is copied unchanged. The conversion rules depend on the source and destination types:
 
-### Integer → Integer
+### Integer to Integer
 
-| Direction               | LLVM                         |
-| ----------------------- | ---------------------------- |
-| Narrowing               | `trunc` (bitwise truncation) |
-| Widening to signed      | `sext` (sign-extend)         |
-| Widening to unsigned    | `zext` (zero-extend)         |
-| Same width, sign change | `bitcast`                    |
+| Direction                           | Behavior                        |
+| ----------------------------------- | ------------------------------- |
+| Narrowing (e.g. `Int64` to `Int32`) | High bits are discarded         |
+| Widening to signed                  | Sign-extended (sign bit copied) |
+| Widening to unsigned                | Zero-extended                   |
+| Same width, different sign          | Bits are reinterpreted as-is    |
 
-### Float → Float
+### Float to Float
 
-- Narrowing: `fptrunc`. Overflowing truncation is undefined.
-- Widening: `fpext`.
+Narrowing truncates toward the nearest representable value. Widening is exact. Overflowing truncation is undefined behavior.
 
-### Integer → Float
+### Integer to Float
 
-- Signed: `sitofp`. Unsigned: `uitofp`.
-- Overflowing conversion is undefined.
+Signed integers are converted as signed. Unsigned integers are converted as unsigned. Overflowing conversion is undefined behavior.
 
-### Float → Integer
+### Float to Integer
 
-- Signed: `fptosi`. Unsigned: `fptoui`.
-- Overflowing conversion is undefined.
+Truncates toward zero. Overflowing conversion is undefined behavior.
 
 ## Checked Integer Operations
 
-Variants of the integer primitives that detect overflow at runtime. They return the result `T` and, on overflow, raise a runtime error (`invalid integer math: ...`) instead of wrapping or producing an undefined value. None may be overloaded.
+These are overflow-safe versions of the integer primitives. Instead of wrapping silently on overflow, they raise a runtime error (`invalid integer math: ...`). Use them when you want overflow to be a hard failure rather than silent wraparound. None may be overloaded.
 
 ```ceramic
 [T when Integer?(T)]
-integerAddChecked(a:T, b:T)      : T;
-integerSubtractChecked(a:T, b:T) : T;
-integerMultiplyChecked(a:T, b:T) : T;
-integerQuotientChecked(a:T, b:T) : T;
-integerNegateChecked(a:T)        : T;
-integerRemainderChecked(a:T, b:T): T;
-integerShiftLeftChecked(a:T, b:T): T;
+integerAddChecked(a:T, b:T)       : T;
+integerSubtractChecked(a:T, b:T)  : T;
+integerMultiplyChecked(a:T, b:T)  : T;
+integerQuotientChecked(a:T, b:T)  : T;
+integerNegateChecked(a:T)         : T;
+integerRemainderChecked(a:T, b:T) : T;
+integerShiftLeftChecked(a:T, b:T) : T;
 
 [T, U when Integer?(T) and Integer?(U)]
 integerConvertChecked(#T, a:U) : T;

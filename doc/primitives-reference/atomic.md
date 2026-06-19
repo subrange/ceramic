@@ -1,8 +1,8 @@
 # Atomic Memory Operations
 
-Uninterruptible, lock-free memory access and synchronization. None may be overloaded.
+When multiple threads access the same memory, you need a way to make sure they do not interfere with each other. Atomic operations solve this by making a read, write, or update happen as a single uninterruptible step. No other thread can observe the memory in a halfway state.
 
-The compile-time evaluator does not support atomic operations. Evaluating one raises an error.
+None of these primitives may be overloaded. They cannot be used in the compile-time evaluator.
 
 ## Memory Order Symbols
 
@@ -15,16 +15,18 @@ define OrderAcqRel;
 define OrderSeqCst;
 ```
 
-Every atomic operation takes one of these as a `static` parameter. They correspond to LLVM orderings, which are a superset of the C11/C++11 memory model. See the [LLVM Atomic Instructions and Concurrency Guide](http://llvm.org/docs/Atomics.html).
+Every atomic operation takes a memory order as a `static` parameter. Memory ordering controls how the compiler and CPU are allowed to reorder memory accesses around the atomic operation. Stronger orders give stronger guarantees but may be slower on some architectures.
 
-| Ceramic          | LLVM        | C++11                  |
-| ---------------- | ----------- | ---------------------- |
-| `OrderUnordered` | `unordered` | (none)                 |
-| `OrderMonotonic` | `monotonic` | `memory_order_relaxed` |
-| `OrderAcquire`   | `acquire`   | `memory_order_acquire` |
-| `OrderRelease`   | `release`   | `memory_order_release` |
-| `OrderAcqRel`    | `acq_rel`   | `memory_order_acq_rel` |
-| `OrderSeqCst`    | `seq_cst`   | `memory_order_seq_cst` |
+| Ceramic          | C++11                  | Description                                           |
+| ---------------- | ---------------------- | ----------------------------------------------------- |
+| `OrderUnordered` | (none)                 | No ordering guarantees. Rarely useful.                |
+| `OrderMonotonic` | `memory_order_relaxed` | Atomic, but no ordering relative to other operations  |
+| `OrderAcquire`   | `memory_order_acquire` | Operations after this load cannot move before it      |
+| `OrderRelease`   | `memory_order_release` | Operations before this store cannot move after it     |
+| `OrderAcqRel`    | `memory_order_acq_rel` | Both acquire and release                              |
+| `OrderSeqCst`    | `memory_order_seq_cst` | Fully sequentially consistent. The strongest option.  |
+
+For a deeper explanation of memory ordering, see the [LLVM Atomic Instructions and Concurrency Guide](http://llvm.org/docs/Atomics.html).
 
 ## `atomicLoad`
 
@@ -33,7 +35,7 @@ Every atomic operation takes one of these as a `static` parameter. They correspo
 atomicLoad(#Order, p:Pointer[T]) : T;
 ```
 
-Atomically loads the value at `p`. Bitwise-copied. Errors if the target does not support atomic loads of `T`. Lowers to LLVM `load atomic`.
+An atomic load reads the value at `p` as a single uninterruptible step, so no other thread can write to it mid-read. You always get a complete, consistent value. Errors at compile time if the target platform does not support atomic loads of `T`.
 
 ## `atomicStore`
 
@@ -42,7 +44,7 @@ Atomically loads the value at `p`. Bitwise-copied. Errors if the target does not
 atomicStore(#Order, p:Pointer[T], value:T) :;
 ```
 
-Atomically stores `value` at `p`. Bitwise-copied. Errors if the target does not support atomic stores of `T`. Lowers to LLVM `store atomic`.
+An atomic store writes `value` to `p` as a single uninterruptible step, so no other thread can observe a partial write. Errors at compile time if the target platform does not support atomic stores of `T`.
 
 ## `atomicRMW`
 
@@ -58,18 +60,20 @@ define RMWUMin;    define RMWUMax;
 atomicRMW(#Order, #Op, p:Pointer[T], operand:T) : T;
 ```
 
-Atomic read-modify-write. Returns the value at `p` **before** the update. Errors if the target does not atomically support `Op` for `T`. Lowers to LLVM `atomicrmw`.
+Atomically reads the value at `p`, applies an operation to it using `operand`, writes the result back, and returns the original value before the update. The entire sequence is one uninterruptible step.
 
-The update semantics for each `Op`:
+The `Op` parameter selects the operation:
 
-| `Op`                          | Effect on `p^`                      | Constraints |
-| ----------------------------- | ----------------------------------- | ----------- |
-| `RMWXchg`                     | written to `operand` (bitwise copy) | any `T`     |
-| `RMWAdd` / `RMWSubtract`      | arithmetic add/subtract             | integer `T` |
-| `RMWMin` / `RMWMax`           | signed min/max                      | integer `T` |
-| `RMWUMin` / `RMWUMax`         | unsigned min/max                    | integer `T` |
-| `RMWAnd` / `RMWOr` / `RMWXor` | bitwise and/or/xor                  | any `T`     |
-| `RMWNAnd`                     | bitwise NAND (`~(p^ & operand)`)    | any `T`     |
+| `Op`                           | Effect on `p^`                    | Constraints |
+| ------------------------------ | --------------------------------- | ----------- |
+| `RMWXchg`                      | replaced with `operand`           | any `T`     |
+| `RMWAdd` / `RMWSubtract`       | arithmetic add/subtract           | integer `T` |
+| `RMWMin` / `RMWMax`            | signed minimum/maximum            | integer `T` |
+| `RMWUMin` / `RMWUMax`          | unsigned minimum/maximum          | integer `T` |
+| `RMWAnd` / `RMWOr` / `RMWXor` | bitwise and/or/xor                | any `T`     |
+| `RMWNAnd`                      | bitwise NAND (`~(p^ & operand)`)  | any `T`     |
+
+Errors at compile time if the target platform does not support the chosen `Op` for `T`.
 
 ## `atomicCompareExchange`
 
@@ -78,7 +82,11 @@ The update semantics for each `Op`:
 atomicCompareExchange(#Order, p:Pointer[T], old:T, new:T) : T;
 ```
 
-Atomic compare-and-swap. If `p^` is bitwise equal to `old`, `new` is written to `p` and `old` is returned. Otherwise, `p^` is unchanged and its current value is returned. Errors if the target does not support CAS for `T`. Lowers to LLVM `cmpxchg`.
+Atomically checks whether the value at `p` equals `old`. If it does, `new` is written to `p` and `old` is returned. If it does not match, nothing is written and the current value at `p` is returned. The comparison and conditional write happen as one uninterruptible step.
+
+This is the classic compare-and-swap operation. It is the building block for lock-free algorithms: you read a value, compute an updated version, then use `atomicCompareExchange` to write it back only if nothing changed since you read it. If the swap fails, you retry.
+
+Errors at compile time if the target platform does not support compare-and-swap for `T`.
 
 ## `atomicFence`
 
@@ -87,4 +95,4 @@ Atomic compare-and-swap. If `p^` is bitwise equal to `old`, `new` is written to 
 atomicFence(#Order);
 ```
 
-Introduces a happens-before edge without an associated memory operation. `Order` must be `OrderAcquire`, `OrderRelease`, `OrderAcqRel`, or `OrderSeqCst`. Lowers to LLVM `fence`.
+Introduces a happens-before edge without an associated memory operation. It prevents the compiler and CPU from reordering memory accesses across this point. `Order` must be `OrderAcquire`, `OrderRelease`, `OrderAcqRel`, or `OrderSeqCst`.

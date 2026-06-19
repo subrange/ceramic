@@ -1,6 +1,6 @@
 # Data Access
 
-Fundamental operations on aggregates and enums. None may be overloaded.
+Primitives for reading and writing values inside aggregates (arrays, tuples, records) and for converting enums to and from integers. None may be overloaded.
 
 ## `bitcopy`
 
@@ -9,7 +9,7 @@ Fundamental operations on aggregates and enums. None may be overloaded.
 bitcopy(dest:T, src:T) :;
 ```
 
-Bitwise copies `TypeSize(T)` bytes from `src` into `dest`. Lowers to an LLVM `load` followed by `store`. `T` must be a primitive type (`Bool`, integer, float, complex, any pointer type, enum, newtype, or `Static[x]`). Records, arrays, tuples, unions, and vectors are not supported.
+`bitcopy` copies the raw bytes of `src` directly into `dest` without calling any `copy` operator. `T` must be a primitive type: `Bool`, any integer or float, any pointer type, an enum, a newtype, or `Static[x]`. Records, arrays, tuples, unions, and vectors are not supported.
 
 ## `arrayRef`
 
@@ -18,10 +18,7 @@ Bitwise copies `TypeSize(T)` bytes from `src` into `dest`. Lowers to an LLVM `lo
 arrayRef(array:Array[T, n], i:I) : ref T;
 ```
 
-Returns a reference to element `i` of `array`.
-
-- Zero-based. Not bounds-checked.
-- Lowers to LLVM `getelementptr`.
+To read or write a single element of an array, use `arrayRef`. It returns a reference to element `i`, so you can both read from and assign through it. Indexing is zero-based and not bounds-checked.
 
 ## `arrayElements`
 
@@ -30,7 +27,7 @@ Returns a reference to element `i` of `array`.
 arrayElements(array:Array[T, n]) : ref ..replicateValue(T, #n);
 ```
 
-Returns a multiple-value list of references to every element of `array` in order.
+When you need to work with all elements of an array at once, `arrayElements` unpacks them as a multiple-value list of references, in order.
 
 ## `tupleRef`
 
@@ -39,10 +36,7 @@ Returns a multiple-value list of references to every element of `array` in order
 tupleRef(tuple:Tuple[..T], #n) : ref nthValue(#n, ..T);
 ```
 
-Returns a reference to the `n`th element of `tuple`.
-
-- Zero-based. `n` is checked at compile time.
-- Lowers to LLVM `getelementptr`.
+Element access on a tuple is done through `tupleRef`. The index `n` must be a static value, so an out-of-bounds index is caught at compile time rather than causing a runtime crash.
 
 ## `tupleElements`
 
@@ -51,7 +45,7 @@ Returns a reference to the `n`th element of `tuple`.
 tupleElements(tuple:Tuple[..T]) : ref ..T;
 ```
 
-Returns a multiple-value list of references to every tuple element in order.
+To unpack an entire tuple into its components, use `tupleElements`. It returns a reference to every element as a multiple-value list, in order.
 
 ## `recordFieldRef`
 
@@ -60,10 +54,7 @@ Returns a multiple-value list of references to every tuple element in order.
 recordFieldRef(rec:R, #n) : ref RecordFieldType(R, #n);
 ```
 
-Returns a reference to the `n`th field of a record value.
-
-- Zero-based. `n` is checked at compile time.
-- Lowers to LLVM `getelementptr`.
+To access a record field by position, use `recordFieldRef`. The index `n` is checked at compile time, so an out-of-bounds access is a compile error.
 
 ## `recordFieldRefByName`
 
@@ -72,7 +63,7 @@ Returns a reference to the `n`th field of a record value.
 recordFieldRefByName(rec:R, #name) : ref;
 ```
 
-Returns a reference to the field named `name` (a static string) in `rec`.
+To access a record field by a name that is only known at compile time, use `recordFieldRefByName`. It is a compile error if `R` has no field with that name.
 
 ## `recordFields`
 
@@ -81,7 +72,7 @@ Returns a reference to the field named `name` (a static string) in `rec`.
 recordFields(rec:R) : ref ..RecordFieldTypes(R);
 ```
 
-Returns a multiple-value list of references to all fields of `rec` in declaration order.
+To unpack every field of a record into a multiple-value list, use `recordFields`. The fields are returned as references in declaration order.
 
 ## `recordVariadicField`
 
@@ -90,7 +81,7 @@ Returns a multiple-value list of references to all fields of `rec` in declaratio
 recordVariadicField(rec:R) : ref ..VariadicFieldTypes(R);
 ```
 
-Returns a multiple-value list of references to the variadic field elements of `rec`. Errors at compile time if `R` has no variadic field. The number of references equals the number of variadic field elements captured in the record.
+To unpack the variadic field of a record, use `recordVariadicField`. It returns a reference to each element as a multiple-value list. It is a compile error if `R` has no variadic field. The number of references equals the number of elements the variadic field was instantiated with.
 
 ```ceramic
 record Packet[..T] (header:Int32, ..body:T, checksum:UInt32);
@@ -111,7 +102,7 @@ main() {
 enumToInt(en:E) : Int32;
 ```
 
-Returns the ordinal of `en` as an `Int32`.
+The underlying integer ordinal of enum value `en` is available via `enumToInt`. Ordinals are assigned in declaration order starting from zero.
 
 ## `intToEnum`
 
@@ -120,4 +111,4 @@ Returns the ordinal of `en` as an `Int32`.
 intToEnum(#E, n:Int32) : E;
 ```
 
-Returns the value of enum type `E` with ordinal `n`. Not bounds-checked against the values defined for `E`.
+To construct an enum value from an integer, use `intToEnum`. The integer is not checked against the values defined for `E`.

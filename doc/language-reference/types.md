@@ -9,7 +9,7 @@ Ceramic has four kinds of user-defined types:
 
 ### Records
 
-A **record** is a general-purpose aggregate laid out in memory like a C `struct`.
+A **record** is a general-purpose aggregate that groups named fields together into a single value, similar to a struct in C.
 
 ```ceramic
 record Point (x:Int, y:Int);

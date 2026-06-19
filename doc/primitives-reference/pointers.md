@@ -1,6 +1,6 @@
 # Pointer Operations
 
-Create, dereference, and convert pointers, plus function-pointer construction and invocation. None of these may be overloaded. Pointer comparison is library-provided (the `equals?` and `lesser?` operators).
+Primitives for creating, dereferencing, and converting pointers, plus for constructing and calling function pointers. None of these may be overloaded. Pointer comparison is provided by the standard library through the `equals?` and `lesser?` operators.
 
 ## `addressOf`
 
@@ -9,7 +9,7 @@ Create, dereference, and convert pointers, plus function-pointer construction an
 addressOf(ref x:T) : Pointer[T];
 ```
 
-Returns the address of `x`. `x` must be an lvalue. Equivalent to the prefix `@` operator.
+The address of an lvalue `x` is available as a `Pointer[T]` via `addressOf`. `x` must be a variable, a field, or a pointer dereference. This is the same as the prefix `@` operator.
 
 ## `pointerDereference`
 
@@ -18,7 +18,7 @@ Returns the address of `x`. `x` must be an lvalue. Equivalent to the prefix `@` 
 pointerDereference(p:Pointer[T]) : ref T;
 ```
 
-Returns a reference to the object pointed to by `p`. Effectively a no-op at the LLVM level (references are pointers).
+To dereference a pointer, use `pointerDereference`. It returns a reference to the value that `p` points to. This is the same as the `^` operator.
 
 ## `pointerOffset`
 
@@ -27,7 +27,7 @@ Returns a reference to the object pointed to by `p`. Effectively a no-op at the 
 pointerOffset(p:Pointer[T], i:I) : Pointer[T];
 ```
 
-Returns a pointer offset from `p` by `i * TypeSize(T)` bytes. Lowers to LLVM `getelementptr`.
+To move a pointer forward or backward by some number of elements, use `pointerOffset`. Each position is `TypeSize(T)` bytes. Negative values move backward. This does not bounds-check.
 
 ## `pointerToInt`
 
@@ -36,7 +36,7 @@ Returns a pointer offset from `p` by `i * TypeSize(T)` bytes. Lowers to LLVM `ge
 pointerToInt(#I, p:Pointer[T]) : I;
 ```
 
-Converts the address of `p` to integer type `I`. Zero-extends if `I` is wider than a pointer, truncates if narrower. Lowers to LLVM `ptrtoint`.
+`pointerToInt` converts the address stored in `p` to integer type `I`. If `I` is wider than a pointer, the value is zero-extended. If narrower, it is truncated.
 
 ## `intToPointer`
 
@@ -45,7 +45,7 @@ Converts the address of `p` to integer type `I`. Zero-extends if `I` is wider th
 intToPointer(#T, address:I) : Pointer[T];
 ```
 
-Converts `address` to a `Pointer[T]`. Truncates if `I` is wider than a pointer, zero-extends if narrower. Lowers to LLVM `inttoptr`.
+`intToPointer` converts an integer `address` to a `Pointer[T]`. If `I` is wider than a pointer, the address is truncated. If narrower, it is zero-extended.
 
 ## `nullPointer`
 
@@ -54,7 +54,7 @@ Converts `address` to a `Pointer[T]`. Truncates if `I` is wider than a pointer, 
 nullPointer(#T) : T;
 ```
 
-Returns the null value of pointer-like type `T` (`Pointer`, `CodePointer`, or `ExternalCodePointer`).
+The null value for any pointer-like type is available via `nullPointer`. Works with `Pointer`, `CodePointer`, and `ExternalCodePointer` types.
 
 ## `bitcast`
 
@@ -63,9 +63,9 @@ Returns the null value of pointer-like type `T` (`Pointer`, `CodePointer`, or `E
 bitcast(#T, x:U) : ref T;
 ```
 
-Reinterprets `x` as type `T`. Returns a reference (lvalue) aliasing the same memory as `x`. `T` must be no larger than the type of `x`, and may not have stricter alignment. Lowers to LLVM `bitcast`.
+`bitcast` reinterprets the bytes of `x` as a value of type `T` without any conversion. It gives you back a reference that aliases the same memory as `x`. `T` must be no larger than `U` in bytes and must not require stricter alignment.
 
-Works between many types, including data pointers (`Pointer[T]` ↔ `Pointer[U]`), code-pointer types (`CodePointer`, `CCodePointer`, …), and between data and code pointers.
+This works between pointer types, between code-pointer types, and between data and code pointers.
 
 ## `memcpy` / `memmove`
 
@@ -75,7 +75,7 @@ memcpy(dest:Pointer[T], src:Pointer[U], n:I) :;
 memmove(dest:Pointer[T], src:Pointer[U], n:I) :;
 ```
 
-Copies `n` bytes from `src` to `dest`. `memcpy` requires the regions not to overlap; `memmove` handles overlap correctly. Lower to the LLVM `memcpy`/`memmove` intrinsics.
+Both `memcpy` and `memmove` copy `n` bytes from `src` to `dest`. The difference is how they handle overlapping regions: `memcpy` requires the source and destination not to overlap, while `memmove` handles overlap correctly.
 
 ## Function Pointer Operations
 
@@ -86,11 +86,9 @@ Copies `n` bytes from `src` to `dest`. `memcpy` requires the regions not to over
 makeCodePointer(#F, #..T) : CodePointer[[..T], [..CallOutputTypes(F, ..T)]];
 ```
 
-Resolves an overload of `F` matching input types `..T`, instantiates it, and returns a [`CodePointer`](types.md#codepointer) to that instance.
+`makeCodePointer` picks the overload of symbol `F` that matches input types `..T`, compiles it to a concrete function instance, and gives you a [`CodePointer`](types.md#codepointer) to it.
 
-- `F` must be a symbol or a non-capturing lambda (equivalent to a symbol).
-- Errors if `F` is not a symbol, or if no overload matches.
-- Always matches as if inputs are lvalues. Taking `CodePointer`s to rvalue functions is unsupported.
+`F` must be a symbol or a non-capturing lambda. If no overload of `F` matches the given types, you get a compile error. Arguments are always matched as lvalues.
 
 ### `makeExternalCodePointer`
 
@@ -100,14 +98,11 @@ makeExternalCodePointer(#F, #CC, #V?, #..T)
     : ExternalCodePointer[CC, V?, [..T], [..CallOutputTypes(F, ..T)]];
 ```
 
-Like `makeCodePointer`, but additionally generates a thunk that adapts the matched overload to the calling convention `CC` (`cdecl`, `stdcall`, …), and returns an [`ExternalCodePointer`](types.md#external-code-pointer-types). `V?` marks the pointer variadic. The `makeCCodePointer` library alias supplies `cdecl` and non-variadic.
+`makeExternalCodePointer` works like `makeCodePointer`, but also generates a thunk that adapts the matched overload to a foreign calling convention `CC` (such as `cdecl` or `stdcall`), and gives you an [`ExternalCodePointer`](types.md#external-code-pointer-types). Set `V?` to `true` to mark the pointer variadic. The `makeCCodePointer` library alias chooses `cdecl` and non-variadic for you.
 
-The matched overload must be **C-compatible**:
+The matched overload must be C-compatible: it returns zero or one values, and none of its argument types have non-trivial `copy`, `move`, or `destroy` operations.
 
-- Returns zero or one values.
-- No arguments with nontrivial `copy`, `move`, or `destroy` operations.
-
-If a Ceramic exception escapes the pointed-to overload, the `unhandledExceptionInExternal` operator function is called (same as for external functions).
+If a Ceramic exception escapes the pointed-to function, `unhandledExceptionInExternal` is called, the same as for `external` functions.
 
 ### `callExternalCodePointer`
 
@@ -116,4 +111,4 @@ If a Ceramic exception escapes the pointed-to overload, the `unhandledExceptionI
 callExternalCodePointer(f:ExternalCodePointer[CC, V?, [..In], [..Out]], ..args:In) : ..Out;
 ```
 
-Invokes an external function pointer using its calling convention. Variadic pointers (`V?` is `true`) additionally accept trailing variadic arguments.
+`callExternalCodePointer` invokes an external function pointer using its declared calling convention. Variadic pointers (where `V?` is `true`) also accept trailing variadic arguments beyond the declared parameter list.
