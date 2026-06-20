@@ -515,7 +515,10 @@ def runTests(opt):
 def main():
     opt = TestOptions()
 
-    argp = argparse.ArgumentParser(description="Run the Ceramic test suite.")
+    argp = argparse.ArgumentParser(
+        description="Run the Ceramic test suite.",
+        usage="%(prog)s [options] [test/path]",
+    )
     argp.add_argument(
         "-I",
         metavar="path",
