@@ -317,6 +317,7 @@ struct StaticAssertStatement;
 struct FormalArg;
 struct ReturnSpec;
 struct LLVMCode;
+struct ASMCode;
 struct Code;
 
 struct TopLevelItem;
@@ -469,6 +470,7 @@ using StaticAssertStatementPtr = Pointer<StaticAssertStatement>;
 using FormalArgPtr = Pointer<FormalArg>;
 using ReturnSpecPtr = Pointer<ReturnSpec>;
 using LLVMCodePtr = Pointer<LLVMCode>;
+using ASMCodePtr = Pointer<ASMCode>;
 using CodePtr = Pointer<Code>;
 
 using TopLevelItemPtr = Pointer<TopLevelItem>;
@@ -1431,6 +1433,12 @@ struct LLVMCode : ANode {
     LLVMCode(llvm::StringRef body) : ANode(LLVM_CODE), body(body) {}
 };
 
+struct ASMCode : ANode {
+    const string body;
+
+    ASMCode(llvm::StringRef body) : ANode(ASM_CODE), body(body) {}
+};
+
 struct Code : public ANode {
     vector<PatternVar> patternVars;
     ExprPtr predicate;
@@ -1439,6 +1447,7 @@ struct Code : public ANode {
     ReturnSpecPtr varReturnSpec;
     StatementPtr body;
     LLVMCodePtr llvmBody;
+    ASMCodePtr asmBody;
     bool hasVarArg : 1;
     bool returnSpecsDeclared : 1;
 
@@ -1462,8 +1471,10 @@ struct Code : public ANode {
     }
 
     bool isLLVMBody() { return llvmBody.ptr() != nullptr; }
+    bool isAsmBody() { return asmBody.ptr() != nullptr; }
+    bool isLiteralBody() { return isLLVMBody() || isAsmBody(); }
 
-    bool hasBody() { return body.ptr() || isLLVMBody(); }
+    bool hasBody() { return body.ptr() || isLiteralBody(); }
 };
 
 //
