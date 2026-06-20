@@ -1,0 +1,10 @@
+import printer.(println);
+
+main() {
+    var x = 0;
+    for (i in array(1, 2, 3)) {
+        var x = i;
+        println(x);
+    }
+    println(x);
+}

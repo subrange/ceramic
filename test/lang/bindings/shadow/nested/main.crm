@@ -1,0 +1,16 @@
+import printer.(println);
+
+main() {
+    var x = 1;
+    println(x);
+    if (true) {
+        var x = 2;
+        println(x);
+        if (true) {
+            var x = 3;
+            println(x);
+        }
+        println(x);
+    }
+    println(x);
+}
