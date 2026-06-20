@@ -2,13 +2,23 @@
 0.2 -> 0.3 (WIP)
 ================
 
-Mostly tooling and fixes. No language changes to speak of.
+Language changes:
+-----------------
+* goto labels defined outside an eval block may be jumped to from
+  within the eval block.
 
-* Rewrote compiler diagnostics: caret snippets, context notes, typo
-  suggestions, parser error recovery, colorized output.
-* Emit valid debug info with -g.
-* Integer literals can now use the full 128-bit range.
-* VS Code extension, raylib bindings, regenerated libclang bindings for LLVM 19.
+Bindings:
+---------
+* raylib bindings and an example program are included.
+* Cocoa, GLUT, and expat bindings have been removed.
+* libclang bindings have been regenerated for LLVM 19.
+
+Tool changes:
+-------------
+* runtests.py has been modernized. Test cases can include a 'warn.txt'
+  file to check expected warning output.
+* VS Code syntax highlighting coverage has been expanded.
+* The Emacs mode indentation has been fixed.
 
 ==========
 0.1 -> 0.2
