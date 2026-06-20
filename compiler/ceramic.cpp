@@ -394,7 +394,9 @@ static void usage(const char *argv0) {
     llvm::errs()
         << "  -pic                  generate position independent code\n";
     llvm::errs() << "  -run                  execute the program without "
-                    "writing to disk\n";
+                    "writing to disk\n"
+                 << "                        use -- to pass arguments to the "
+                    "program: -run file.crm -- arg1 arg2\n";
     llvm::errs() << "  -timing               show timing information\n";
     llvm::errs() << "  -verbose              be verbose\n";
     llvm::errs() << "  -full-match-errors    show universal patterns in match "
@@ -516,6 +518,8 @@ int main2(int argc, char **argv, char const *const *envp) {
 
     string ceramicScriptImports;
     string ceramicScript;
+
+    vector<string> programArgs;
 
     vector<string> libSearchPathArgs;
     vector<string> libSearchPath;
@@ -794,23 +798,17 @@ int main2(int argc, char **argv, char const *const *envp) {
             dependenciesOutputFile = argv[i];
         } else if (strcmp(argv[i], "--") == 0) {
             ++i;
-            if (ceramicFile.empty()) {
-                if (i != argc - 1) {
-                    llvm::errs()
-                        << "error: ceramic file already specified: " << argv[i]
-                        << ", unrecognized parameter: " << argv[i + 1] << '\n';
+            if (ceramicFile.empty() && ceramicScript.empty()) {
+                if (i >= argc) {
+                    llvm::errs() << "error: ceramic file missing after --\n";
                     return 1;
                 }
                 ceramicFile = argv[i];
-            } else {
-                if (i != argc) {
-                    llvm::errs()
-                        << "error: ceramic file already specified: "
-                        << ceramicFile
-                        << ", unrecognized parameter: " << argv[i] << '\n';
-                    return 1;
-                }
+                ++i;
             }
+            for (; i < argc; ++i)
+                programArgs.push_back(argv[i]);
+            break;
         } else if (strcmp(argv[i], "-help") == 0 ||
                    strcmp(argv[i], "--help") == 0 ||
                    strcmp(argv[i], "/?") == 0) {
@@ -847,6 +845,11 @@ int main2(int argc, char **argv, char const *const *envp) {
             llvm::errs() << "error: -e cannot be specified with input file\n";
             return 1;
         }
+    }
+
+    if (!programArgs.empty() && !run) {
+        llvm::errs() << "error: program arguments after -- require -run\n";
+        return 1;
     }
 
     if (!ceramicScriptImports.empty() && ceramicScript.empty()) {
@@ -1055,7 +1058,9 @@ int main2(int argc, char **argv, char const *const *envp) {
 
         if (run) {
             vector<string> runArgs;
-            runArgs.push_back(ceramicFile);
+            runArgs.push_back(ceramicFile.empty() ? "-e" : ceramicFile);
+            runArgs.insert(runArgs.end(), programArgs.begin(),
+                           programArgs.end());
             runModule(llvmModule, runArgs, envp, libSearchPath, libraries);
         } else if (repl) {
             // TODO: future me task
