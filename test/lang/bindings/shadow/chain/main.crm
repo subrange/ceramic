@@ -1,0 +1,8 @@
+import printer.(println);
+
+main() {
+    var x = 10;
+    var x = x * 2;
+    var x = x + 5;
+    println(x);
+}
