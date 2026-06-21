@@ -10,4 +10,3 @@ site/
 __pycache__/
 *.ceramiccache
 ceramicobj-*.obj
-testlog.txt

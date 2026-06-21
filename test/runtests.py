@@ -22,7 +22,7 @@ class TestOptions:
     testBuildFlags = []
     testRoot = os.path.dirname(os.path.abspath(__file__))
     runTestRoot = os.path.dirname(os.path.abspath(__file__))
-    testLogFile = "testlog.txt"
+
     ceramicCompiler = None
     ceramicPlatform = None
     cleanUpLater = []
@@ -333,8 +333,6 @@ class TestCase(object):
 
     def run(self):
         self.testLogBuffer = StringIO()
-        print(file=self.testLogBuffer)
-        self.testLogBuffer.write("[%s]\n" % self.name())
         os.chdir(self.path)
         self.pre_build()
         self.post_build()
@@ -464,7 +462,7 @@ def runTests(opt):
     succeeded = []
     failed = []
     disabled = []
-    logfile = open(opt.testLogFile, "w")
+    failure_logs = []
     try:
         print("[TargetPlatform]")
         platform, family, arch, bits = opt.ceramicPlatform
@@ -480,14 +478,12 @@ def runTests(opt):
             startTime = time.time()
             res, log = next(results)
             endTime = time.time()
-            if res != "ok" and res != "disabled":
-                logfile.write(log)
-            logfile.flush()
             print("%s: %s (%fs)" % (test.name(), res, (endTime - startTime)))
             if res == "disabled":
                 disabled.append(test.name())
             elif res != "ok":
                 failed.append("%s: %s" % (test.name(), res))
+                failure_logs.append(log)
             else:
                 succeeded.append(test.name())
     except KeyboardInterrupt:
@@ -498,7 +494,9 @@ def runTests(opt):
     if failed:
         print()
         print("[Failed]")
-        print("\n".join(failed))
+        for name, log in zip(failed, failure_logs):
+            print(name)
+            print(log)
 
     print()
     print("[Summary]")
@@ -507,8 +505,6 @@ def runTests(opt):
         print("Disabled: %d" % len(disabled))
     if failed:
         print("Failed: %d" % len(failed))
-    logfile.flush()
-    print("\n# Test log written to " + opt.testLogFile)
     return len(failed)
 
 
@@ -557,12 +553,7 @@ def main():
         dest="testRoot",
         help="Specifies the root directory out of which to run tests.",
     )
-    argp.add_argument(
-        "--log",
-        metavar="path",
-        dest="logfile",
-        help="Log detailed test failures to the given path (default testlog.txt).",
-    )
+
     argp.add_argument(
         "testname",
         nargs="?",
@@ -581,8 +572,6 @@ def main():
         opt.testBuildFlags += ["-target", args.target]
     if args.testRoot is not None:
         opt.testRoot = os.path.abspath(args.testRoot)
-    if args.logfile is not None:
-        opt.testLogFile = args.logfile
 
     if args.testname is not None:
         opt.runTestRoot = os.path.join(opt.testRoot, args.testname)
