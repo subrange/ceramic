@@ -144,8 +144,11 @@ forceinline overload integerMultiplyWithOverflow(x:UInt128, y:UInt128) : UInt128
 // division, remainder, negation
 
 [T when SignedInteger?(T)]
-forceinline overload integerQuotientWithOverflow(x:T, y:T) : T, Bool
-    = integerQuotient(x, y), y == 0 or (x == Least(T) and y == -1);
+forceinline overload integerQuotientWithOverflow(x:T, y:T) : T, Bool {
+    if (y == 0 or (x == Least(T) and y == -1))
+        return T(0), true;
+    return integerQuotient(x, y), false;
+}
 
 [T when UnsignedInteger?(T)]
 forceinline overload integerQuotientWithOverflow(x:T, y:T) : T, Bool

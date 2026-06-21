@@ -10,3 +10,4 @@ site/
 __pycache__/
 *.ceramiccache
 ceramicobj-*.obj
+ceramic-notes
