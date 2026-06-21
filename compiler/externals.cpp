@@ -1120,13 +1120,13 @@ struct Mips32_ExternalTarget : public ExternalTarget {
 
 void Mips32_ExternalTarget::coerceToIntArgs(
     size_t tySize, vector<llvm::Type *> &argList) const {
-    llvm::Type *intType = llvmIntType(minABIAlign * 8);
+    llvm::Type *intType = llvmIntType(unsigned(minABIAlign * 8));
 
-    for (unsigned n = tySize / (minABIAlign * 8); n > 0; --n) {
+    for (unsigned n = unsigned(tySize / (minABIAlign * 8)); n > 0; --n) {
         argList.push_back(intType);
     }
 
-    unsigned r = tySize % (minABIAlign * 8);
+    unsigned r = unsigned(tySize % (minABIAlign * 8));
 
     if (r > 0) {
         argList.push_back(llvmIntType(r));
@@ -1136,7 +1136,7 @@ void Mips32_ExternalTarget::coerceToIntArgs(
 llvm::Type *Mips32_ExternalTarget::getPaddingType(size_t align,
                                                   size_t offset) const {
     if (((align - 1) & offset) > 0) {
-        return llvmIntType(minABIAlign * 8);
+        return llvmIntType(unsigned(minABIAlign * 8));
     }
 
     return nullptr;

@@ -483,8 +483,8 @@ BINARY_OP(Op_numericMultiply, T, a *b);
 BINARY_OP(Op_floatDivide, T, a / b);
 BINARY_OP(Op_integerQuotient, T, a / b);
 BINARY_OP(Op_integerRemainder, T, a % b);
-BINARY_OP(Op_integerShiftLeft, T, a << b);
-BINARY_OP(Op_integerShiftRight, T, a >> b);
+BINARY_OP(Op_integerShiftLeft, T, T(a << b));
+BINARY_OP(Op_integerShiftRight, T, T(a >> b));
 BINARY_OP(Op_integerBitwiseAnd, T, a &b);
 BINARY_OP(Op_integerBitwiseOr, T, a | b);
 BINARY_OP(Op_integerBitwiseXor, T, a ^ b);
@@ -706,7 +706,7 @@ class Op_integerShiftLeftChecked : public BinaryOpHelper<T> {
             if (b > T(sizeof(T) * 8) || (a >> (sizeof(T) * 8 - (size_t)b)) != 0)
                 overflowError("bitshl", a, b);
         }
-        *((T *)out) = a << b;
+        *((T *)out) = T(a << b);
     }
 };
 
