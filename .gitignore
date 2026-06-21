@@ -11,3 +11,4 @@ __pycache__/
 *.ceramiccache
 ceramicobj-*.obj
 testlog.txt
+ceramic-notes
