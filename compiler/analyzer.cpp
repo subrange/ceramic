@@ -1626,7 +1626,7 @@ struct IntrinsicAnalyzer {
 
         skipReturnType(TableRef);
 
-        for (unsigned i = 0, e = inputTypes.size(); i != e; ++i) {
+        for (size_t i = 0, e = inputTypes.size(); i != e; ++i) {
             VerifyIntrinsicType(inputTypes[i], TableRef, errors, i);
         }
         if (!TableRef.empty()) {

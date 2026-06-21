@@ -3858,7 +3858,6 @@ static bool documentationText(std::string &text) {
 }
 
 static bool documentation(TopLevelItemPtr &x, Module *module) {
-    Location location = currentLocation();
     std::map<DocumentationAnnotation, string> annotation;
     std::string text;
 

@@ -1605,7 +1605,7 @@ void codegenCompileTimeValue(EValuePtr ev, CodegenContext *ctx,
             EValuePtr elementValue =
                 new EValue(arrayType->elementType, elementPtr);
             llvm::Value *destPtr = ctx->builder->CreateConstGEP2_32(
-                llvmType(out0->type), out0->llValue, 0, i);
+                llvmType(out0->type), out0->llValue, 0, unsigned(i));
             CValuePtr cgDest = new CValue(arrayType->elementType, destPtr);
             codegenCompileTimeValue(elementValue, ctx, new MultiCValue(cgDest));
         }
@@ -1708,7 +1708,8 @@ llvm::Value *codegenSimpleConstant(EValuePtr ev) {
         FloatType *t = (FloatType *)ev->type.ptr();
         switch (t->bits) {
         case 32:
-            val = llvm::ConstantFP::get(llvmType(t), *((float *)ev->addr));
+            val = llvm::ConstantFP::get(llvmType(t),
+                                        double(*((float *)ev->addr)));
             break;
         case 64:
             val = llvm::ConstantFP::get(llvmType(t), *((double *)ev->addr));

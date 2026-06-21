@@ -70,7 +70,7 @@ endif()
 
 foreach(tgt IN ITEMS compiler ceramic ceramicdoc ut)
     target_compile_options(${tgt} PRIVATE ${LLVM_CXXFLAGS})
-    target_include_directories(${tgt} PRIVATE ${LLVM_INCLUDE_DIRS})
+    target_include_directories(${tgt} SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS})
     target_compile_definitions(${tgt} PRIVATE ${_debug_def})
     if(NOT MSVC)
         target_compile_options(${tgt} PRIVATE -fexceptions
