@@ -573,12 +573,15 @@ struct Source : public Object {
 };
 
 struct Location {
-    SourcePtr source;
+    Source *source;
     unsigned offset;
 
     Location() : source(nullptr), offset(0) {}
 
     Location(const SourcePtr &source, unsigned offset)
+        : source(source.ptr()), offset(offset) {}
+
+    Location(Source *source, unsigned offset)
         : source(source), offset(offset) {}
 
     bool ok() const { return source != nullptr; }
@@ -1012,6 +1015,14 @@ struct ExprList : public Object {
     ExprList(ExprPtr x) : Object(EXPR_LIST) { exprs.push_back(x); }
 
     ExprList(llvm::ArrayRef<ExprPtr> exprs) : Object(EXPR_LIST), exprs(exprs) {}
+
+    void *operator new(size_t num_bytes) {
+        return ANodeAllocator->Allocate(num_bytes, alignof(ExprList));
+    }
+
+    void operator delete(void *p) {
+        ANodeAllocator->Deallocate(p, sizeof(ExprList), alignof(ExprList));
+    }
 
     size_t size() const { return exprs.size(); }
     void add(ExprPtr x) { exprs.push_back(x); }

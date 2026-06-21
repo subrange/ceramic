@@ -927,8 +927,7 @@ void matchFailureError(MatchFailureError const &err) {
         bld.at(span);
         if (span.ok())
             bld.label(expectedFound);
-        if (nearCandidate->location.ok() &&
-            nearCandidate->location.source.ptr())
+        if (nearCandidate->location.ok() && nearCandidate->location.source)
             bld.note(nearCandidate->location, "defined here");
         bld.skipInnermostContextNote();
         bld.emit();
