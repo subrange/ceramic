@@ -12,7 +12,7 @@ static unsigned position;
 static unsigned maxPosition;
 // farthest token a terminal tried to match, and what it expected there
 static unsigned failPosition;
-static vector<llvm::StringRef> failExpected;
+static vector<const char *> failExpected;
 // prevent errors if tokens is missing
 static bool suppressExpected;
 // diagnostics collected during recovery, rendered together at the end
@@ -55,7 +55,7 @@ static unsigned save() { return position; }
 static void restore(unsigned p) { position = p; }
 
 // remember the set of terminals expected at the farthest failure point
-static void recordExpected(unsigned p, llvm::StringRef what) {
+static void recordExpected(unsigned p, const char *what) {
     if (suppressExpected)
         return;
     if (p > failPosition) {
@@ -64,7 +64,8 @@ static void recordExpected(unsigned p, llvm::StringRef what) {
     }
     if (p != failPosition)
         return;
-    for (llvm::StringRef e : failExpected)
+    // pointer dedup only
+    for (const char *e : failExpected)
         if (e == what)
             return;
     failExpected.push_back(what);
@@ -79,17 +80,22 @@ static Diagnostic buildParseError() {
     static const char *const terminators[] = {";", "}", ")", "]", ",", ":"};
     vector<llvm::StringRef> ordered;
     for (const char *p : terminators)
-        for (llvm::StringRef e : failExpected)
+        for (const char *ec : failExpected) {
+            llvm::StringRef e(ec);
             if (e == p) {
                 ordered.push_back(e);
                 break;
             }
-    for (llvm::StringRef e : failExpected)
+        }
+    for (const char *ec : failExpected) {
+        llvm::StringRef e(ec);
         if (e == "expression") {
             ordered.push_back(e);
             break;
         }
-    for (llvm::StringRef e : failExpected) {
+    }
+    for (const char *ec : failExpected) {
+        llvm::StringRef e(ec);
         bool seen = false;
         for (llvm::StringRef o : ordered)
             if (o == e) {
@@ -108,8 +114,8 @@ static Diagnostic buildParseError() {
         bool isCloser =
             f == ")" || f == "]" || f == "}" || f == ";" || f == ",";
         bool commaExpected = false;
-        for (llvm::StringRef e : failExpected)
-            if (e == ",") {
+        for (const char *ec : failExpected)
+            if (llvm::StringRef(ec) == ",") {
                 commaExpected = true;
                 break;
             }
