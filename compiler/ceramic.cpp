@@ -371,7 +371,8 @@ static void usage(const char *argv0) {
         << "  -DFLAG[=value]        set flag value\n"
         << "                        (queryable with Flag?() and Flag())\n";
     llvm::errs() << "  -O0 -O1 -O2 -O3       set optimization level\n";
-    llvm::errs() << "                        (default -O2, or -O0 with -g)\n";
+    llvm::errs()
+        << "                        (default -O0, pass -O2 for release)\n";
     llvm::errs() << "  -g                    keep debug symbol information\n";
     llvm::errs() << "  -exceptions           enable exception handling\n";
     llvm::errs() << "  -no-exceptions        disable exception handling\n";
@@ -499,7 +500,7 @@ int main2(int argc, char **argv, char const *const *envp) {
 
     bool generateDeps = false;
 
-    unsigned optLevel = 2;
+    unsigned optLevel = 0;
     bool optLevelSet = false;
 
     bool finalOverloadsEnabled = false;
