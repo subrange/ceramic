@@ -6,6 +6,7 @@
 
 #include <llvm/Support/DynamicLibrary.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Format.h>
 #include <llvm/Support/Path.h>
 #include <llvm/Support/Signals.h>
 #include <llvm/TargetParser/Host.h>
@@ -45,7 +46,9 @@ static bool runModule(llvm::Module *module,
                       const std::vector<std::string> &argv,
                       char const *const *envp,
                       llvm::ArrayRef<std::string> libSearchPaths,
-                      llvm::ArrayRef<std::string> libs) {
+                      llvm::ArrayRef<std::string> libs,
+                      HiResTimer *jitCompileTimer = nullptr,
+                      HiResTimer *execTimer = nullptr) {
     auto JIT_expected = llvm::orc::LLJITBuilder().create();
     if (!JIT_expected) {
         llvm::errs() << "error creating JIT: "
@@ -116,7 +119,11 @@ static bool runModule(llvm::Module *module,
         return false;
     }
 
+    if (jitCompileTimer)
+        jitCompileTimer->start();
     auto mainAddr_expected = jit.lookup("main");
+    if (jitCompileTimer)
+        jitCompileTimer->stop();
     if (!mainAddr_expected) {
         llvm::errs() << "error resolving main: "
                      << llvm::toString(mainAddr_expected.takeError()) << "\n";
@@ -134,8 +141,12 @@ static bool runModule(llvm::Module *module,
     }
     c_argv.push_back(nullptr);
 
+    if (execTimer)
+        execTimer->start();
     mainFunc(static_cast<int>(c_argv.size() - 1),
              const_cast<char **>(c_argv.data()), const_cast<char **>(envp));
+    if (execTimer)
+        execTimer->stop();
 
     return true;
 }
@@ -889,6 +900,10 @@ int main2(int argc, char **argv, char const *const *envp) {
 
     std::string moduleName = ceramicScript.empty() ? ceramicFile : "-e";
 
+    HiResTimer initTimer, loadTimer, compileTimer, optTimer, outputTimer,
+        execTimer;
+
+    initTimer.start();
     llvm::TargetMachine *targetMachine =
         initLLVM(targetTriple, targetCPU, targetFeatures, softFloat, moduleName,
                  "", (sharedLib || genPIC), debug, optLevel);
@@ -900,6 +915,7 @@ int main2(int argc, char **argv, char const *const *envp) {
 
     initTypes();
     initExternalTarget(targetTriple);
+    initTimer.stop();
 
     // Try environment variables first
     if (char *libceramicPath = getenv("CERAMIC_PATH")) {
@@ -996,8 +1012,6 @@ int main2(int argc, char **argv, char const *const *envp) {
         llvm::sys::RemoveFileOnSignal(dependenciesOutputFile);
     }
 
-    HiResTimer loadTimer, compileTimer, optTimer, outputTimer;
-
     // compiler
 
     loadTimer.start();
@@ -1062,7 +1076,8 @@ int main2(int argc, char **argv, char const *const *envp) {
             runArgs.push_back(ceramicFile.empty() ? "-e" : ceramicFile);
             runArgs.insert(runArgs.end(), programArgs.begin(),
                            programArgs.end());
-            runModule(llvmModule, runArgs, envp, libSearchPath, libraries);
+            runModule(llvmModule, runArgs, envp, libSearchPath, libraries,
+                      &outputTimer, &execTimer);
         } else if (repl) {
             // TODO: future me task
             runInteractive(llvmModule, m);
@@ -1118,18 +1133,23 @@ int main2(int argc, char **argv, char const *const *envp) {
         return 1;
     }
     if (showTiming) {
-        llvm::errs() << "load time = "
-                     << static_cast<size_t>(loadTimer.elapsedMillis())
-                     << " ms\n";
-        llvm::errs() << "compile time = "
-                     << static_cast<size_t>(compileTimer.elapsedMillis())
-                     << " ms\n";
-        llvm::errs() << "optimization time = "
-                     << static_cast<size_t>(optTimer.elapsedMillis())
-                     << " ms\n";
-        llvm::errs() << "codegen time = "
-                     << static_cast<size_t>(outputTimer.elapsedMillis())
-                     << " ms\n";
+        auto ms = [](double v) { return llvm::format("%.3f ms", v); };
+        double init = initTimer.elapsedMillis();
+        double load = loadTimer.elapsedMillis();
+        double compile = compileTimer.elapsedMillis();
+        double opt = optTimer.elapsedMillis();
+        double codegen = outputTimer.elapsedMillis();
+        double exec = execTimer.elapsedMillis();
+        double total = init + load + compile + opt + codegen;
+
+        llvm::errs() << "init time = " << ms(init) << "\n";
+        llvm::errs() << "load time = " << ms(load) << "\n";
+        llvm::errs() << "compile time = " << ms(compile) << "\n";
+        llvm::errs() << "optimization time = " << ms(opt) << "\n";
+        llvm::errs() << "codegen time = " << ms(codegen) << "\n";
+        if (run)
+            llvm::errs() << "run time = " << ms(exec) << "\n";
+        llvm::errs() << "total time = " << ms(total) << "\n";
         llvm::errs().flush();
     }
 
