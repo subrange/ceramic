@@ -46,10 +46,41 @@ static bool runModule(llvm::Module *module,
                       const std::vector<std::string> &argv,
                       char const *const *envp,
                       llvm::ArrayRef<std::string> libSearchPaths,
-                      llvm::ArrayRef<std::string> libs,
+                      llvm::ArrayRef<std::string> libs, unsigned optLevel,
                       HiResTimer *jitCompileTimer = nullptr,
                       HiResTimer *execTimer = nullptr) {
-    auto JIT_expected = llvm::orc::LLJITBuilder().create();
+    auto JTMB_expected = llvm::orc::JITTargetMachineBuilder::detectHost();
+    if (!JTMB_expected) {
+        llvm::errs() << "error detecting host for JIT: "
+                     << llvm::toString(JTMB_expected.takeError()) << "\n";
+        return false;
+    }
+    auto JTMB = std::move(*JTMB_expected);
+
+    llvm::CodeGenOptLevel cgLevel;
+    switch (optLevel) {
+    case 0:
+        cgLevel = llvm::CodeGenOptLevel::None;
+        break;
+    case 1:
+        cgLevel = llvm::CodeGenOptLevel::Less;
+        break;
+    case 2:
+        cgLevel = llvm::CodeGenOptLevel::Default;
+        break;
+    default:
+        cgLevel = llvm::CodeGenOptLevel::Aggressive;
+        break;
+    }
+    JTMB.setCodeGenOptLevel(cgLevel);
+
+    // FastISel only fires at -O0 and skips SelectionDAG
+    if (optLevel == 0)
+        JTMB.getOptions().EnableFastISel = true;
+
+    auto JIT_expected = llvm::orc::LLJITBuilder()
+                            .setJITTargetMachineBuilder(std::move(JTMB))
+                            .create();
     if (!JIT_expected) {
         llvm::errs() << "error creating JIT: "
                      << llvm::toString(JIT_expected.takeError()) << "\n";
@@ -1077,7 +1108,7 @@ int main2(int argc, char **argv, char const *const *envp) {
             runArgs.insert(runArgs.end(), programArgs.begin(),
                            programArgs.end());
             runModule(llvmModule, runArgs, envp, libSearchPath, libraries,
-                      &outputTimer, &execTimer);
+                      optLevel, &outputTimer, &execTimer);
         } else if (repl) {
             // TODO: future me task
             runInteractive(llvmModule, m);
