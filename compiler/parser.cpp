@@ -15,6 +15,7 @@ static unsigned failPosition;
 static vector<const char *> failExpected;
 // prevent errors if tokens is missing
 static bool suppressExpected;
+static bool trackExpected;
 // diagnostics collected during recovery, rendered together at the end
 static SourcePtr parseSource;
 static vector<Diagnostic> parseErrors;
@@ -62,6 +63,8 @@ static void recordExpected(unsigned p, const char *what) {
         failPosition = p;
         failExpected.clear();
     }
+    if (!trackExpected)
+        return;
     if (p != failPosition)
         return;
     // pointer dedup only
@@ -4096,15 +4099,28 @@ void applyParser(const SourcePtr &source, unsigned offset, size_t length,
 
     tokens = &t;
     parseSource = source;
-    position = maxPosition = 0;
-    failPosition = 0;
-    failExpected.clear();
-    parseErrors.clear();
-    parseErrorOverflow = false;
 
-    bool ok = parser(node, parserParam);
-    if ((!ok || position < t.size()) && parseErrors.empty())
-        parseErrors.push_back(buildParseError());
+    auto run = [&]() {
+        position = maxPosition = 0;
+        failPosition = 0;
+        failExpected.clear();
+        parseErrors.clear();
+        parseErrorOverflow = false;
+
+        bool ok = parser(node, parserParam);
+        if ((!ok || position < t.size()) && parseErrors.empty())
+            parseErrors.push_back(buildParseError());
+    };
+
+    // interactive parses pull tokens on demand so cannot be replayed
+    bool canReplay = addTokens == nullptr;
+    trackExpected = !canReplay;
+    run();
+    if (!parseErrors.empty() && canReplay) {
+        trackExpected = true;
+        run();
+    }
+    trackExpected = false;
 
     vector<Diagnostic> errs;
     errs.swap(parseErrors);
