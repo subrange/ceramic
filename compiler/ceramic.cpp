@@ -30,6 +30,9 @@ using std::vector;
 #endif
 
 namespace ceramic {
+
+CeramicTimers timers;
+
 #ifdef WIN32
 #define PATH_SEPARATORS "/\\"
 #else
@@ -933,6 +936,7 @@ int main2(int argc, char **argv, char const *const *envp) {
 
     HiResTimer initTimer, loadTimer, compileTimer, optTimer, outputTimer,
         execTimer;
+    timers = CeramicTimers{};
 
     initTimer.start();
     llvm::TargetMachine *targetMachine =
@@ -1175,7 +1179,25 @@ int main2(int argc, char **argv, char const *const *envp) {
 
         llvm::errs() << "init time = " << ms(init) << "\n";
         llvm::errs() << "load time = " << ms(load) << "\n";
+        llvm::errs() << "  locate time = " << ms(timers.locate.elapsedMillis())
+                     << "\n";
+        llvm::errs() << "  read time = " << ms(timers.read.elapsedMillis())
+                     << "\n";
+        llvm::errs() << "  parse time = " << ms(timers.parse.elapsedMillis())
+                     << "\n";
+        llvm::errs() << "  install time = "
+                     << ms(timers.install.elapsedMillis()) << "\n";
+        llvm::errs() << "  init time = " << ms(timers.initMod.elapsedMillis())
+                     << "\n";
         llvm::errs() << "compile time = " << ms(compile) << "\n";
+        llvm::errs() << "  top level time = "
+                     << ms(timers.topLevel.elapsedMillis()) << "\n";
+        llvm::errs() << "  externals time = "
+                     << ms(timers.externals.elapsedMillis()) << "\n";
+        llvm::errs() << "  main entry time = "
+                     << ms(timers.mainEntry.elapsedMillis()) << "\n";
+        llvm::errs() << "  finalize time = "
+                     << ms(timers.finalize.elapsedMillis()) << "\n";
         llvm::errs() << "optimization time = " << ms(opt) << "\n";
         llvm::errs() << "codegen time = " << ms(codegen) << "\n";
         if (run)

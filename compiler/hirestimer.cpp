@@ -96,8 +96,9 @@ void HiResTimer::stop() {
     if (--running == 0) {
         struct timespec t;
         clock_gettime(CLOCK, &t);
-        elapsedTicks = (unsigned long long)(t.tv_sec * 1000000000 + t.tv_nsec) -
-                       startTicks;
+        elapsedTicks +=
+            (unsigned long long)(t.tv_sec * 1000000000 + t.tv_nsec) -
+            startTicks;
     }
 }
 
