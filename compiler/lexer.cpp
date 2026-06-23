@@ -15,6 +15,8 @@ void tokenize(SourcePtr source, vector<Token> &tokens) {
 void tokenize(SourcePtr source, unsigned offset, size_t length,
               vector<Token> &tokens) {
     initLexer(source, offset, length);
+    // at most one token per source byte
+    tokens.reserve(tokens.size() + length);
     tokens.push_back(Token());
     while (nextToken(tokens.back())) {
         switch (tokens.back().tokenKind) {
