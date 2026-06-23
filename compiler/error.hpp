@@ -177,18 +177,10 @@ void error(Pointer<Expr> context, llvm::Twine const &msg) CERAMIC_NORETURN;
 void warning(llvm::Twine const &msg);
 void warning(Location const &location, llvm::Twine const &msg);
 void warning(Span span, llvm::Twine const &msg);
-void warning(Expr const *context, llvm::Twine const &msg);
-void warning(Pointer<Expr> context, llvm::Twine const &msg);
 
 template <class T> void warning(Pointer<T> context, llvm::Twine const &msg);
 
 template <class T> void warning(Pointer<T> context, llvm::Twine const &msg) {
-    warning(context->location, msg);
-}
-
-template <class T> void warning(T const *context, llvm::Twine const &msg);
-
-template <class T> void warning(T const *context, llvm::Twine const &msg) {
     warning(context->location, msg);
 }
 
