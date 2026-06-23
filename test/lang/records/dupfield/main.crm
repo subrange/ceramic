@@ -1,0 +1,4 @@
+record Point (x:Int, x:Int);
+main() {
+    var p = Point(1, 2);
+}

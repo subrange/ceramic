@@ -710,6 +710,15 @@ void initializeRecordFields(const RecordTypePtr &t) {
     } else {
         for (unsigned i = 0; i < body->fields.size(); ++i) {
             RecordField *x = body->fields[i].ptr();
+            auto prev = t->fieldIndexMap.find(x->name->str);
+            if (prev != t->fieldIndexMap.end()) {
+                IdentifierPtr first = body->fields[prev->second]->name;
+                DiagBuilder("duplicate field: " + x->name->str)
+                    .at(identifierSpan(x->name->location, x->name->str))
+                    .note(identifierSpan(first->location, first->str),
+                          "first defined here")
+                    .emit();
+            }
             if (x->varField) {
                 LocationContext loc(x->type->location);
                 MultiStaticPtr ms = evaluateExprStatic(x->type, env);
