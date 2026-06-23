@@ -8,6 +8,8 @@ cmake-build-*/
 *.o
 site/
 __pycache__/
+test.exe
 *.ceramiccache
 ceramicobj-*.obj
 ceramic-notes
+test/bench
