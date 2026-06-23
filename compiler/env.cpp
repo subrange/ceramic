@@ -12,8 +12,8 @@ using MapIter = llvm::StringMap<ObjectPtr>::iterator;
 // addGlobal
 //
 
-void addGlobal(ModulePtr module, IdentifierPtr name, Visibility visibility,
-               ObjectPtr value) {
+void addGlobal(const ModulePtr &module, const IdentifierPtr &name,
+               Visibility visibility, ObjectPtr value) {
     MapIter i = module->globals.find(name->str);
     if (i != module->globals.end())
         error(name, "name redefined: " + name->str);
@@ -302,7 +302,7 @@ static void addImportedSymbols(ModulePtr module, bool publicOnly) {
 // lookupPrivate
 //
 
-ObjectPtr lookupPrivate(ModulePtr module, IdentifierPtr name) {
+ObjectPtr lookupPrivate(const ModulePtr &module, const IdentifierPtr &name) {
 retry:
     llvm::StringMap<ImportSet>::const_iterator i =
         module->allSymbols.find(name->str);
@@ -329,7 +329,7 @@ retry:
 // lookupPublic, safeLookupPublic
 //
 
-ObjectPtr lookupPublic(ModulePtr module, IdentifierPtr name) {
+ObjectPtr lookupPublic(const ModulePtr &module, const IdentifierPtr &name) {
 retry:
     llvm::StringMap<ImportSet>::const_iterator i =
         module->publicSymbols.find(name->str);
@@ -348,7 +348,7 @@ retry:
     return *objs.begin();
 }
 
-ObjectPtr safeLookupPublic(ModulePtr module, IdentifierPtr name) {
+ObjectPtr safeLookupPublic(const ModulePtr &module, const IdentifierPtr &name) {
     ObjectPtr x = lookupPublic(module, name);
     if (!x)
         undefinedNameError(name);
@@ -359,14 +359,14 @@ ObjectPtr safeLookupPublic(ModulePtr module, IdentifierPtr name) {
 // addLocal, safeLookupEnv
 //
 
-void addLocal(EnvPtr env, IdentifierPtr name, ObjectPtr value) {
+void addLocal(const EnvPtr &env, const IdentifierPtr &name, ObjectPtr value) {
     MapIter i = env->entries.find(name->str);
     if (i != env->entries.end())
         error(name, "duplicate name: " + name->str);
     env->entries[name->str] = value;
 }
 
-ObjectPtr lookupEnv(EnvPtr env, IdentifierPtr name) {
+ObjectPtr lookupEnv(const EnvPtr &env, const IdentifierPtr &name) {
     MapIter i = env->entries.find(name->str);
     if (i != env->entries.end())
         return i->second;
@@ -388,14 +388,14 @@ ObjectPtr lookupEnv(EnvPtr env, IdentifierPtr name) {
         return nullptr;
 }
 
-ObjectPtr safeLookupEnv(EnvPtr env, IdentifierPtr name) {
+ObjectPtr safeLookupEnv(const EnvPtr &env, const IdentifierPtr &name) {
     ObjectPtr obj = lookupEnv(env, name);
     if (obj == nullptr)
         undefinedNameError(name);
     return obj;
 }
 
-ModulePtr safeLookupModule(EnvPtr env) {
+ModulePtr safeLookupModule(const EnvPtr &env) {
     switch (env->parent->objKind) {
     case ENV: {
         Env *parent = (Env *)env->parent.ptr();
@@ -411,7 +411,7 @@ ModulePtr safeLookupModule(EnvPtr env) {
     }
 }
 
-llvm::DINamespace *lookupModuleDebugInfo(EnvPtr env) {
+llvm::DINamespace *lookupModuleDebugInfo(const EnvPtr &env) {
     if (env == nullptr || env->parent == nullptr)
         return nullptr;
 
@@ -433,8 +433,8 @@ llvm::DINamespace *lookupModuleDebugInfo(EnvPtr env) {
 // lookupEnvEx
 //
 
-ObjectPtr lookupEnvEx(EnvPtr env, IdentifierPtr name, EnvPtr nonLocalEnv,
-                      bool &isNonLocal, bool &isGlobal) {
+ObjectPtr lookupEnvEx(const EnvPtr &env, const IdentifierPtr &name,
+                      EnvPtr nonLocalEnv, bool &isNonLocal, bool &isGlobal) {
     if (nonLocalEnv == env)
         nonLocalEnv = nullptr;
 
@@ -475,7 +475,7 @@ ObjectPtr lookupEnvEx(EnvPtr env, IdentifierPtr name, EnvPtr nonLocalEnv,
 // foreignExpr
 //
 
-ExprPtr foreignExpr(EnvPtr env, ExprPtr expr) {
+ExprPtr foreignExpr(const EnvPtr &env, ExprPtr expr) {
     if (expr->exprKind == UNPACK) {
         Unpack *y = (Unpack *)expr.ptr();
         return new Unpack(foreignExpr(env, y->expr));
@@ -487,7 +487,7 @@ ExprPtr foreignExpr(EnvPtr env, ExprPtr expr) {
 // lookupCallByNameExprHead
 //
 
-ExprPtr lookupCallByNameExprHead(EnvPtr env) {
+ExprPtr lookupCallByNameExprHead(const EnvPtr &env) {
     if (env->callByNameExprHead.ptr())
         return env->callByNameExprHead;
 
@@ -511,7 +511,7 @@ ExprPtr lookupCallByNameExprHead(EnvPtr env) {
 // safeLookupCallByNameLocation
 //
 
-Location safeLookupCallByNameLocation(EnvPtr env, const char *macro) {
+Location safeLookupCallByNameLocation(const EnvPtr &env, const char *macro) {
     ExprPtr head = lookupCallByNameExprHead(env);
     if (head.ptr() == 0) {
         error(llvm::Twine(macro) + " is only allowed in an alias function");

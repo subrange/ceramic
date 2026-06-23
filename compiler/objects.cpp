@@ -21,7 +21,7 @@ ValueHolder::~ValueHolder() {
 //
 
 // FIXME: this doesn't handle arbitrary values (need to call ceramic)
-bool _objectValueEquals(ObjectPtr a, ObjectPtr b) {
+bool _objectValueEquals(const ObjectPtr &a, const ObjectPtr &b) {
     // at this point pointer identity should already have been checked by
     // objectEquals
 
@@ -66,7 +66,7 @@ static unsigned identityHash(Object *a) {
 }
 
 // FIXME: this doesn't handle arbitrary values (need to call ceramic)
-unsigned objectHash(ObjectPtr a) {
+unsigned objectHash(const ObjectPtr &a) {
     switch (a->objKind) {
     case IDENTIFIER: {
         Identifier *b = (Identifier *)a.ptr();

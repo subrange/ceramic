@@ -70,11 +70,11 @@ TypePtr enumType(const EnumDeclPtr &enumeration);
 
 TypePtr newType(const NewTypeDeclPtr &decl);
 
-bool isPrimitiveType(TypePtr t);
-bool isPrimitiveAggregateType(TypePtr t);
-bool isPrimitiveAggregateTooLarge(TypePtr t);
-bool isPointerOrCodePointerType(TypePtr t);
-bool isStaticOrTupleOfStatics(TypePtr t);
+bool isPrimitiveType(const TypePtr &t);
+bool isPrimitiveAggregateType(const TypePtr &t);
+bool isPrimitiveAggregateTooLarge(const TypePtr &t);
+bool isPointerOrCodePointerType(const TypePtr &t);
+bool isStaticOrTupleOfStatics(const TypePtr &t);
 
 void initializeRecordFields(const RecordTypePtr &t);
 
@@ -82,13 +82,13 @@ llvm::ArrayRef<IdentifierPtr> recordFieldNames(const RecordTypePtr &t);
 
 llvm::ArrayRef<TypePtr> recordFieldTypes(const RecordTypePtr &t);
 
-const llvm::StringMap<size_t> &recordFieldIndexMap(RecordTypePtr t);
+const llvm::StringMap<size_t> &recordFieldIndexMap(const RecordTypePtr &t);
 
 llvm::ArrayRef<TypePtr> variantMemberTypes(const VariantTypePtr &t);
 
 TypePtr variantReprType(const VariantTypePtr &t);
 
-unsigned dispatchTagCount(TypePtr t);
+unsigned dispatchTagCount(const TypePtr &t);
 
 TypePtr newtypeReprType(const NewTypePtr &t);
 
@@ -120,13 +120,13 @@ llvm::DIType *llvmVoidTypeDebugInfo();
 
 void materializeDebugInfoForTypes();
 
-size_t typeSize(TypePtr t);
+size_t typeSize(const TypePtr &t);
 
-size_t typeAlignment(TypePtr t);
+size_t typeAlignment(const TypePtr &t);
 
-void typePrint(llvm::raw_ostream &out, TypePtr t);
+void typePrint(llvm::raw_ostream &out, const TypePtr &t);
 
-std::string typeName(TypePtr t);
+std::string typeName(const TypePtr &t);
 
 inline size_t alignedUpTo(const size_t offset, const size_t align) {
     return (offset + align - 1) / align * align;

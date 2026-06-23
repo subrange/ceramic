@@ -1215,7 +1215,7 @@ void patternPrint(llvm::raw_ostream &out, MultiPatternPtr x) {
 
 // typePrint
 
-void typePrint(llvm::raw_ostream &out, TypePtr t) {
+void typePrint(llvm::raw_ostream &out, const TypePtr &t) {
     switch (t->typeKind) {
     case BOOL_TYPE:
         out << "Bool";

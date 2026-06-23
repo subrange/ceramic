@@ -450,7 +450,7 @@ TypePtr newtypeReprType(const NewTypePtr &t) {
 // isPrimitiveType, isPrimitiveAggregateType, isPointerOrCodePointerType
 //
 
-bool isPrimitiveType(TypePtr t) {
+bool isPrimitiveType(const TypePtr &t) {
     switch (t->typeKind) {
     case BOOL_TYPE:
     case INTEGER_TYPE:
@@ -468,7 +468,7 @@ bool isPrimitiveType(TypePtr t) {
     }
 }
 
-bool isPrimitiveAggregateType(TypePtr t) {
+bool isPrimitiveAggregateType(const TypePtr &t) {
     switch (t->typeKind) {
     case BOOL_TYPE:
     case INTEGER_TYPE:
@@ -498,7 +498,7 @@ bool isPrimitiveAggregateType(TypePtr t) {
     }
 }
 
-bool isPrimitiveAggregateTooLarge(TypePtr t) {
+bool isPrimitiveAggregateTooLarge(const TypePtr &t) {
     switch (t->typeKind) {
     case BOOL_TYPE:
     case INTEGER_TYPE:
@@ -532,7 +532,7 @@ bool isPrimitiveAggregateTooLarge(TypePtr t) {
     }
 }
 
-bool isPointerOrCodePointerType(TypePtr t) {
+bool isPointerOrCodePointerType(const TypePtr &t) {
     switch (t->typeKind) {
     case POINTER_TYPE:
     case CODE_POINTER_TYPE:
@@ -543,7 +543,7 @@ bool isPointerOrCodePointerType(TypePtr t) {
     }
 }
 
-bool isStaticOrTupleOfStatics(TypePtr t) {
+bool isStaticOrTupleOfStatics(const TypePtr &t) {
     switch (t->typeKind) {
     case STATIC_TYPE:
         return true;
@@ -740,7 +740,7 @@ llvm::ArrayRef<TypePtr> recordFieldTypes(const RecordTypePtr &t) {
     return t->fieldTypes;
 }
 
-const llvm::StringMap<size_t> &recordFieldIndexMap(RecordTypePtr t) {
+const llvm::StringMap<size_t> &recordFieldIndexMap(const RecordTypePtr &t) {
     if (!t->fieldsInitialized)
         initializeRecordFields(t);
     return t->fieldIndexMap;
@@ -848,7 +848,7 @@ TypePtr variantReprType(const VariantTypePtr &t) {
     return t->reprType;
 }
 
-unsigned dispatchTagCount(TypePtr t) {
+unsigned dispatchTagCount(const TypePtr &t) {
     ExprPtr dtc = operator_expr_DispatchTagCount();
     ExprPtr dtcExpr = new Call(dtc, new ExprList(new ObjectExpr(t.ptr())));
 
@@ -1654,17 +1654,17 @@ static void initTypeInfo(const TypePtr &t) {
     }
 }
 
-size_t typeSize(TypePtr t) {
+size_t typeSize(const TypePtr &t) {
     initTypeInfo(t.ptr());
     return t->typeSize;
 }
 
-size_t typeAlignment(TypePtr t) {
+size_t typeAlignment(const TypePtr &t) {
     initTypeInfo(t.ptr());
     return t->typeAlignment;
 }
 
-string typeName(TypePtr type) {
+string typeName(const TypePtr &type) {
     llvm::SmallString<128> buf;
     llvm::raw_svector_ostream os(buf);
     typePrint(os, type);
