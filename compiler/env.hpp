@@ -3,26 +3,26 @@
 #include "ceramic.hpp"
 
 namespace ceramic {
-void addGlobal(ModulePtr module, IdentifierPtr name, Visibility visibility,
-               ObjectPtr value);
+void addGlobal(const ModulePtr &module, const IdentifierPtr &name,
+               Visibility visibility, ObjectPtr value);
 
-ObjectPtr lookupPrivate(ModulePtr module, IdentifierPtr name);
-ObjectPtr lookupPublic(ModulePtr module, IdentifierPtr name);
-ObjectPtr safeLookupPublic(ModulePtr module, IdentifierPtr name);
+ObjectPtr lookupPrivate(const ModulePtr &module, const IdentifierPtr &name);
+ObjectPtr lookupPublic(const ModulePtr &module, const IdentifierPtr &name);
+ObjectPtr safeLookupPublic(const ModulePtr &module, const IdentifierPtr &name);
 
-void addLocal(EnvPtr env, IdentifierPtr name, ObjectPtr value);
-ObjectPtr lookupEnv(EnvPtr env, IdentifierPtr name);
-ObjectPtr safeLookupEnv(EnvPtr env, IdentifierPtr name);
-ModulePtr safeLookupModule(EnvPtr env);
-llvm::DINamespace *lookupModuleDebugInfo(EnvPtr env);
+void addLocal(const EnvPtr &env, const IdentifierPtr &name, ObjectPtr value);
+ObjectPtr lookupEnv(const EnvPtr &env, const IdentifierPtr &name);
+ObjectPtr safeLookupEnv(const EnvPtr &env, const IdentifierPtr &name);
+ModulePtr safeLookupModule(const EnvPtr &env);
+llvm::DINamespace *lookupModuleDebugInfo(const EnvPtr &env);
 
-ObjectPtr lookupEnvEx(EnvPtr env, IdentifierPtr name, EnvPtr nonLocalEnv,
-                      bool &isNonLocal, bool &isGlobal);
+ObjectPtr lookupEnvEx(const EnvPtr &env, const IdentifierPtr &name,
+                      EnvPtr nonLocalEnv, bool &isNonLocal, bool &isGlobal);
 
-ExprPtr foreignExpr(EnvPtr env, ExprPtr expr);
+ExprPtr foreignExpr(const EnvPtr &env, ExprPtr expr);
 
-ExprPtr lookupCallByNameExprHead(EnvPtr env);
-Location safeLookupCallByNameLocation(EnvPtr env, const char *macro);
+ExprPtr lookupCallByNameExprHead(const EnvPtr &env);
+Location safeLookupCallByNameLocation(const EnvPtr &env, const char *macro);
 
 bool lookupExceptionAvailable(const Env *env);
 } // namespace ceramic

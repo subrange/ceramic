@@ -14,10 +14,10 @@ struct ValueHolder : public Object {
     template <typename T> T const &as() const { return *(T const *)buf; }
 };
 
-bool _objectValueEquals(ObjectPtr a, ObjectPtr b);
-unsigned objectHash(ObjectPtr a);
+bool _objectValueEquals(const ObjectPtr &a, const ObjectPtr &b);
+unsigned objectHash(const ObjectPtr &a);
 
-inline bool objectEquals(ObjectPtr a, ObjectPtr b) {
+inline bool objectEquals(const ObjectPtr &a, const ObjectPtr &b) {
     if (a == b)
         return true;
     return _objectValueEquals(a, b);

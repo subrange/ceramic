@@ -645,14 +645,13 @@ struct Identifier : public ANode {
     Identifier(llvm::StringRef str, bool isOperator)
         : ANode(IDENTIFIER), str(str), isOperator(isOperator) {}
 
-    static map<llvm::StringRef, IdentifierPtr> freeIdentifiers; // in parser.cpp
+    static llvm::StringMap<IdentifierPtr> freeIdentifiers; // in parser.cpp
 
     static Identifier *get(llvm::StringRef str, bool isOperator = false) {
-        map<llvm::StringRef, IdentifierPtr>::const_iterator iter =
-            freeIdentifiers.find(str);
+        auto iter = freeIdentifiers.find(str);
         if (iter == freeIdentifiers.end()) {
             Identifier *ident = new Identifier(str, isOperator);
-            freeIdentifiers[ident->str] = ident;
+            freeIdentifiers[str] = ident;
             return ident;
         } else
             return iter->second.ptr();

@@ -17,6 +17,8 @@ template <class T> class Pointer {
             p->incRef();
     }
 
+    Pointer(Pointer<T> &&other) noexcept : p(other.p) { other.p = nullptr; }
+
     ~Pointer() {
         if (p)
             p->decRef();
@@ -29,6 +31,16 @@ template <class T> class Pointer {
         if (p)
             p->decRef();
         p = q;
+        return *this;
+    }
+
+    Pointer<T> &operator=(Pointer<T> &&other) noexcept {
+        if (this != &other) {
+            if (p)
+                p->decRef();
+            p = other.p;
+            other.p = nullptr;
+        }
         return *this;
     }
 
