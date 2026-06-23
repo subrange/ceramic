@@ -1,6 +1,10 @@
 #include "hirestimer.hpp"
 #include <cassert>
 
+namespace ceramic {
+CeramicTimers timers;
+} // namespace ceramic
+
 #ifdef __APPLE__
 
 #include <mach/mach.h>

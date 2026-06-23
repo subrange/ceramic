@@ -31,8 +31,6 @@ using std::vector;
 
 namespace ceramic {
 
-CeramicTimers timers;
-
 #ifdef WIN32
 #define PATH_SEPARATORS "/\\"
 #else
