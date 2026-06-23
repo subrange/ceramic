@@ -8,6 +8,7 @@
 #include "env.hpp"
 #include "error.hpp"
 #include "evaluator.hpp"
+#include "hirestimer.hpp"
 #include "loader.hpp"
 #include "parser.hpp"
 #include "patterns.hpp"
@@ -217,13 +218,19 @@ static PathString toRelativePath2(DottedNamePtr name) {
 static PathString locateModule(DottedNamePtr name) {
     PathString path;
 
+    timers.locate.start();
     PathString relativePath1 = toRelativePath1(name);
-    if (locateFile(relativePath1, path))
+    if (locateFile(relativePath1, path)) {
+        timers.locate.stop();
         return path;
+    }
 
     PathString relativePath2 = toRelativePath2(name);
-    if (locateFile(relativePath2, path))
+    if (locateFile(relativePath2, path)) {
+        timers.locate.stop();
         return path;
+    }
+    timers.locate.stop();
 
     string s;
     llvm::raw_string_ostream ss(s);
@@ -262,7 +269,10 @@ static SourcePtr loadFile(llvm::StringRef fileName,
     if (sourceFiles != nullptr)
         sourceFiles->push_back(fileName.str());
 
+    timers.read.start();
     SourcePtr src = new Source(fileName);
+    timers.read.stop();
+
     if (llvmDIBuilder != nullptr) {
         PathString absFileName(fileName);
         llvm::sys::fs::make_absolute(absFileName);
@@ -350,12 +360,16 @@ static ModulePtr loadModuleByName(DottedNamePtr name,
             llvm::errs() << "loading module " << name->join() << " from "
                          << path << "\n";
         }
+        timers.parse.start();
         module = parse(key, loadFile(path, sourceFiles));
+        timers.parse.stop();
     }
 
     globalModules[key] = module;
     loadDependents(module, sourceFiles, verbose);
+    timers.install.start();
     installGlobals(module);
+    timers.install.stop();
 
     return module;
 }
@@ -444,12 +458,18 @@ static ModulePtr loadPrelude(vector<string> *sourceFiles, bool verbose,
 
 ModulePtr loadProgram(llvm::StringRef fileName, vector<string> *sourceFiles,
                       bool verbose, bool repl) {
+    timers.parse.start();
     globalMainModule = parse("", loadFile(fileName, sourceFiles));
+    timers.parse.stop();
     ModulePtr prelude = loadPrelude(sourceFiles, verbose, repl);
     loadDependents(globalMainModule, sourceFiles, verbose);
+    timers.install.start();
     installGlobals(globalMainModule);
+    timers.install.stop();
+    timers.initMod.start();
     initModule(prelude);
     initModule(globalMainModule);
+    timers.initMod.stop();
     return globalMainModule;
 }
 
@@ -461,13 +481,19 @@ ModulePtr loadProgramSource(llvm::StringRef name, llvm::StringRef source,
         mainSource->debugInfo.reset(llvmDIBuilder->createFile("-e", ""));
     }
 
+    timers.parse.start();
     globalMainModule = parse("", mainSource);
+    timers.parse.stop();
     // Don't keep track of source files for -e script
     ModulePtr prelude = loadPrelude(nullptr, verbose, repl);
     loadDependents(globalMainModule, nullptr, verbose);
+    timers.install.start();
     installGlobals(globalMainModule);
+    timers.install.stop();
+    timers.initMod.start();
     initModule(prelude);
     initModule(globalMainModule);
+    timers.initMod.stop();
     return globalMainModule;
 }
 

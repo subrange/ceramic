@@ -1,6 +1,10 @@
 #include "hirestimer.hpp"
 #include <cassert>
 
+namespace ceramic {
+CeramicTimers timers;
+} // namespace ceramic
+
 #ifdef __APPLE__
 
 #include <mach/mach.h>
@@ -96,8 +100,9 @@ void HiResTimer::stop() {
     if (--running == 0) {
         struct timespec t;
         clock_gettime(CLOCK, &t);
-        elapsedTicks = (unsigned long long)(t.tv_sec * 1000000000 + t.tv_nsec) -
-                       startTicks;
+        elapsedTicks +=
+            (unsigned long long)(t.tv_sec * 1000000000 + t.tv_nsec) -
+            startTicks;
     }
 }
 

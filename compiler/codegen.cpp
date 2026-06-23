@@ -8,6 +8,7 @@
 #include "error.hpp"
 #include "evaluator.hpp"
 #include "externals.hpp"
+#include "hirestimer.hpp"
 #include "int128.hpp"
 #include "invoketables.hpp"
 #include "lambdas.hpp"
@@ -4466,25 +4467,34 @@ void codegenEntryPoints(ModulePtr module, bool importedExternals) {
     constructorsCtx = &theConstructorCtx;
     destructorsCtx = &theDestructorCtx;
 
+    timers.topLevel.start();
     codegenTopLevelLLVM(module);
+    timers.topLevel.stop();
+
+    timers.externals.start();
     initializeCtorsDtors();
     generateLLVMCtorsAndDtors();
     codegenModuleEntryPoints(module, importedExternals);
+    timers.externals.stop();
 
     ObjectPtr mainProc = lookupPrivate(module, Identifier::get("main"));
 
     // Generate call to `main` function.
     // But if `main` is external procedure, it was already generated in
     // `codegenModuleEntryPoints`.
+    timers.mainEntry.start();
     if (mainProc != nullptr && mainProc->objKind != EXTERNAL_PROCEDURE)
         codegenMain(module);
+    timers.mainEntry.stop();
 
+    timers.finalize.start();
     finalizeCtorsDtors();
 
     if (llvmDIBuilder != nullptr) {
         materializeDebugInfoForTypes();
         llvmDIBuilder->finalize();
     }
+    timers.finalize.stop();
 
     constructorsCtx = nullptr;
     destructorsCtx = nullptr;
