@@ -18,6 +18,10 @@ main() = testMain(
     TestCase("any? finds a matching element", -> {
       expectEqual(true, any?(array(1, 2, 3), x -> x > 2));
       expectEqual(false, any?(array(1, 2, 3), x -> x > 5));
+    }),
+    TestCase("all? checks every element", -> {
+      expectEqual(true, all?(array(3, 4, 5), x -> x > 2));
+      expectEqual(false, all?(array(1, 2, 3), x -> x > 2));
     })
   ))
 );

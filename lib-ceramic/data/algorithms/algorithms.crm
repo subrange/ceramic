@@ -148,7 +148,7 @@ overload reverseFindIf(_first, _last, pred) {
 }
 
 any?(seq, pred) = findIf(seq, pred) != end(seq);
-all?(seq, pred) = findIf(seq, x -> not pred(x)) != end(seq);
+all?(seq, pred) = findIf(seq, x -> not pred(x)) == end(seq);
 
 
 /// @section  find 
