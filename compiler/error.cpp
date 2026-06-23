@@ -7,6 +7,8 @@
 #include "matchinvoke.hpp"
 #include "printer.hpp"
 
+#include "llvm/Support/Path.h"
+
 #include <algorithm>
 #include <cstdarg>
 
@@ -825,18 +827,29 @@ static string buildMatchDetail(MatchFailureError const &err,
     size_t shown = std::min(visible.size(), MAX_SHOW);
     size_t lessSpecific = visible.size() - shown;
 
-    if (shown > 0)
-        sout << "  candidates:";
+    vector<string> locCol(shown), sigCol(shown);
+    unsigned locWidth = 0, sigWidth = 0;
     for (size_t i = 0; i < shown; ++i) {
         const auto &f = visible[i];
         Location loc = f.first->location;
         unsigned line, column, tabColumn;
         getLineCol(loc, line, column, tabColumn);
-        sout << "\n    " << displayPath(loc.source->fileName) << ":" << line + 1
-             << "  ";
-        appendOverloadSignature(sout, name, f.first);
-        sout << "  ";
-        printMatchErrorCompact(sout, f.second);
+        locCol[i] = (llvm::sys::path::filename(loc.source->fileName) + ":" +
+                     llvm::Twine(line + 1))
+                        .str();
+        llvm::raw_string_ostream sigOut(sigCol[i]);
+        appendOverloadSignature(sigOut, name, f.first);
+        sigOut.flush();
+        locWidth = std::max(locWidth, (unsigned)locCol[i].size());
+        sigWidth = std::max(sigWidth, (unsigned)sigCol[i].size());
+    }
+
+    if (shown > 0)
+        sout << "  candidates:";
+    for (size_t i = 0; i < shown; ++i) {
+        sout << "\n    " << llvm::left_justify(locCol[i], locWidth) << "  "
+             << llvm::left_justify(sigCol[i], sigWidth) << "  ";
+        printMatchErrorCompact(sout, visible[i].second);
     }
 
     if (lessSpecific > 0) {

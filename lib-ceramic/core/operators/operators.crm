@@ -132,21 +132,29 @@ forceinline overload prefixUpdateAssign(#F, ref dest, forward ..src) : {
     dest = prefixOperator(F, dest, ..src);
 }
 
+[[transparent]]
 forceinline default (!=)(a, b) : Bool = not (==)(a, b);
 
 define ordered?;
+[[transparent]]
 forceinline overload ordered?(a, b) : Bool = (<=)(a, b) or (<=)(b, a);
 
+[[transparent]]
 forceinline default (<=)(a, b) : Bool = not (<)(b, a);
 
+[[transparent]]
 forceinline default (>)(a, b) : Bool = (<)(b, a);
 
+[[transparent]]
 forceinline default (>=)(a, b) : Bool = not (<)(a, b);
 
+[[transparent]]
 forceinline overload (&)(a, b, c, ..rest) = (&)((&)(a, b), c, ..rest);
 
+[[transparent]]
 forceinline overload (|)(a, b, c, ..rest) = (|)((|)(a, b), c, ..rest);
 
+[[transparent]]
 forceinline overload (~)(a, b, c, ..rest) = (~)((~)(a, b), c, ..rest);
 
 [FIELD]
