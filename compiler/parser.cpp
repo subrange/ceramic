@@ -5,7 +5,7 @@
 #include "error.hpp"
 
 namespace ceramic {
-map<llvm::StringRef, IdentifierPtr> Identifier::freeIdentifiers;
+llvm::StringMap<IdentifierPtr> Identifier::freeIdentifiers;
 
 static vector<Token> *tokens;
 static unsigned position;
