@@ -10,4 +10,5 @@ site/
 __pycache__/
 *.ceramiccache
 ceramicobj-*.obj
+test.exe
 ceramic-notes
