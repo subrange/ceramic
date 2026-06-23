@@ -1,0 +1,6 @@
+import printer.(println);
+twoThree() = 2, 3;
+main() {
+    var a, b, c, d = 1, ..twoThree(), 4;
+    println(a, " ", b, " ", c, " ", d);
+}

@@ -11,5 +11,6 @@ __pycache__/
 test.exe
 *.ceramiccache
 ceramicobj-*.obj
+test.exe
 ceramic-notes
 test/bench

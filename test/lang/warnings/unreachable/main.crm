@@ -1,7 +1,7 @@
 import printer.(println);
 
 main() {
-    println("ok");
+    println("a");
     return;
     println("dead");
 }

@@ -1,0 +1,9 @@
+import printer.(println);
+
+main() {
+    goto inner;
+    {
+inner:
+        println("hi");
+    }
+}

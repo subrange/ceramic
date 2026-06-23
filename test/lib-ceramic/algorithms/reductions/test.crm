@@ -1,0 +1,23 @@
+import test.*;
+import data.algorithms.*;
+import data.vectors.*;
+
+main() = testMain(
+  TestSuite("Reductions", array(
+    TestCase("sum and product", -> {
+      expectEqual(15, sum(array(1, 2, 3, 4, 5)));
+      expectEqual(120, product(array(1, 2, 3, 4, 5)));
+    }),
+    TestCase("selectMin and selectMax", -> {
+      expectEqual(1, selectMin(array(3, 1, 2)));
+      expectEqual(3, selectMax(array(3, 1, 2)));
+    }),
+    TestCase("reduce with an initial value", -> {
+      expectEqual(10, reduce(add, 0, array(1, 2, 3, 4)));
+    }),
+    TestCase("any? finds a matching element", -> {
+      expectEqual(true, any?(array(1, 2, 3), x -> x > 2));
+      expectEqual(false, any?(array(1, 2, 3), x -> x > 5));
+    })
+  ))
+);

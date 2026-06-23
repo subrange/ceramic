@@ -1,0 +1,9 @@
+import printer.(println);
+
+main() {
+    var a = Array[Int, 3]();
+    println(a[0], " ", a[1], " ", a[2]);
+    println(size(a));
+    var b = Array[Int, 0]();
+    println(size(b));
+}

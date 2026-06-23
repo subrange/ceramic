@@ -1,0 +1,11 @@
+import printer.(println);
+import data.vectors.*;
+
+main() {
+    var v = Vector(range(10));
+    var p = begin(v);
+    var q = p + 3_uss;
+    println(q^);
+    println(q - p);
+    println((q - 1_uss)^);
+}

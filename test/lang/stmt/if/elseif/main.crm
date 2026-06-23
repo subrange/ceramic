@@ -1,0 +1,14 @@
+import printer.(println);
+sign(n) {
+    if (n > 0)
+        return StringLiteralRef("pos");
+    else if (n < 0)
+        return StringLiteralRef("neg");
+    else
+        return StringLiteralRef("zero");
+}
+main() {
+    println(sign(5));
+    println(sign(-5));
+    println(sign(0));
+}

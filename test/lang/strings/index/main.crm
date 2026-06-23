@@ -1,0 +1,7 @@
+import printer.(println);
+import data.strings.*;
+main() {
+    var s = String("abc");
+    println(s[0]);
+    println(s[2]);
+}

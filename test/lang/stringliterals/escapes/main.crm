@@ -1,0 +1,8 @@
+import printer.(print, println);
+
+main() {
+    print("tab[\tend]\n");
+    print("quote[\"]\n");
+    print("backslash[\\]\n");
+    println(Type("x"));
+}

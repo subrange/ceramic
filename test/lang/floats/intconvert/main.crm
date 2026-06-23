@@ -1,0 +1,7 @@
+import printer.(println);
+import numbers.floats.*;
+main() {
+    var x = 3.9;
+    println(Int64(x));
+    println(Double(7));
+}

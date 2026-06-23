@@ -1,0 +1,11 @@
+import printer.(println);
+import data.sequences.*;
+
+main() {
+    var xs = range(4);
+    var it = iterator(xs);
+    while (var v = nextValue(it); hasValue?(v)) {
+        forward x = getValue(v);
+        println(x);
+    }
+}

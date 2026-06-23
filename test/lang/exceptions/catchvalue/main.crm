@@ -1,0 +1,18 @@
+import printer.(println);
+record Boom (code : Int);
+instance Exception (Boom);
+risky(x) {
+    if (x < 0)
+        throw Boom(x);
+    return x;
+}
+main() {
+    try {
+        println(risky(5));
+        println(risky(-1));
+        println("not reached");
+    }
+    catch (e : Boom) {
+        println("caught ", e.code);
+    }
+}

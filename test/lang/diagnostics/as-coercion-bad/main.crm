@@ -1,0 +1,7 @@
+import printer.(println);
+
+foo(x as Int) = x;
+
+main() {
+    println(foo("hello"));
+}

@@ -1,0 +1,8 @@
+import printer.(println);
+main() {
+    var xs = array(10, 20, 30);
+    var sum = 0;
+    for (x in xs)
+        sum +: x;
+    println(sum);
+}

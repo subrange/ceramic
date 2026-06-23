@@ -1,0 +1,6 @@
+import printer.(println);
+import data.strings.*;
+main() {
+    var s = String("hello");
+    println(size(s));
+}

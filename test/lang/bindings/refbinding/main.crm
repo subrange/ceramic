@@ -1,0 +1,7 @@
+import printer.(println);
+main() {
+    var x = 1;
+    ref y = x;
+    y = 99;
+    println(x);
+}

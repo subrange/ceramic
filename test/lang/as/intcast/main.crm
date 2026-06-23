@@ -1,0 +1,5 @@
+import printer.(println);
+foo(x as Int64) = Type(x);
+main() {
+    println(foo(5));
+}

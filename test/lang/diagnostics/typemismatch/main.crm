@@ -1,0 +1,5 @@
+foo(x : Int) = x;
+
+main() {
+    foo(1.5);
+}

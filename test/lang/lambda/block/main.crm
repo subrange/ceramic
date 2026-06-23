@@ -1,0 +1,6 @@
+import printer.(println);
+apply(f, x) = f(x);
+main() {
+    var r = apply(n -> { var t = n + 1; return t * t; }, 4);
+    println(r);
+}

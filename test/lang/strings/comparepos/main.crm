@@ -1,0 +1,6 @@
+import printer.(println);
+import data.strings.*;
+main() {
+    println(String("abc") == String("abc"));
+    println(String("abc") == String("abd"));
+}

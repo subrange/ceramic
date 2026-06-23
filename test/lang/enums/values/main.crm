@@ -1,0 +1,11 @@
+import printer.(println);
+
+enum Color (RED, GREEN, BLUE);
+
+main() {
+    println(RED);
+    println(GREEN);
+    println(BLUE);
+    println(RED == RED);
+    println(RED == GREEN);
+}

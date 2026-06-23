@@ -1,0 +1,12 @@
+import printer.(println);
+classify(n) {
+    switch (n)
+    case (0) return StringLiteralRef("zero");
+    case (1) return StringLiteralRef("one");
+    else return StringLiteralRef("many");
+}
+main() {
+    println(classify(0));
+    println(classify(1));
+    println(classify(7));
+}

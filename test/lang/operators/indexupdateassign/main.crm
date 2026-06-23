@@ -1,0 +1,9 @@
+import printer.(println);
+import data.vectors.*;
+
+main() {
+    var v = Vector(array(10, 20, 30));
+    v[1] +: 5;
+    v[2] *: 2;
+    println(v[0], " ", v[1], " ", v[2]);
+}

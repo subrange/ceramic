@@ -1,0 +1,17 @@
+import test.*;
+import sharedpointers.*;
+
+main() = testMain(
+  TestSuite("Shared pointers", array(
+    TestCase("dereference yields the stored value", -> {
+      var p = new(42);
+      expectEqual(42, p^);
+    }),
+    TestCase("copies share the same underlying value", -> {
+      var p = new(10);
+      var q = p;
+      q^ = 99;
+      expectEqual(99, p^);
+    })
+  ))
+);

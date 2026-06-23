@@ -1,0 +1,3 @@
+[T] foo(x : Int) = T;
+
+main() { foo(1); }

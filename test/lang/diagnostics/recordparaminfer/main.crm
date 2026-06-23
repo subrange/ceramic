@@ -1,0 +1,3 @@
+record Box[T] ();
+
+main() { var b = Box(); }
