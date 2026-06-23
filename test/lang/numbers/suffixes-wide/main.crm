@@ -1,0 +1,10 @@
+import printer.(println);
+
+main() {
+    println(Type(1ll));
+    println(Type(1ull));
+    println(Type(1.0j));
+    println(Type(1.0fj));
+    println(Type(1.0ffj));
+    println(Type(1.0flj));
+}

@@ -1,0 +1,16 @@
+import printer.(println);
+
+variant Shape (Circle, Square);
+record Circle ();
+record Square ();
+
+define area;
+overload area(s : Circle) = 1;
+overload area(s : Square) = StringLiteralRef("square");
+
+describe(s : Shape) = area(*s);
+
+main() {
+    var c = Shape(Circle());
+    println(describe(c));
+}

@@ -1,0 +1,5 @@
+import printer.*;
+
+main() {
+    staticassert(1 == 2);
+}

@@ -1,0 +1,8 @@
+import printer.(println);
+
+main() {
+    println(17 \ 5);
+    println(17 % 5);
+    println(-17 \ 5);
+    println(-17 % 5);
+}

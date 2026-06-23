@@ -1,0 +1,9 @@
+import printer.(println);
+var counter = 0;
+bump() { counter +: 1; }
+main() {
+    bump();
+    bump();
+    bump();
+    println(counter);
+}

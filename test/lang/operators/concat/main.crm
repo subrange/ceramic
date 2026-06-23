@@ -1,0 +1,8 @@
+import printer.(println);
+import data.strings.*;
+
+main() {
+    var a = String("foo");
+    var b = String("bar");
+    println(a ++ b);
+}

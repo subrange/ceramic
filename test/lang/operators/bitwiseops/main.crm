@@ -1,0 +1,8 @@
+import printer.(println);
+main() {
+    println(12 & 10);
+    println(12 | 10);
+    println(12 ~ 10);
+    println(1 << 4);
+    println(256 >> 2);
+}

@@ -1,0 +1,5 @@
+import printer.(println);
+main() {
+    println((() -> 42)());
+    println((x -> x * x)(7));
+}

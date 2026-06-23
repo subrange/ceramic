@@ -1,0 +1,10 @@
+import printer.(println);
+define kind;
+[T when Integer?(T)]
+overload kind(x : T) = StringLiteralRef("int");
+[T when Float?(T)]
+overload kind(x : T) = StringLiteralRef("float");
+main() {
+    println(kind(3));
+    println(kind(3.0));
+}

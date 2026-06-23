@@ -1,0 +1,8 @@
+import printer.(println);
+import data.sequences.*;
+main() {
+    for (i in range(3))
+        for (j in range(3))
+            if (i == j)
+                println(i, ",", j);
+}

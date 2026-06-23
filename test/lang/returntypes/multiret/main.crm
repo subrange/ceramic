@@ -1,0 +1,10 @@
+import printer.(println);
+minmax(a, b) {
+    if (a < b)
+        return a, b;
+    return b, a;
+}
+main() {
+    var lo, hi = minmax(7, 3);
+    println(lo, " ", hi);
+}

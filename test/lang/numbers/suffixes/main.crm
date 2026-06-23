@@ -1,0 +1,7 @@
+import printer.(println);
+main() {
+    println(Type(1ss));
+    println(Type(1u));
+    println(Type(1l));
+    println(Type(1.0f));
+}

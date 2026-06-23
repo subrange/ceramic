@@ -1,0 +1,6 @@
+import printer.(println);
+import __primitives__.(countValues);
+abc() = 1, 2, 3;
+main() {
+    println(countValues(..abc()));
+}

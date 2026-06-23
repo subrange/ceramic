@@ -1,0 +1,7 @@
+import printer.(println);
+main() {
+    var n = 10;
+    var addN = x -> x + n;
+    println(addN(5));
+    println(addN(100));
+}

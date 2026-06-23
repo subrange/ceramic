@@ -1,0 +1,6 @@
+import printer.(println);
+main() {
+    println(1.5 + 2.5);
+    println(10.0 / 4.0);
+    println(2.0 * 3.5);
+}

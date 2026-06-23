@@ -1,0 +1,5 @@
+import printer.(println);
+record Pair (a : Int, b : Int);
+main() {
+    println(Pair(3, 4));
+}

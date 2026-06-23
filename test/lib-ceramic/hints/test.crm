@@ -1,0 +1,13 @@
+import test.*;
+import hints.*;
+
+main() = testMain(
+  TestSuite("Branch hints", array(
+    TestCase("likely/unlikely are value-preserving passthroughs", -> {
+      expectEqual(true, likely(true));
+      expectEqual(false, likely(false));
+      expectEqual(true, unlikely(true));
+      expectEqual(false, unlikely(false));
+    })
+  ))
+);

@@ -1,0 +1,7 @@
+import printer.(println);
+main() {
+    var xs = array(5, 6, 7, 8);
+    println(size(xs));
+    println(xs[0]);
+    println(xs[3]);
+}

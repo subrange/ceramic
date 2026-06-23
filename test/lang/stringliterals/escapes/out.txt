@@ -1,0 +1,4 @@
+tab[	end]
+quote["]
+backslash[\]
+Static["x"]

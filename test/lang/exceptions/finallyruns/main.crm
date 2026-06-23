@@ -1,0 +1,11 @@
+import printer.(println);
+main() {
+    try {
+        println("try");
+        finally println("finally");
+        println("end try");
+    }
+    catch (e) {
+        println("caught");
+    }
+}

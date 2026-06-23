@@ -1,0 +1,6 @@
+import printer.(println);
+
+main() {
+    println(Flag?("foo"), " ", Flag("foo"));
+    println(Flag?("missing"), " >", Flag("missing"), "<");
+}

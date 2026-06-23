@@ -1,0 +1,15 @@
+import printer.(println);
+
+var x = 0;
+
+main() {
+    atomicStore(OrderSeqCst, @x, 12);
+    println(atomicRMW(OrderSeqCst, RMWXchg, @x, 99));
+    println(atomicLoad(OrderSeqCst, @x));
+
+    atomicStore(OrderSeqCst, @x, 12);
+    println(atomicRMW(OrderSeqCst, RMWOr, @x, 1));
+    println(atomicRMW(OrderSeqCst, RMWAnd, @x, 6));
+    println(atomicRMW(OrderSeqCst, RMWMin, @x, 3));
+    println(atomicLoad(OrderSeqCst, @x));
+}

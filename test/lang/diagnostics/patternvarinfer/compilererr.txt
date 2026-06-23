@@ -1,0 +1,1 @@
+pattern variable 'T' cannot be inferred

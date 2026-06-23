@@ -1,0 +1,4 @@
+Int8
+UInt32
+Int64
+Float32

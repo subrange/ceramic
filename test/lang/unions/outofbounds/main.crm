@@ -1,0 +1,8 @@
+import printer.(println);
+
+alias T = Union[Double, UInt64];
+
+main() {
+    var u = T();
+    println(u.5);
+}

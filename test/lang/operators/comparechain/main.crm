@@ -1,0 +1,7 @@
+import printer.(println);
+main() {
+    println(1 < 2 and 2 < 3);
+    println(1 < 2 or 3 < 2);
+    println(not (1 == 2));
+    println(3 >= 3 and 3 <= 3);
+}

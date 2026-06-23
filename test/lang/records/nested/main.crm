@@ -1,0 +1,7 @@
+import printer.(println);
+record Inner (v : Int);
+record Outer (a : Inner, b : Inner);
+main() {
+    var o = Outer(Inner(1), Inner(2));
+    println(o.a.v, " ", o.b.v);
+}

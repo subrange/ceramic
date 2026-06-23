@@ -1,0 +1,6 @@
+import printer.(println);
+main() {
+    var x, y = 1, 2;
+    x, y = y, x;
+    println(x, " ", y);
+}

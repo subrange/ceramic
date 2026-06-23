@@ -1,0 +1,7 @@
+import printer.(println);
+main() {
+    println(2 + 3 * 4);
+    println((2 + 3) * 4);
+    println(2 * 3 + 4 * 5);
+    println(20 - 4 - 3);
+}
