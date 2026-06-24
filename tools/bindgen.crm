@@ -155,6 +155,8 @@ convertTypeFromDeclaration(declaration:CXCursor) : String {
 
 convertType(type:CXType, refCursor:CXCursor) : String {
     switch (type.kind)
+    case (CXType_Void)
+        return str("Opaque");
     case (CXType_Bool)
         return str("CBool");
     case (CXType_SChar, CXType_Char_S)
@@ -200,6 +202,8 @@ convertType(type:CXType, refCursor:CXCursor) : String {
             return str("Opaque /* unsupported complex type ",
                 clang_getTypeKindSpelling(elementType.kind), " */");
     }
+    case (CXType_FunctionProto, CXType_FunctionNoProto)
+        return convertPointerType(type, refCursor);
     case (CXType_Pointer)
         return convertPointerType(clang_getPointeeType(type), refCursor);
     case (CXType_Elaborated)
